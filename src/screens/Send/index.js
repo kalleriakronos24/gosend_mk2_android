@@ -6,6 +6,7 @@ import MapView, { MarkerAnimated, AnimatedRegion } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import { SendPackageModal } from '../../components/modals/sp_modal';
 import Geolocation from '@react-native-community/geolocation';
+import { SplashScreen } from '../Splash';
 Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
 
 const Send = ({ navigation }) => {
@@ -93,10 +94,18 @@ const SendStep = ({ navigation, route }) => {
 				}
 			}
 		);
-	};
+    };
+    let [reg, setReg] = useState({
+        latitude : '',
+        longitude: '',
+        latitudeDelta: '',
+        longitudeDelta: ''
+    });
+
     useEffect(() => {
         Geolocation.getCurrentPosition(
             (position) => {
+                console.log('current region is : ', position.coords)
                 setPos(pos = position.coords)
             },
             (err) => {
@@ -105,23 +114,25 @@ const SendStep = ({ navigation, route }) => {
             { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
         )
     }, []);
-
-    return (
+    return pos !== 0 ? (
         <View style={{ flex: 1, backgroundColor:'white' }}>
-            <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent'/>
+            <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)'/>
             <Swiper showsButtons={true} nextButton={<NextButton/>} prevButton={<PrevButton/>} bounces={true} loadMinimalLoader={<ActivityIndicator/>} showsPagination={false} loop={false}>
                     {
                         Array.from({ length : package_amount }).map((v,i) => {
                             return (
                                 <>
-                                <View style={{ flex: 1 }} key={i}> 
+                                <View style={{ flex: 1, position:'relative' }} key={i}> 
                                     <MapView
                                     initialRegion={region}
-					                onLayout={() => mapFitToCoordinates()}
-                                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} loadingEnabled={true}>
-                                        <MapView.Marker
-                                        draggable coordinate={pos === 0 ? region : pos} identifier='tujuan' title='tujuan'/>
-                                    </MapView>
+                                    onLayout={() => mapFitToCoordinates()}
+                                    onRegionChangeComplete={(e) => console.log(e)}
+                                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}/>
+                                    <View style={{ position:'absolute', justifyContent:'center', alignItems:'center', top: -100, left: 0, bottom: 0, right : 0 }}>
+                                        <View style={{ padding: 10 }}>
+                                                <Icon name='pin-sharp' size={80} color='red'/>
+                                        </View>
+                                    </View>
                                 </View>
                                 <SendPackageModal index={i}/>
                                 </>
@@ -130,6 +141,10 @@ const SendStep = ({ navigation, route }) => {
                     }
             </Swiper>
         </View>
+    ) : (
+        <View style={{ flex: 1, justifyContent:'center', alignItems:'center' }}>
+            <SplashScreen/>
+        </View>
     )
 }
 
@@ -137,3 +152,10 @@ export {
     Send,
     SendStep
 };
+
+//  {/* <MapView.Marker
+//                                         draggable coordinate={pos === 0 ? region : pos} identifier='tujuan' title='tujuan'>
+//                                             <View style={{ padding: 10 }}>
+//                                                 <Icon name='pin-sharp' size={80} color='red'/>
+//                                             </View>
+//                                         </MapView.Marker> *
