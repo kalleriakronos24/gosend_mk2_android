@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, StatusBar, ScrollView, ActivityIndicator, Touchable, TouchableOpacity} from 'react-native'
 import Swiper from 'react-native-swiper';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
-
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 const Home = ({ navigation }) => {
     const barHeight = StatusBar.currentHeight;
     let [index, setIndex] = useState(0);
@@ -14,7 +14,30 @@ const Home = ({ navigation }) => {
 		console.log('logged out');
 		dispatch({ type: 'LOGOUT' });
 		await AsyncStorage.removeItem('LOGIN_TOKEN');
-	};
+    };
+    
+    useEffect(() => {
+
+RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastInterval: 5000})
+  .then(data => {
+
+    if(data === 'already-enabled')
+        return
+    console.log('is this running ?')
+    // The user has accepted to enable the location services
+    // data can be :
+    //  - "already-enabled" if the location services has been already enabled
+    //  - "enabled" if user has clicked on OK button in the popup
+  }).catch(err => {
+      console.log(err.msg);
+    // The user has not accepted to enable the location services or something went wrong during the process
+    // "err" : { "code" : "ERR00|ERR01|ERR02", "message" : "message"}
+    // codes : 
+    //  - ERR00 : The user has clicked on Cancel button in the popup
+    //  - ERR01 : If the Settings change are unavailable
+    //  - ERR02 : If the popup has failed to open
+  });
+    }, [])
     return (
         <View style={{ flex: 1, backgroundColor:'white', justifyContent:'center', alignItems:'center'}}>
             <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent'/>

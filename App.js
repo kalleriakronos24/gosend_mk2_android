@@ -11,6 +11,7 @@ import React, { useEffect } from 'react';
 import NetInfo from "@react-native-community/netinfo";
 import SplashScreen from 'react-native-splash-screen';
 import { Provider } from 'react-redux';
+import { LogBox } from 'react-native';
 import Router from './src/routes';
 import { createStore } from 'redux';
 import Root from './src/redux/reducers/index.reducers';
@@ -28,6 +29,7 @@ const App = () => {
       console.log("Connection type", state.type);
       console.log("Is connected?", state.isConnected);
     })
+    LogBox.ignoreLogs(['Warning: ...'])
 
   }, [])
   return (

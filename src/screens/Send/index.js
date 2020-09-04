@@ -1,15 +1,15 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { View, Text, StatusBar, Image, Dimensions, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import Swiper from 'react-native-swiper';
-import MapView from 'react-native-maps';
+import MapView, { MarkerAnimated, AnimatedRegion } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import { SendPackageModal } from '../../components/modals/sp_modal';
-
+import Geolocation from '@react-native-community/geolocation';
 Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
 
 const Send = ({ navigation }) => {
-    const { navigate } = navigation;
+    const { navigate, push } = navigation;
     const { width, height } = Dimensions.get('window');
     let [amount, setAmount] = useState('1');
     console.log('Current Device window height is ', height);
@@ -41,7 +41,7 @@ const Send = ({ navigation }) => {
                     </View>
                 </View>
             </View>
-            <TouchableOpacity onPress={() => navigate('send_step', { package_amount : amount })} style={{ position:'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent:'center', alignItems:'center' }}>
+            <TouchableOpacity onPress={() => push('send_step', { package_amount : amount })} style={{ position:'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent:'center', alignItems:'center' }}>
                 <View style={{ padding : 8, height: 60, width: 60, justifyContent:'center', alignItems:'center', borderRadius: 30, backgroundColor:'#1F4788' ,shadowColor: "#000" }}>
                     <Icon name='arrow-forward-outline' size={40} color='white' />
                 </View>
@@ -71,6 +71,41 @@ const SendStep = ({ navigation, route }) => {
            </View>
        </View>
     )
+    let region = {
+        latitude : -0.454063,
+        longitude : 117.167437,
+        longitudeDelta: 0.005,
+        latitudeDelta: 0.005
+    }
+    let [pos, setPos] = useState(0);
+
+    const mapFitToCoordinates = () => {
+		return mapRef.fitToSuppliedMarkers(
+			[
+				'tujuan',
+			],
+			{
+				edgePadding: {
+					top: 150,
+					right: 150,
+					left: 150,
+					bottom: 150
+				}
+			}
+		);
+	};
+    useEffect(() => {
+        Geolocation.getCurrentPosition(
+            (position) => {
+                setPos(pos = position.coords)
+            },
+            (err) => {
+                console.log(err)
+            },
+            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
+        )
+    }, []);
+
     return (
         <View style={{ flex: 1, backgroundColor:'white' }}>
             <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent'/>
@@ -79,11 +114,16 @@ const SendStep = ({ navigation, route }) => {
                         Array.from({ length : package_amount }).map((v,i) => {
                             return (
                                 <>
-                                <View style={{ flex: 1 }} key={i}>
-                                    <MapView ref={(ref) => mapRef = ref} style={{ flex: 1 }} cacheEnabled={true} loadingEnabled={true} showsUserLocation/>
-                                    <SendPackageModal key={i+2} index={i}/>
-                                
+                                <View style={{ flex: 1 }} key={i}> 
+                                    <MapView
+                                    initialRegion={region}
+					                onLayout={() => mapFitToCoordinates()}
+                                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} loadingEnabled={true}>
+                                        <MapView.Marker
+                                        draggable coordinate={pos === 0 ? region : pos} identifier='tujuan' title='tujuan'/>
+                                    </MapView>
                                 </View>
+                                <SendPackageModal index={i}/>
                                 </>
                             )
                         })
