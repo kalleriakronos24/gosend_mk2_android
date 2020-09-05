@@ -109,11 +109,22 @@ const SendStep = ({ navigation, route }) => {
                 setPos(pos = position.coords)
             },
             (err) => {
-                console.log(err)
+                console.log('failed to retreive user location',err)
             },
             { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
         )
     }, []);
+
+    let [regionChange, setRegionChange] = useState(0);
+    let [isRegionMoving, setRegionMove] = useState(false);
+    const regionChangeHandler = () => {
+        setRegionChange(300)
+        setRegionMove(false)
+    }
+    const onRegionChangeHandler = () => {
+        setRegionChange(130)
+        setRegionMove(true);
+    }
     return pos !== 0 ? (
         <View style={{ flex: 1, backgroundColor:'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)'/>
@@ -126,7 +137,8 @@ const SendStep = ({ navigation, route }) => {
                                     <MapView
                                     initialRegion={region}
                                     onLayout={() => mapFitToCoordinates()}
-                                    onRegionChangeComplete={(e) => console.log(e)}
+                                    onRegionChangeComplete={(e) => regionChangeHandler()}
+                                    onRegionChange={(e) => onRegionChangeHandler()}
                                     ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}/>
                                     <View style={{ position:'absolute', justifyContent:'center', alignItems:'center', top: -100, left: 0, bottom: 0, right : 0 }}>
                                         <View style={{ padding: 10 }}>
@@ -134,7 +146,7 @@ const SendStep = ({ navigation, route }) => {
                                         </View>
                                     </View>
                                 </View>
-                                <SendPackageModal index={i}/>
+                                <SendPackageModal index={i} modalHeight={regionChange} isRegionRunning={isRegionMoving}/>
                                 </>
                             )
                         })
@@ -142,8 +154,8 @@ const SendStep = ({ navigation, route }) => {
             </Swiper>
         </View>
     ) : (
-        <View style={{ flex: 1, justifyContent:'center', alignItems:'center' }}>
-            <SplashScreen/>
+        <View style={{ flex: 1, justifyContent:'center', alignItems:'center', backgroundColor:'white' }}>
+            <ActivityIndicator size='large' color='blue'/>
         </View>
     )
 }
