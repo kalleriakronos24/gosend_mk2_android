@@ -1,16 +1,16 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StatusBar} from 'react-native'
+import { View, Text, TouchableOpacity, StatusBar } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 
 export const Landing = ({ navigation }) => {
     return (
         <View style={{
             flex: 1,
-            justifyContent:'center',
-            alignItems:'center',
-            backgroundColor:'white'
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'white'
         }}>
-            <StatusBar barStyle='dark-content' animated backgroundColor='white'/>
+            <StatusBar barStyle='dark-content' animated backgroundColor='white' />
             <Text>Welcome Screen</Text>
             <View style={{ paddingTop: 5 }}>
                 <TouchableOpacity onPress={() => navigation.navigate('login')} style={{
@@ -18,8 +18,8 @@ export const Landing = ({ navigation }) => {
                     borderRadius: 4,
                     borderColor: 'blue',
                     borderWidth: 1,
-                    justifyContent:'center',
-                    alignItems:'center'
+                    justifyContent: 'center',
+                    alignItems: 'center'
                 }}>
                     <Text>Get Started</Text>
                 </TouchableOpacity>

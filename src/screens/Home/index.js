@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import SplashScreen from 'react-native-splash-screen';
+
 const Home = ({ navigation }) => {
     const barHeight = StatusBar.currentHeight;
     let [index, setIndex] = useState(0);
@@ -38,6 +40,10 @@ RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastI
     //  - ERR02 : If the popup has failed to open
   });
     }, [])
+    const goToSendScreen = () => {
+            SplashScreen.hide();
+            navigation.push('send');
+    }
     return (
         <View style={{ flex: 1, backgroundColor:'white', justifyContent:'center', alignItems:'center'}}>
             <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent'/>
@@ -87,7 +93,7 @@ RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastI
                                                             <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color:'white' }}>TEST SEND</Text>
                                                         </View>
                                                 </View>
-                                                <TouchableOpacity activeOpacity={0.4} onPress={() => navigation.navigate('send') } style={{ padding: 16, justifyContent:'center', alignItems:'center' }}>
+                                                <TouchableOpacity activeOpacity={0.4} onPress={() => goToSendScreen()} style={{ padding: 16, justifyContent:'center', alignItems:'center' }}>
                                                     <Icon size={40} name="arrow-forward-circle-outline"/>
                                                 </TouchableOpacity>
                                         </View>
@@ -97,7 +103,7 @@ RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastI
                                         <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>About Our Service</Text>
                                         <View style={{ padding: 6 }}>
                                                 <Text style={{ letterSpacing: 0.4, fontSize: 16 }}>
-                                                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+                                                    Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                                                 </Text>
                                         </View>
                                     </View>

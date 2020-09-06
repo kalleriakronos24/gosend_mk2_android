@@ -22,14 +22,15 @@ const App = () => {
   useEffect(() => {
     
     // hide the splash screen from native ui
-    SplashScreen.hide();
+    setTimeout(() => SplashScreen.hide() , 2000);
 
     // listen for internet changes or connectivity
     NetInfo.addEventListener(state => {
       console.log("Connection type", state.type);
       console.log("Is connected?", state.isConnected);
     })
-    LogBox.ignoreLogs(['Warning: ...'])
+    
+    LogBox.ignoreAllLogs(true);
 
   }, [])
   return (
