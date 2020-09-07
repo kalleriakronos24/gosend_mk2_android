@@ -16,6 +16,15 @@ const Send = ({ navigation }) => {
     console.log('Current Device window height is ', height);
     useEffect(() => {
         SplashScreen.hide();
+        Geolocation.getCurrentPosition(
+            (position) => {
+                console.log('current region is : ', position)
+            },
+            (err) => {
+                console.log('failed to retreive user location', err)
+            },
+            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
+        )
     }, [])
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -39,7 +48,7 @@ const Send = ({ navigation }) => {
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>From (your current location).</Text>
 
                         <View style={{ padding: 6, borderWidth: 1, marginTop: 8, borderRadius: 10, height: 50 }}>
-                            <TextInput keyboardType='numeric' value={amount} onChangeText={(v) => v > 10 ? setAmount(10) : setAmount(v)} placeholder='default 1; max 10' />
+                            <TextInput keyboardType='numeric' style={{ height: '100%', width: '100%'}}  placeholder='test' value='(input ini seharusnya nama lokasi sekarang tapi blum ada integrasi google map api)' />
                         </View>
                     </View>
                 </View>

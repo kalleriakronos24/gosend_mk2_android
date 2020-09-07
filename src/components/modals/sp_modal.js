@@ -83,8 +83,7 @@ export const SendPackageModal = ({ index,
 
         let idx = index + 1;
 
-        if (Number(idx) !== Number(totalIndex)) {
-            let { latitude, longitude } = coordinate;
+        let { latitude, longitude } = coordinate;
             let obj = {
                 id: index,
                 coords: {
@@ -102,10 +101,14 @@ export const SendPackageModal = ({ index,
                 date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
                 order_id : moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999)
             }
+            
+        if (Number(idx) !== Number(totalIndex)) {
+            
             dispatch({ type : 'add', item : obj });
             swipeHandler(idx, true);
         } else {
-            navigation.push('find_courier')
+            dispatch({ type : 'add', item : obj });
+            navigation.push('find_courier');
         }
     }
     useEffect(() => {
@@ -155,11 +158,11 @@ export const SendPackageModal = ({ index,
                             <TextInput
                                 value={contactName}
                                 style={{
-                                    width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 20,
-                                    height: '100%',
+                                    width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
+                                    height: '100%'
                                 }} placeholder={'e.g Nona Srikaya'} />
                             <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
-                                <Icon name='call-outline' size={16} />
+                                <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -170,10 +173,10 @@ export const SendPackageModal = ({ index,
                                 value={phone}
                                 style={{
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 20,
-                                    height: '100%',
+                                    height: '100%'
                                 }} placeholder={'e.g +6289690636990'} />
                             <TouchableOpacity activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
-                                <Icon name='call-outline' size={16} />
+                                <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -186,6 +189,7 @@ export const SendPackageModal = ({ index,
                             onChangeText={(v) => setOrderDetail(v)}
                              multiline={true} style={{
                                 height: '100%',
+                                width : '100%'
                             }} placeholder={'e.g nasi goreng ayam, ayam kecap, nasi bungkus'} />
                         </View>
                     </View>

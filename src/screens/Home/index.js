@@ -85,14 +85,14 @@ RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({interval: 10000, fastI
                                         <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>Our Service</Text>
 
                                         <View style={{ padding: 10, flexDirection: 'row', justifyContent:'space-between' }}>
-                                                <View style={{ backgroundColor:'#1F4788',padding: 6, height: 150, width: 150, justifyContent:'center', alignItems:'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
+                                                <TouchableOpacity activeOpacity={0.7} onPress={() => goToSendScreen()} style={{ backgroundColor:'#1F4788',padding: 6, height: 150, width: 150, justifyContent:'center', alignItems:'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
                                                         <View style={{ padding: 6, height: 55, width: 55, borderRadius: 20, borderWidth: 1, justifyContent:'center', alignItems:'center', borderColor:'white' }}>
                                                             <Icon name="bicycle-outline" size={35} color='white'/>
                                                         </View>
                                                         <View style={{ paddingTop: 20 }}>
                                                             <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color:'white' }}>TEST SEND</Text>
                                                         </View>
-                                                </View>
+                                                </TouchableOpacity>
                                                 <TouchableOpacity activeOpacity={0.4} onPress={() => goToSendScreen()} style={{ padding: 16, justifyContent:'center', alignItems:'center' }}>
                                                     <Icon size={40} name="arrow-forward-circle-outline"/>
                                                 </TouchableOpacity>

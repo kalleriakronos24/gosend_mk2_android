@@ -37,11 +37,7 @@ const Router = React.memo((props) => {
             })
     }, [])
 
-    const logoutHandler = async () => {
-        console.log('logged out');
-        dispatch({ type: 'LOGOUT' });
-        await AsyncStorage.removeItem('LOGIN_TOKEN');
-    };
+    
     return (
         <NavigationContainer>
             <Stack.Navigator initialRouteName='landing' screenOptions={{
@@ -85,11 +81,12 @@ const Router = React.memo((props) => {
                                 <Stack.Screen name="password" component={CreatePassword} options={{
                                     headerShown: false
                                 }} />
-
+                                <Stack.Screen name="kurir_register" component={CreatePassword} options={{
+                                    headerShown: false
+                                }} />
                             </React.Fragment>
 
                         )}
-
             </Stack.Navigator>
         </NavigationContainer>
     )

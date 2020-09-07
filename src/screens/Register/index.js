@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState } from 'react'
 import { View, Text, Dimensions, ScrollView, KeyboardAvoidingView, Alert } from 'react-native'
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler'
-
+import Checkbox from '@react-native-community/checkbox';
 
 const Register = ({ navigation }) => {
 
@@ -37,7 +37,7 @@ const Register = ({ navigation }) => {
         setEmailErrMsg('');
         setEmail(email);
     }
-
+    let [asDriver, setAsDriver] = useState(false);
     useEffect(() => {
             // fetch('http://192.168.43.178:8000/id', {
             //     method : 'GET',
@@ -84,6 +84,10 @@ const Register = ({ navigation }) => {
                         onChangeText={(v) => setAlamat(v)}
                         style={{ width: '100%',textAlign:'justify', height: 70 }} placeholder={'e.g perum kuburan rt 19 no 09 sungai kunjang samarinda '}/>
                     </View>
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems:'center' }}>
+                    <Text style={{ fontSize: 17 }}>I want to be driver instead </Text>
+                    <Checkbox label='' value={asDriver} onValueChange={(n) => setAsDriver(n)}/>
                 </View>
             </View>
 
@@ -158,7 +162,50 @@ const CreatePassword = ({ navigation, route }) => {
     )
 }
 
+const CourierRegister = ({ navigation }) => {
+    return (
+        <KeyboardAvoidingView style={{ flex: 1, paddingTop: '30%', backgroundColor:'white' }}>
+        <View style={{ alignItems:'center', flex: 1 }}>
+            <View style={{ paddingBottom: '10%' }}>
+                <Text style={{ fontSize: 30, fontWeight:'600'}}>Daftar sbg Kurir</Text>
+            </View>
+
+            <View style={{ flexDirection:'column' }}>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                    <Text style={{ fontSize: 17, fontWeight:'400', marginBottom: 6 }}>Email</Text>
+                    <View style={{ borderRadius: 5, borderWidth: 1, width : width - ((16 + 10) * 2) }}>
+                        <TextInput value={email} onChangeText={(v) => emailValidation(v)} style={{ width: '100%' }} placeholder={'test@gmail.com'}/>
+                    </View>
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                    <Text style={{ fontSize: 17, fontWeight:'400', marginBottom: 6 }}>Full Name</Text>
+                    <View style={{ borderRadius: 5, borderWidth: 1, width : width - ((16 + 10) * 2) }}>
+                        <TextInput value={name} style={{ width: '100%' }} onChangeText={(v) => setName(v)} placeholder={'e.g udin sedunia '}/>
+                    </View>
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                    <Text style={{ fontSize: 17, fontWeight:'400', marginBottom: 6 }}>Address</Text>
+                    <View style={{ borderRadius: 5, borderWidth: 1, width : width - ((16 + 10) * 2), height: 70 }}>
+                        <TextInput
+                        multiline={true}
+                        value={alamat}
+                        onChangeText={(v) => setAlamat(v)}
+                        style={{ width: '100%',textAlign:'justify', height: 70 }} placeholder={'e.g perum kuburan rt 19 no 09 sungai kunjang samarinda '}/>
+                    </View>
+                </View>
+            </View>
+
+            <TouchableOpacity onPress={() => navigation.navigate('password', {
+                data
+            })} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor:'blue', justifyContent:'center', alignItems:'center' }}>
+                <Text style={{ fontSize: 17, fontWeight:'600', color:'white', width: width - (100 * 2), textAlign:'center' }}>Next</Text>
+            </TouchableOpacity>
+        </View>
+    </KeyboardAvoidingView>
+    )
+}
 export {
     Register,
-    CreatePassword
+    CreatePassword,
+    CourierRegister
 } ;

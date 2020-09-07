@@ -18,7 +18,7 @@ const Login = ({ navigation }) => {
         password
     }
     const submitLogin = () => {
-        fetch('http://192.168.1.10:8000/user/login', {
+        fetch('http://192.168.43.178:8000/user/login', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
