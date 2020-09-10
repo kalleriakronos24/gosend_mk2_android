@@ -8,7 +8,7 @@ import {
 import { NavigationContainer } from '@react-navigation/native';
 import { Landing } from '../screens/Landing/index';
 import Login from '../screens/Login';
-import { Register, CreatePassword } from '../screens/Register';
+import { Register, CreatePassword, CourierRegister } from '../screens/Register';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useSelector, useDispatch } from 'react-redux';
 import { SplashScreen } from '../screens/Splash';
@@ -81,7 +81,7 @@ const Router = React.memo((props) => {
                                 <Stack.Screen name="password" component={CreatePassword} options={{
                                     headerShown: false
                                 }} />
-                                <Stack.Screen name="kurir_register" component={CreatePassword} options={{
+                                <Stack.Screen name="kurir_register" component={CourierRegister} options={{
                                     headerShown: false
                                 }} />
                             </React.Fragment>

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, memo } from 'react';
 import { Modalize } from 'react-native-modalize'
 import {
     View,
@@ -17,14 +17,14 @@ import { selectContactPhone } from 'react-native-select-contact';
 import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 
-export const SendPackageModal = ({ index, 
-    modalHeight, 
-    isRegionRunning, 
-    swipeHandler, 
-    totalIndex, 
-    navigation, 
+export const SendPackageModal = ({ index,
+    modalHeight,
+    isRegionRunning,
+    swipeHandler,
+    totalIndex,
+    navigation,
     coordinate
-    }) => {
+}) => {
 
     const modalizeRef = useRef(null);
     let { width, height } = Dimensions.get('window');
@@ -33,6 +33,8 @@ export const SendPackageModal = ({ index,
     let [order, setOrder] = useState([]);
     let [addrDetail, setAddrDetail] = useState('');
     let [orderDetail, setOrderDetail] = useState('');
+    let memoized_modal_height = modalHeight;
+
     let [mHeight, setMHeight] = useState(modalHeight);
     const orderReducer = useSelector(state => state.orders);
 
@@ -76,7 +78,11 @@ export const SendPackageModal = ({ index,
         }
     }
     const orderDetailsHandler = () => {
-        setMHeight(600);
+        console.log('is this even running lmao');
+        setMHeight(height);
+    }
+    const onFocusLeaveHandler = () => {
+        setMHeight(memoized_modal_height);
     }
 
     const nextScreenHandler = () => {
@@ -84,40 +90,43 @@ export const SendPackageModal = ({ index,
         let idx = index + 1;
 
         let { latitude, longitude } = coordinate;
-            let obj = {
-                id: index,
-                coords: {
-                    latitude,
-                    longitude
-                },
-                ordered_by: 'test',
-                to: {
-                    contact_name: contactName,
-                    phone,
-                    set_this_as_recipient: true
-                },
-                address_detail: addrDetail,
-                send_item: orderDetail,
-                date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
-                order_id : moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999)
-            }
-            
+        let obj = {
+            id: index,
+            coords: {
+                latitude,
+                longitude
+            },
+            ordered_by: 'test',
+            to: {
+                contact_name: contactName,
+                phone,
+                set_this_as_recipient: true
+            },
+            address_detail: addrDetail,
+            send_item: orderDetail,
+            date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+            order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999)
+        }
+
         if (Number(idx) !== Number(totalIndex)) {
-            
-            dispatch({ type : 'add', item : obj });
+
+            dispatch({ type: 'add', item: obj });
             swipeHandler(idx, true);
         } else {
-            dispatch({ type : 'add', item : obj });
-            navigation.push('find_courier');
+            navigation.push('find_courier', {
+                data: obj
+            });
         }
     }
+
     useEffect(() => {
 
-    }, [addrDetail,phone,contactName,orderDetail])
+    }, [addrDetail, phone, contactName, orderDetail])
+
     const modalContent = () => {
         return (
-            <KeyboardAvoidingView behavior='padding'
-             style={{ flex: 1, backgroundColor: 'white' }}>
+            <KeyboardAvoidingView removeClippedSubviews={true}
+                style={{ flex: 1, backgroundColor: 'white' }}>
                 <View style={{
                     padding: 16,
                 }}>
@@ -144,8 +153,7 @@ export const SendPackageModal = ({ index,
                                 </View>
                             )
                     }
-
-
+                    
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
@@ -161,7 +169,7 @@ export const SendPackageModal = ({ index,
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
                                     height: '100%'
                                 }} placeholder={'e.g Nona Srikaya'} />
-                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
+                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, backgroundColor: 'yellow', height: '100%' }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>
@@ -184,13 +192,14 @@ export const SendPackageModal = ({ index,
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Mau Ngirim Apa ?</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 70, backgroundColor: '#F7F7F9' }}>
                             <TextInput
-                            onPress={() => orderDetailsHandler()}
-                            value={orderDetail}
-                            onChangeText={(v) => setOrderDetail(v)}
-                             multiline={true} style={{
-                                height: '100%',
-                                width : '100%'
-                            }} placeholder={'e.g nasi goreng ayam, ayam kecap, nasi bungkus'} />
+                                value={orderDetail}
+                                onFocus={() => orderDetailsHandler()}
+                                onBlur={() => onFocusLeaveHandler()}
+                                onChangeText={(v) => setOrderDetail(v)}
+                                multiline={true} style={{
+                                    height: '100%',
+                                    width: '100%'
+                                }} placeholder={'e.g nasi goreng ayam, ayam kecap, nasi bungkus'} />
                         </View>
                     </View>
                     <TouchableOpacity onPress={() => nextScreenHandler()} style={{ padding: 16, borderRadius: 5, backgroundColor: 'blue', marginTop: 40 }}>
@@ -204,10 +213,13 @@ export const SendPackageModal = ({ index,
     return (
         <Modalize
             ref={modalizeRef}
-            alwaysOpen={modalHeight ? modalHeight : 300}
-            keyboardAvoidingOffset={100}
+            alwaysOpen={mHeight ? mHeight : 300}
             modalHeight={height - StatusBar.currentHeight}
             handlePosition='inside'
+            scrollViewProps={{
+                keyboardShouldPersistTaps: 'always',
+                showsVerticalScrollIndicator: false
+            }}
             modalStyle={{
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 6 },

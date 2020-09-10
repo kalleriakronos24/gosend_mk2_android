@@ -64,6 +64,7 @@ const Send = ({ navigation }) => {
 
 
 const SendStep = ({ navigation, route }) => {
+    
     let mapRef = useRef(null);
     const { package_amount } = route.params;
 
