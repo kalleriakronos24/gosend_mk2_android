@@ -3,7 +3,8 @@ import {
     createStackNavigator,
     TransitionSpecs,
     HeaderStyleInterpolators,
-    CardStyleInterpolators
+    CardStyleInterpolators,
+    CardAnimationContext
 } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Landing } from '../screens/Landing/index';
@@ -15,6 +16,8 @@ import { SplashScreen } from '../screens/Splash';
 import Home from '../screens/Home';
 import { Send, SendStep } from '../screens/Send';
 import FindCourer from '../screens/FindCourier';
+import OrderFind from '../screens/Courier';
+import OrderDetailCourier from '../screens/Courier/DetailOrder';
 
 const Stack = createStackNavigator();
 
@@ -37,31 +40,56 @@ const Router = React.memo((props) => {
             })
     }, [])
 
-    
+
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName='landing' screenOptions={{
-                cardStyleInterpolator: CardStyleInterpolators.forScaleFromCenterAndroid
-            }}>
+            <Stack.Navigator headerMode='none'>
 
                 {isLoading ? (
                     <Stack.Screen name='SplashScreen' component={SplashScreen} options={{
-                        headerShown: false
+                        headerShown: true,
+                        cardShadowEnabled: false,
+                        cardOverlayEnabled: false,
+                        cardOverlay : false
                     }} />
                 ) : token !== null || login_token.token !== null ? (
                     // Regular Routes
                     <React.Fragment>
                         <Stack.Screen name="home" component={Home} options={{
-                            headerShown: false
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay : false
                         }} />
                         <Stack.Screen name="send" component={Send} options={{
-                            headerShown: false
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay : false
                         }} />
                         <Stack.Screen name="send_step" component={SendStep} options={{
-                            headerShown: false
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay : false
                         }} />
                         <Stack.Screen name="find_courier" component={FindCourer} options={{
-                            headerShown: false
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay : false
+                        }} />
+                        <Stack.Screen name="find_order" component={OrderFind} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay : false
+                        }} />
+                         <Stack.Screen name="courier_order_detail" component={OrderDetailCourier} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay : false
                         }} />
                     </React.Fragment>
                 ) : (
@@ -70,22 +98,36 @@ const Router = React.memo((props) => {
                             <React.Fragment>
 
                                 <Stack.Screen name="landing" component={Landing} options={{
-                                    headerShown: false
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay : false
                                 }} />
                                 <Stack.Screen name="login" component={Login} options={{
-                                    headerShown: false
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay : false
                                 }} />
                                 <Stack.Screen name="register" component={Register} options={{
-                                    headerShown: false
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay : false
                                 }} />
                                 <Stack.Screen name="password" component={CreatePassword} options={{
-                                    headerShown: false
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay : false
                                 }} />
                                 <Stack.Screen name="kurir_register" component={CourierRegister} options={{
-                                    headerShown: false
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay : false
                                 }} />
                             </React.Fragment>
-
                         )}
             </Stack.Navigator>
         </NavigationContainer>

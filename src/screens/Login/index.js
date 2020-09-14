@@ -57,6 +57,8 @@ const Login = ({ navigation }) => {
 
                 <View style={{ borderWidth: 1, borderColor: 'blue', width: width - (16 * 2), borderRadius: 6, marginTop: 6 }}>
                     <TextInput
+                        textContentType='password'
+                        secureTextEntry={true}
                         onChangeText={(v) => setPassword(v)} style={{
                             height: 40,
                             width: width - (16 * 2)
@@ -66,6 +68,7 @@ const Login = ({ navigation }) => {
                     <Text style={{ fontSize: 18, color: 'white', fontWeight: '500' }}>Login</Text>
                 </TouchableOpacity>
             </View>
+            
             <View style={{ padding: 16 }}>
                 <Text>OR</Text>
             </View>
@@ -81,7 +84,7 @@ const Login = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
             <View style={{ alignSelf: 'flex-start' }}>
-                <TouchableOpacity style={{ padding: 16, flexDirection: 'row' }} activeOpacity={0.5} onPress={() => navigation.navigate('register')}>
+                <TouchableOpacity style={{ padding: 16, flexDirection: 'row' }} activeOpacity={0.5} onPress={() => navigation.push('register')}>
                     <Text style={{ fontSize: 17 }}>Tidak punya akun ? </Text>
                     <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'blue', fontSize: 17 }}>daftar sekarang!</Text>
                 </TouchableOpacity>

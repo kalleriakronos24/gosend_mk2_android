@@ -122,28 +122,29 @@ const CreatePassword = ({ navigation, route }) => {
 
     const submitRegistForm = async () => {
         console.log('test');
+        
         let token = Math.random() * 9999 + 'abcd'
 
-        const formData = new FormData();
+        // const formData = new FormData();
 
-        formData.append('name', data.name);
-        formData.append('email', data.email);
-        formData.append('alamat', data.alamat);
-        formData.append('nik', data.nik);
+        // formData.append('name', data.name);
+        // formData.append('email', data.email);
+        // formData.append('alamat', data.alamat);
+        // formData.append('nik', data.nik);
 
-        formData.append('type', data.type);
-        formData.append('password', password);
+        // formData.append('type', data.type);
+        // formData.append('password', password);
 
-        formData.append('fotoKtp', {
-            uri: 'file://' + data.fotoKtp.path,
-            filename: data.ktpFilename,
-            type: data.ktpType
-        });
-        formData.append('fotoDiri', {
-            uri: 'file://' + data.fotoDiri.path,
-            filename: data.fotoDiriFilename,
-            type: data.fotoDiriType
-        });
+        // formData.append('fotoKtp', {
+        //     uri: 'file://' + data.fotoKtp.path,
+        //     filename: data.ktpFilename,
+        //     type: data.ktpType
+        // });
+        // formData.append('fotoDiri', {
+        //     uri: 'file://' + data.fotoDiri.path,
+        //     filename: data.fotoDiriFilename,
+        //     type: data.fotoDiriType
+        // });
 
         await RNFetchBlob.fetch(
             "POST",
@@ -181,7 +182,11 @@ const CreatePassword = ({ navigation, route }) => {
             ]
         )
             .then((res) => {
+                return res.json();
+            })
+            .then(res => {
                 console.log(res);
+                navigation.push('login');
             })
             .catch(err => {
                 console.log('ini error ', err);
