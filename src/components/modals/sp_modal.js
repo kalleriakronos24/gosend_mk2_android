@@ -16,6 +16,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { selectContactPhone } from 'react-native-select-contact';
 import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
+import * as geolib from 'geolib';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const SendPackageModal = ({ index,
     modalHeight,
@@ -23,7 +25,8 @@ export const SendPackageModal = ({ index,
     swipeHandler,
     totalIndex,
     navigation,
-    coordinate
+    coordinate,
+    distance
 }) => {
 
     const modalizeRef = useRef(null);
@@ -37,6 +40,7 @@ export const SendPackageModal = ({ index,
 
     let [mHeight, setMHeight] = useState(modalHeight);
     const orderReducer = useSelector(state => state.orders);
+    const coordinateReducer = useSelector(state => state.coordinate);
 
     const dispatch = useDispatch();
 
@@ -104,22 +108,28 @@ export const SendPackageModal = ({ index,
             },
             address_detail: addrDetail,
             send_item: orderDetail,
+            distance: Math.round(distance / 1000),
+            ongkir: (Math.round(distance / 1000) / 5) * 10000,
             date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
             order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999)
         }
 
-        if (Number(idx) !== Number(totalIndex)) {
+        let check = orderReducer.orders.some((v, i) => i === index);
 
-            dispatch({ type: 'add', item: obj });
+        if (check) {
+            return 'data sudah ada woi'
+        }
+
+        dispatch({ type: 'add', item: obj, from: '123213', costumer_coordinate: coordinate });
+
+        if (Number(idx) !== Number(totalIndex)) {
             swipeHandler(idx, true);
         } else {
-            navigation.push('find_courier', {
-                data: obj
-            });
+                navigation.push('redirect_screen');
         }
     }
-
     useEffect(() => {
+
 
     }, [addrDetail, phone, contactName, orderDetail])
 
@@ -130,7 +140,7 @@ export const SendPackageModal = ({ index,
                 <View style={{
                     padding: 16,
                 }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Delivery {index + 1} details</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Delivery {index + 1}</Text>
                     {
                         isRegionRunning ? (
                             <View style={{ paddingTop: 15, paddingHorizontal: 4, justifyContent: 'center', alignItems: 'center' }}>
@@ -143,7 +153,7 @@ export const SendPackageModal = ({ index,
                                         <View style={{ justifyContent: 'center', flexDirection: 'column', margin: 6 }}>
                                             <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
                                                 <Text style={{ fontSize: 17.2, fontWeight: 'bold' }}>Gg. Kasah 11 no.1</Text>
-                                                <TouchableOpacity activeOpacity={.4} onPress={() => console.log(orderReducer)} style={{ padding: 2, borderWidth: 0.4, borderColor: 'blue', borderRadius: 5, width: 60, marginRight: 10 }}>
+                                                <TouchableOpacity activeOpacity={.4} onPress={() => console.log(distance)} style={{ padding: 2, borderWidth: 0.4, borderColor: 'blue', borderRadius: 5, width: 60, marginRight: 10 }}>
                                                     <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: 'blue' }}>Edit</Text>
                                                 </TouchableOpacity>
                                             </View>
@@ -153,7 +163,14 @@ export const SendPackageModal = ({ index,
                                 </View>
                             )
                     }
-                    
+                    <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jarak : </Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{Math.round(distance / 1000)} km</Text>
+                    </View>
+                    <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>Ongkir : </Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{Math.round((distance / 1000) / 5) * 10000},-</Text>
+                    </View>
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
@@ -169,7 +186,7 @@ export const SendPackageModal = ({ index,
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
                                     height: '100%'
                                 }} placeholder={'e.g Nona Srikaya'} />
-                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, backgroundColor: 'yellow', height: '100%' }}>
+                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>

@@ -18,6 +18,8 @@ import { Send, SendStep } from '../screens/Send';
 import FindCourer from '../screens/FindCourier';
 import OrderFind from '../screens/Courier';
 import OrderDetailCourier from '../screens/Courier/DetailOrder';
+import Testing from '../screens/Test/test';
+import LoadingScreen from '../screens/Misc/loading_screen';
 
 const Stack = createStackNavigator();
 
@@ -50,7 +52,7 @@ const Router = React.memo((props) => {
                         headerShown: true,
                         cardShadowEnabled: false,
                         cardOverlayEnabled: false,
-                        cardOverlay : false
+                        cardOverlay: false
                     }} />
                 ) : token !== null || login_token.token !== null ? (
                     // Regular Routes
@@ -59,37 +61,44 @@ const Router = React.memo((props) => {
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
-                            cardOverlay : false
+                            cardOverlay: false
                         }} />
                         <Stack.Screen name="send" component={Send} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
-                            cardOverlay : false
+                            cardOverlay: false
                         }} />
+
                         <Stack.Screen name="send_step" component={SendStep} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
-                            cardOverlay : false
+                            cardOverlay: false
                         }} />
                         <Stack.Screen name="find_courier" component={FindCourer} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
-                            cardOverlay : false
+                            cardOverlay: false
                         }} />
                         <Stack.Screen name="find_order" component={OrderFind} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
-                            cardOverlay : false
+                            cardOverlay: false
                         }} />
-                         <Stack.Screen name="courier_order_detail" component={OrderDetailCourier} options={{
+                        <Stack.Screen name="courier_order_detail" component={OrderDetailCourier} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
-                            cardOverlay : false
+                            cardOverlay: false
+                        }} />
+                        <Stack.Screen name="redirect_screen" component={LoadingScreen} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
                         }} />
                     </React.Fragment>
                 ) : (
@@ -101,31 +110,31 @@ const Router = React.memo((props) => {
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
-                                    cardOverlay : false
+                                    cardOverlay: false
                                 }} />
                                 <Stack.Screen name="login" component={Login} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
-                                    cardOverlay : false
+                                    cardOverlay: false
                                 }} />
                                 <Stack.Screen name="register" component={Register} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
-                                    cardOverlay : false
+                                    cardOverlay: false
                                 }} />
                                 <Stack.Screen name="password" component={CreatePassword} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
-                                    cardOverlay : false
+                                    cardOverlay: false
                                 }} />
                                 <Stack.Screen name="kurir_register" component={CourierRegister} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
-                                    cardOverlay : false
+                                    cardOverlay: false
                                 }} />
                             </React.Fragment>
                         )}

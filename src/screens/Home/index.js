@@ -224,7 +224,7 @@ const Home = ({ navigation }) => {
                                             <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>Our Service</Text>
 
                                             <View style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.push('send')} style={{ backgroundColor: '#1F4788', padding: 6, height: 150, width: 150, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
+                                                <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.push('test-1')} style={{ backgroundColor: '#1F4788', padding: 6, height: 150, width: 150, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
                                                     <View style={{ padding: 6, height: 55, width: 55, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center', borderColor: 'white' }}>
                                                         <Icon name="bicycle-outline" size={35} color='white' />
                                                     </View>

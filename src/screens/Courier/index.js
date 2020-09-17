@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -6,6 +6,31 @@ const OrderFind = ({ navigation }) => {
     const { width, height } = Dimensions.get('window');
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
+    let [data, setData] = useState([]);
+
+    useEffect(() => {
+
+    }, [data])
+    const fetchOrder = () => {
+        
+        fetch('http://192.168.43.178:8000', {
+            method : 'GET',
+            headers : {
+                'Content-Type' : 'application/json',
+                Authorization : 'Bearer' + Math.round(Math.random() * 9999)
+            }
+        })
+        .then(res => {
+            return res.json();
+        })
+        .then(res => {
+            console.log(res)
+        })
+        .catch(err => {
+            throw new Error(err);
+        })
+
+    }
     return (
         <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }}>
             <StatusBar barStyle='dark-content' />

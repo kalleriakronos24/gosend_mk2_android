@@ -7,18 +7,22 @@ import Geocoder from 'react-native-geocoding';
 import { SendPackageModal } from '../../components/modals/sp_modal';
 import Geolocation from '@react-native-community/geolocation';
 import SplashScreen from 'react-native-splash-screen';
+import { useDispatch } from 'react-redux';
 Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
+import * as geolib from 'geolib';
 
 const Send = ({ navigation }) => {
     const { navigate, push } = navigation;
     const { width, height } = Dimensions.get('window');
     let [amount, setAmount] = useState('1');
-    console.log('Current Device window height is ', height);
+    let [coords, setCoords] = useState(0);
+
     useEffect(() => {
         SplashScreen.hide();
         Geolocation.getCurrentPosition(
             (position) => {
                 console.log('current region is : ', position)
+                setCoords(position);
             },
             (err) => {
                 console.log('failed to retreive user location', err)
@@ -26,6 +30,10 @@ const Send = ({ navigation }) => {
             { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
         )
     }, [])
+    let data = {
+        amount,
+        coords
+    }
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar translucent backgroundColor='transparent' barStyle='default' />
@@ -45,15 +53,15 @@ const Send = ({ navigation }) => {
                         </View>
                     </View>
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>From (your current location).</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Pickup Location (your current location).</Text>
 
                         <View style={{ padding: 6, borderWidth: 1, marginTop: 8, borderRadius: 10, height: 50 }}>
-                            <TextInput keyboardType='numeric' style={{ height: '100%', width: '100%'}}  placeholder='test' value='(input ini seharusnya nama lokasi sekarang tapi blum ada integrasi google map api)' />
+                            <TextInput keyboardType='numeric' style={{ height: '100%', width: '100%' }} placeholder='test' value='(input ini seharusnya nama lokasi sekarang tapi blum ada integrasi google map api)' />
                         </View>
                     </View>
                 </View>
             </View>
-            <TouchableOpacity onPress={() => push('send_step', { package_amount: amount })} style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => push('send_step', { data: data })} style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent: 'center', alignItems: 'center' }}>
                 <View style={{ padding: 8, height: 60, width: 60, justifyContent: 'center', alignItems: 'center', borderRadius: 30, backgroundColor: '#1F4788', shadowColor: "#000" }}>
                     <Icon name='arrow-forward-outline' size={40} color='white' />
                 </View>
@@ -64,11 +72,12 @@ const Send = ({ navigation }) => {
 
 
 const SendStep = ({ navigation, route }) => {
-    
-    let mapRef = useRef(null);
-    const { package_amount } = route.params;
 
+    let mapRef = useRef(null);
+    const { data } = route.params;
+    const { amount } = data;
     const { width, height } = Dimensions.get('window');
+    const dispatch = useDispatch();
 
     const NextButton = ({ nextHandler }) => (
         <View style={{ position: 'absolute', bottom: 0, left: 0, zIndex: 20 }}>
@@ -84,6 +93,7 @@ const SendStep = ({ navigation, route }) => {
             </View>
         </View>
     )
+
     let region = {
         latitude: -0.454063,
         longitude: 117.167437,
@@ -107,6 +117,7 @@ const SendStep = ({ navigation, route }) => {
             }
         );
     };
+
     let [reg, setReg] = useState({
         latitude: '',
         longitude: '',
@@ -118,10 +129,13 @@ const SendStep = ({ navigation, route }) => {
         setTimeout(() => {
             SplashScreen.hide();
         }, 2000);
+
         Geolocation.getCurrentPosition(
             (position) => {
                 console.log('current region is : ', position.coords)
-                setPos(pos = position.coords)
+                setTimeout(() => {
+                    setPos(pos = position.coords)
+                }, 2000)
             },
             (err) => {
                 console.log('failed to retreive user location', err)
@@ -137,14 +151,18 @@ const SendStep = ({ navigation, route }) => {
         latitude: 0,
         longitude: 0
     })
+    let [distance, setDistance] = useState(0);
+
     const regionChangeHandler = (coords) => {
 
         let { latitude, longitude } = coords;
+        console.log('region changed, coords:::', coords);
+        console.log('position :: ', pos);
 
-        setCoords({
-            latitude,
+        setDistance(distance = geolib.getDistance(pos, {
+            latitude: latitude,
             longitude
-        })
+        }));
 
         setRegionChange(300)
         setRegionMove(false)
@@ -162,9 +180,9 @@ const SendStep = ({ navigation, route }) => {
     return pos !== 0 ? (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-            <Swiper ref={(ref) => swiperRef = ref} bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false}>
+            <Swiper scrollEnabled={true} ref={(ref) => swiperRef = ref} bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false}>
                 {
-                    Array.from({ length: package_amount }).map((v, i) => {
+                    Array.from({ length: amount }).map((v, i) => {
                         return (
                             <View style={{ flex: 1, position: 'relative' }}>
                                 <MapView
@@ -178,14 +196,15 @@ const SendStep = ({ navigation, route }) => {
                                         <Icon name='pin-sharp' size={80} color='red' />
                                     </View>
                                 </View>
-                                <SendPackageModal 
-                                navigation={navigation} 
-                                swipeHandler={swipeRight}
-                                index={i} 
-                                totalIndex={package_amount} 
-                                modalHeight={regionChange} 
-                                isRegionRunning={isRegionMoving} 
-                                coordinate={coords}/>
+                                <SendPackageModal
+                                    navigation={navigation}
+                                    swipeHandler={swipeRight}
+                                    index={i}
+                                    totalIndex={amount}
+                                    modalHeight={regionChange}
+                                    isRegionRunning={isRegionMoving}
+                                    coordinate={pos}
+                                    distance={distance} />
                             </View>
                         )
                     })
