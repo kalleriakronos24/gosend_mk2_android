@@ -1,79 +1,162 @@
-import React from 'react'
-import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView } from 'react-native'
+import React, { useRef, useEffect, useState } from 'react'
+import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import MapView from 'react-native-maps';
+import Geolocation from '@react-native-community/geolocation';
 
-const OrderDetailCourier = ({ navigation }) => {
+
+const OrderDetailCourier = ({ navigation, route }) => {
+
     const { width, height } = Dimensions.get('window');
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
+    let [isLoading, setIsLoading] = useState(true);
+    let { data, from } = route.params;
+    let [coords, setCoords] = useState(0);
 
-    return (
-        <>
-            <View style={{ flex: 1, backgroundColor: 'white' }}>
-                <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-                <MapView style={{ height: (height / 2) + 50 }} loadingEnabled={true}>
+    let mapRef = useRef(null);
 
-                </MapView>
-                <ScrollView style={{ flex: 1 }}>
-                    <View style={{ padding: 16, flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
-                                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Order ID : </Text>
-                                <Text style={{ marginLeft: 10, fontWeight: 'bold', fontSize: 16 }}>XI/20201/1231239</Text>
-                            </View>
-                            <Text style={{ textDecorationLine: 'underline', textDecorationColor:'blue' }}>{new Date().toDateString()}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>Dari : </Text>
-                            <Text style={{ marginLeft: 10, fontSize: 16 }}>(Nama Pembeli)</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>Jarak : </Text>
-                            <Text style={{ marginLeft: 10, fontSize: 16 }}>4km</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>Ongkir : </Text>
-                            <Text style={{ marginLeft: 10, fontSize: 16 }}>Rp.1239812938</Text>
-                        </View>
+    let region = {
+        latitude: -0.454063,
+        longitude: 117.167437,
+        longitudeDelta: 0.005,
+        latitudeDelta: 0.005
+    }
 
-                        <Text style={{ fontSize: 18, fontWeight: 'bold', paddingTop: 10 }}>Informasi Penerima : </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>Nama Penerima : </Text>
-                            <Text style={{ marginLeft: 10, fontSize: 16 }}>{'(Nama Penerima123123123123123123123123123)'.slice(0, 23)}{true ? '...' : null}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>No.HP : </Text>
-                            <Text style={{ marginLeft: 10, fontSize: 16 }}>(0814123123123)</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>Detail Alamat : </Text>
-                            <View style={{ padding: 4, flex: 1 }}>
-                                <Text style={{ textAlign: 'justify', fontSize: 16 }}>Perum PKL Blok D Rt.14 No 510 sungai kapih samarinda ilir samarinda</Text>
+    useEffect(() => {
+        Geolocation.getCurrentPosition(
+            (position) => {
+                setCoords(position.coords);
+
+                setTimeout(() => {
+                    setIsLoading(false)
+                }, 3000)
+            },
+            (err) => {
+                console.log('failed to retreive user location', err)
+            },
+            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
+        )
+    }, [coords])
+    
+    useEffect(() => {
+        return () => {
+          console.log("cleaned up");
+        };
+      }, []);
+
+    const mapFitToCoordinates = () => {
+        return mapRef.fitToSuppliedMarkers(
+            [
+                'kurir',
+                'penerima'
+            ],
+            {
+                edgePadding: {
+                    top: 150,
+                    right: 150,
+                    left: 150,
+                    bottom: 150
+                }
+            }
+        );
+    };
+    return coords === 0 || isLoading === true ? (
+        <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+            <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+            <ActivityIndicator color='blue' size='large' />
+        </View>
+    ) : (
+            <>
+                <View style={{ flex: 1, backgroundColor: 'white' }}>
+                    <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+                    <MapView
+                        style={{ height: (height / 2) + 50 }}
+                        initialRegion={{
+                            latitude: data.coords.latitude,
+                            longitude: data.coords.longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005
+                        }}
+                        onLayout={() => mapFitToCoordinates()}
+                        ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} loadingEnabled={true} showsUserLocation={true}>
+                        <MapView.Marker
+                            identifier={'kurir'}
+                            title='You'
+                            key={1}
+                            description='Lokasi anda'
+                            coordinate={{
+                                latitude: coords.latitude,
+                                longitude: coords.longitude
+                            }}
+                        />
+                        <MapView.Marker
+                            identifier='penerima'
+                            title='Penerima'
+                            description='Lokasi Penerima'
+                            coordinate={{ latitude: data.coords.latitude, longitude: data.coords.longitude }}
+                            key={2}
+                        />
+                    </MapView>
+                    <ScrollView style={{ flex: 1 }}>
+                        <View style={{ padding: 16, flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Order ID : </Text>
+                                    <Text style={{ marginLeft: 10, fontWeight: 'bold', fontSize: 16 }}>XI/20201/1231239</Text>
+                                </View>
+                                <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'blue' }}>{new Date().toDateString()}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>Dari : </Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{from}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>Jarak : </Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.distance} km</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>Ongkir : </Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16 }}>Rp. {data.ongkir}</Text>
+                            </View>
+
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', paddingTop: 10 }}>Informasi Penerima : </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>Nama Penerima : </Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.to.contact_name}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>No.HP : </Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.to.phone}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>Detail Alamat : </Text>
+                                <View style={{ padding: 4, flex: 1 }}>
+                                    <Text style={{ textAlign: 'justify', fontSize: 16 }}>{data.address_detail}</Text>
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                <Text style={{ fontSize: 18 }}>Brg yg dikirim : </Text>
+                                <View style={{ padding: 4, flex: 1 }}>
+                                    <Text style={{ textAlign: 'justify', fontSize: 16 }}>{data.send_item}</Text>
+                                </View>
+                            </View>
+                            <View style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                    <Text style={{ color: 'white', fontSize: 17 }}>Tetapkan sbg telah dikirim </Text>
+                                    <Icon name='checkmark-circle-outline' size={30} color='white' />
+                                </View>
                             </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                            <Text style={{ fontSize: 18 }}>Brg yg dikirim : </Text>
-                            <View style={{ padding: 4, flex: 1 }}>
-                                <Text style={{ textAlign: 'justify', fontSize: 16 }}>Nasi Goreng, nasi bungkus, kepiting bakar, ayam bakar</Text>
-                            </View>
-                        </View>
-                        <View style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
-                            <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                <Text style={{ color: 'white', fontSize: 17 }}>Tetapkan sbg telah dikirim </Text>
-                                <Icon name='checkmark-circle-outline' size={30} color='white' />
-                            </View>
-                        </View>
-                    </View>
-                </ScrollView>
-            </View>
-            <View style={{ position: 'absolute', left: 0, top: 0, paddingTop: barHeight + 16, paddingHorizontal: 16, }}>
-                <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={.7} style={{ padding: 6 }}>
-                    <Icon name='arrow-back-outline' size={30} />
-                </TouchableOpacity>
-            </View>
-        </>
-    )
+                    </ScrollView>
+                </View>
+                <View style={{ position: 'absolute', left: 0, top: 0, paddingTop: barHeight + 16, paddingHorizontal: 16, }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={.7} style={{ padding: 6 }}>
+                        <Icon name='arrow-back-outline' size={30} />
+                    </TouchableOpacity>
+                </View>
+            </>
+        )
 }
 
 export default OrderDetailCourier;

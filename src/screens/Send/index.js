@@ -16,8 +16,9 @@ const Send = ({ navigation }) => {
     const { width, height } = Dimensions.get('window');
     let [amount, setAmount] = useState('1');
     let [coords, setCoords] = useState(0);
+    let dispatch = useDispatch();
 
-    useEffect(() => {
+    useEffect(() => { 
         SplashScreen.hide();
         Geolocation.getCurrentPosition(
             (position) => {
@@ -33,6 +34,10 @@ const Send = ({ navigation }) => {
     let data = {
         amount,
         coords
+    }
+    const nextSreenHandler = () => {
+        dispatch({ type : 'add_count', count: amount });
+        push('send_step', { data: data })
     }
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -61,7 +66,7 @@ const Send = ({ navigation }) => {
                     </View>
                 </View>
             </View>
-            <TouchableOpacity onPress={() => push('send_step', { data: data })} style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => nextSreenHandler()} style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent: 'center', alignItems: 'center' }}>
                 <View style={{ padding: 8, height: 60, width: 60, justifyContent: 'center', alignItems: 'center', borderRadius: 30, backgroundColor: '#1F4788', shadowColor: "#000" }}>
                     <Icon name='arrow-forward-outline' size={40} color='white' />
                 </View>
@@ -147,10 +152,8 @@ const SendStep = ({ navigation, route }) => {
     let [regionChange, setRegionChange] = useState(0);
     let [isRegionMoving, setRegionMove] = useState(false);
 
-    let [coords, setCoords] = useState({
-        latitude: 0,
-        longitude: 0
-    })
+    let [coords, setCoords] = useState({});
+
     let [distance, setDistance] = useState(0);
 
     const regionChangeHandler = (coords) => {
@@ -163,7 +166,8 @@ const SendStep = ({ navigation, route }) => {
             latitude: latitude,
             longitude
         }));
-
+        setCoords(coords);
+        
         setRegionChange(300)
         setRegionMove(false)
     }
@@ -186,7 +190,12 @@ const SendStep = ({ navigation, route }) => {
                         return (
                             <View style={{ flex: 1, position: 'relative' }}>
                                 <MapView
-                                    initialRegion={region}
+                                    initialRegion={{
+                                        latitude : pos.latitude,
+                                        longitude : pos.longitude,
+                                        latitudeDelta: 0.005,
+                                        longitudeDelta: 0.005
+                                    }}
                                     onLayout={() => mapFitToCoordinates()}
                                     onRegionChangeComplete={(e) => regionChangeHandler(e)}
                                     onRegionChange={(e) => onRegionChangeHandler()}
@@ -204,7 +213,8 @@ const SendStep = ({ navigation, route }) => {
                                     modalHeight={regionChange}
                                     isRegionRunning={isRegionMoving}
                                     coordinate={pos}
-                                    distance={distance} />
+                                    distance={distance}
+                                    targetCoord={coords} />
                             </View>
                         )
                     })

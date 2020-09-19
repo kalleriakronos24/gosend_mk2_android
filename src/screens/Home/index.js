@@ -59,7 +59,7 @@ const Home = ({ navigation }) => {
     }, [])
 
     const fetchUserByToken = async (token) => {
-
+        console.log('this running ?');
         await fetch('http://192.168.43.178:8000/user/single/' + token, {
             method: 'GET',
             headers: {
@@ -67,9 +67,11 @@ const Home = ({ navigation }) => {
             }
         })
             .then(res => {
+                console.log('this too as well ?');
                 return res.json();
             })
             .then(res => {
+                console.log('this too ?');
                 if (res)
                     setTimeout(() => {
                         setIsLoading(false);
@@ -134,31 +136,31 @@ const Home = ({ navigation }) => {
                                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>My Balance</Text>
                                             <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
                                                 <Icon name='wallet-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Rp.{8000}</Text>
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Rp.xxxxx</Text>
                                             </View>
                                         </View>
                                         <View style={{ paddingTop: 16 }}>
                                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Item Dikirim Hari ini</Text>
                                             <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
                                                 <Icon name='bicycle-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>1</Text>
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>0</Text>
                                             </View>
                                         </View>
                                     </View>
-                                    <View style={{ paddingTop: 15, flexDirection:'row', justifyContent:'space-between', alignItems:'center' }}>
-                                        <View style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor:'blue', justifyContent:'center', alignItems:'center',width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                                <Text style={{ fontSize: 18 }}>Isi Balance</Text>
+                                    <View style={{ paddingTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <View style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+                                            <Text style={{ fontSize: 18 }}>Isi Balance</Text>
                                         </View>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor:'blue', justifyContent:'center', alignItems:'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                                <Text style={{ fontSize: 18 }}>Cari Orderan</Text>
+                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+        <Text style={{ fontSize: 18 }}>Cari Orderan ({userData.active_order ? 1 : null})</Text>
                                         </TouchableOpacity>
                                     </View>
 
                                     <View style={{ padding: 16, marginTop: 10 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Notes : </Text>
-                                            <View style={{ padding: 6 }}>
-                                                <Text>N/B</Text>
-                                            </View>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Notes : </Text>
+                                        <View style={{ padding: 6 }}>
+                                            <Text>N/B</Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
@@ -209,7 +211,9 @@ const Home = ({ navigation }) => {
                                         <View style={{ marginHorizontal: 10 }}>
                                             <Icon name="search-outline" size={20} color="white" />
                                         </View>
-                                        <Icon name="basket-outline" size={20} color='white' />
+                                        <TouchableOpacity onPress={() => navigation.push('find_courier')} activeOpacity={.7}>
+                                            <Icon name="basket-outline" size={20} color='white' />
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
                                 <View style={{ paddingHorizontal: 32, justifyContent: 'center', alignItems: 'center', flex: 1 }}>

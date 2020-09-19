@@ -1,6 +1,7 @@
 let initialState = {
     costumer_coordinate : 0,
-    orders : []
+    orders : [],
+    count: 0
 }
 
 
@@ -17,6 +18,18 @@ export const orderReducers = (state = initialState, action) => {
                     ],
                     costumer_coordinate : action.costumer_coordinate
                 }
+        case 'reset':
+            return {
+                ...state,
+                orders : [],
+                costumer_coordinate : 0,
+                count : 0
+            }
+        case 'add_count' : 
+            return {
+                ...state,
+                count: action.count
+            }
         default:
             return state;
     }

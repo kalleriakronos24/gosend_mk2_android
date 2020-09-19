@@ -26,7 +26,8 @@ export const SendPackageModal = ({ index,
     totalIndex,
     navigation,
     coordinate,
-    distance
+    distance,
+    targetCoord
 }) => {
 
     const modalizeRef = useRef(null);
@@ -93,7 +94,7 @@ export const SendPackageModal = ({ index,
 
         let idx = index + 1;
 
-        let { latitude, longitude } = coordinate;
+        let { latitude, longitude } = targetCoord;
         let obj = {
             id: index,
             coords: {
@@ -109,9 +110,10 @@ export const SendPackageModal = ({ index,
             address_detail: addrDetail,
             send_item: orderDetail,
             distance: Math.round(distance / 1000),
-            ongkir: (Math.round(distance / 1000) / 5) * 10000,
+            ongkir: distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000,
             date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
-            order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999)
+            order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
+            status : false
         }
 
         let check = orderReducer.orders.some((v, i) => i === index);
@@ -165,11 +167,11 @@ export const SendPackageModal = ({ index,
                     }
                     <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jarak : </Text>
-                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{Math.round(distance / 1000)} km</Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{distance < 1000 ? distance + ' m' : Math.round(distance / 1000) + ' km'}</Text>
                     </View>
                     <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontSize: 16, letterSpacing: .5 }}>Ongkir : </Text>
-                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{Math.round((distance / 1000) / 5) * 10000},-</Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000},-</Text>
                     </View>
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>

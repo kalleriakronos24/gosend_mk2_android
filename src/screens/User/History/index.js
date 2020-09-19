@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const FindCourer = ({ navigation, route }) => {
+const UserOrderHistory = ({ navigation, route }) => {
 
 
     let [initText, setInitText] = useState('Searching for nearest Courier...')
@@ -32,7 +32,7 @@ const FindCourer = ({ navigation, route }) => {
                 let body = {
                     token: res
                 }
-                fetch('http://192.168.43.178:8000/user/order/get', {
+                fetch('http://192.168.43.178:8000/user/order/get/all', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -84,7 +84,6 @@ const FindCourer = ({ navigation, route }) => {
                             <ActivityIndicator size='large' color='blue' />
                         </View>
                     </View>
-
                 ) : (
                         <>
                             <ScrollView style={{ flex: 1 }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}>
@@ -94,7 +93,7 @@ const FindCourer = ({ navigation, route }) => {
                                         <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6 }}>
                                             <Icon name='home-outline' size={25} />
                                         </TouchableOpacity>
-                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}> Your Orders </Text>
+                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}> Your Orders History </Text>
                                         <TouchableOpacity activeOpacity={.7} onPress={() => console.log('no effect')} style={{ padding: 6 }}>
                                             <Icon name='help-circle-outline' size={25} />
                                         </TouchableOpacity>
@@ -108,29 +107,34 @@ const FindCourer = ({ navigation, route }) => {
                                     ) : (
                                             <View style={{ padding: 16, marginTop: 10, flex: 1 }}>
                                                 <View style={{ flex: 1 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Waiting courier to arrive</Text>
                                                     <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <View>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{courierData.fullname}</Text>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10 }}>As {courierData.type}</Text>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{userData.fullname}</Text>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10 }}>As {userData.type}</Text>
                                                         </View>
-                                                        <View style={{ height: 100, width: 100, borderWidth: 1, borderRadius: 10 }}>
-                                                            <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10, flex: 1 }} source={{ uri: courierData.foto_diri }} />
+                                                        <View style={{ height: 100, width: 100, borderRadius: 10 }}>
+                                                            <Icon name='person-outline' size={50}/>
                                                         </View>
                                                     </View>
                                                 </View>
                                                 <View style={{ marginTop: 15 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Courier details</Text>
+                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>User details</Text>
                                                     <View style={{ padding: 6 }}>
-                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}> Estimate time to arrive : 0 ~ 4 mins at 40km/h</Text>
+                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Statistic based on last orders</Text>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10, textDecorationLine: 'line-through' }}> View courier location on maps </Text>
-                                                            <Text style={{ marginLeft: 5, color: 'red', fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textAlign: 'center' }}>not available yet</Text>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10 }}>total order count : </Text>
+                                                            <Text style={{ marginLeft: 5, fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textAlign: 'center', marginTop: 10 }}>0</Text>
                                                         </View>
                                                     </View>
                                                 </View>
                                                 <View style={{ marginTop: 15, flex: 1 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Your items </Text>
+                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Your order history </Text>
+
+                                                    { orderItems.length === 0 ? (
+                                                        <View style={{ justifyContent:'center', alignItems:'center', marginTop: 50, marginBottom: 50 }}>
+                                                            <Text>no history found</Text>
+                                                        </View>
+                                                    ) : null }
                                                     {
                                                         orderItems.map((v, i) => {
                                                             return (
@@ -173,8 +177,8 @@ const FindCourer = ({ navigation, route }) => {
                                         )
                                 }
                                 <View style={{ marginTop: 15, marginHorizontal: 15, marginBottom: 5 }}>
-                                    <TouchableOpacity onPress={() => navigation.push('user_order_history')} activeOpacity={.7} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', height: 45, borderRadius: 10 }}>
-                                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Lihat History</Text>
+                                    <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', height: 45, borderRadius: 10 }}>
+                                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Back to home</Text>
                                     </TouchableOpacity>
                                 </View>
                             </ScrollView>
@@ -185,4 +189,4 @@ const FindCourer = ({ navigation, route }) => {
     )
 }
 
-export default FindCourer
+export default UserOrderHistory

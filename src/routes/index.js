@@ -20,6 +20,7 @@ import OrderFind from '../screens/Courier';
 import OrderDetailCourier from '../screens/Courier/DetailOrder';
 import Testing from '../screens/Test/test';
 import LoadingScreen from '../screens/Misc/loading_screen';
+import UserOrderHistory from '../screens/User/History';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ const Router = React.memo((props) => {
     let login_token = useSelector(state => state.token);
     let [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
+    let count = useSelector(state => state.orders.count);
 
     useEffect(() => {
         AsyncStorage.getItem('LOGIN_TOKEN', (err, res) => res)
@@ -69,13 +71,25 @@ const Router = React.memo((props) => {
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
+                        {
+                            count !== 0 ? (
+                                <>
+                                    <Stack.Screen name="send_step" component={SendStep} options={{
+                                        headerShown: false,
+                                        cardShadowEnabled: false,
+                                        cardOverlayEnabled: false,
+                                        cardOverlay: false
+                                    }} />
+                                    <Stack.Screen name="redirect_screen" component={LoadingScreen} options={{
+                                        headerShown: false,
+                                        cardShadowEnabled: false,
+                                        cardOverlayEnabled: false,
+                                        cardOverlay: false
+                                    }} />
+                                </>
+                            ) : null
+                        }
 
-                        <Stack.Screen name="send_step" component={SendStep} options={{
-                            headerShown: false,
-                            cardShadowEnabled: false,
-                            cardOverlayEnabled: false,
-                            cardOverlay: false
-                        }} />
                         <Stack.Screen name="find_courier" component={FindCourer} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
@@ -94,7 +108,7 @@ const Router = React.memo((props) => {
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
-                        <Stack.Screen name="redirect_screen" component={LoadingScreen} options={{
+                        <Stack.Screen name="user_order_history" component={UserOrderHistory} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
