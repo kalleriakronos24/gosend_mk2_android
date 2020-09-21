@@ -11,7 +11,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
     let [isLoading, setIsLoading] = useState(true);
-    let { data, from } = route.params;
+    let { data, from, _id, id } = route.params;
     let [coords, setCoords] = useState(0);
 
     let mapRef = useRef(null);
@@ -24,6 +24,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
     }
 
     useEffect(() => {
+        console.log('_id', _id, ' id ', id);
         Geolocation.getCurrentPosition(
             (position) => {
                 setCoords(position.coords);
@@ -37,13 +38,42 @@ const OrderDetailCourier = ({ navigation, route }) => {
             },
             { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
         )
-    }, [coords])
-    
+        return () => {
+            return 'cleaned up'
+        }
+    }, [])
+
     useEffect(() => {
         return () => {
-          console.log("cleaned up");
+            console.log("cleaned up");
         };
-      }, []);
+    }, []);
+
+    const setDoneOrder = async () => {
+
+        let body = {
+            order_id: _id,
+            id: id
+        }
+
+        await fetch('http://192.168.43.178:8000/order/single/set-to-done', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(res => {
+                return res.json();
+            })
+            .then(res => {
+                return navigation.goBack();
+            })
+            .catch(err => {
+                throw new Error(err);
+            })
+
+    };
 
     const mapFitToCoordinates = () => {
         return mapRef.fitToSuppliedMarkers(
@@ -61,6 +91,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
             }
         );
     };
+
     return coords === 0 || isLoading === true ? (
         <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
@@ -78,6 +109,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
                             latitudeDelta: 0.005,
                             longitudeDelta: 0.005
                         }}
+                        showsCompass={false}
                         onLayout={() => mapFitToCoordinates()}
                         ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} loadingEnabled={true} showsUserLocation={true}>
                         <MapView.Marker
@@ -141,12 +173,12 @@ const OrderDetailCourier = ({ navigation, route }) => {
                                     <Text style={{ textAlign: 'justify', fontSize: 16 }}>{data.send_item}</Text>
                                 </View>
                             </View>
-                            <View style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                            <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
                                 <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ color: 'white', fontSize: 17 }}>Tetapkan sbg telah dikirim </Text>
-                                    <Icon name='checkmark-circle-outline' size={30} color='white' />
+                                    <Text style={{ color: 'white', fontSize: 17 }}>{data.status ? 'Sudah Terkirim' : 'Ttpkan sbg telah terkirim'}</Text>
+                                    <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
                                 </View>
-                            </View>
+                            </TouchableOpacity>
                         </View>
                     </ScrollView>
                 </View>

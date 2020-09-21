@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView } from 'react-native'
+import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, RefreshControl } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -13,11 +13,18 @@ const OrderFind = ({ navigation }) => {
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
     let [isLoading, setIsLoading] = useState(true);
+    let [orderID, setOrderID] = useState(0);
 
     useEffect(() => {
         fetchOrder();
-        
-        return () => {}
+
+        return () => {
+            setCourierData({});
+            setUserData({})
+            setOrderItems([]);
+            setOrderID(0);
+            onRefresh();
+        }
     }, [])
 
 
@@ -40,11 +47,10 @@ const OrderFind = ({ navigation }) => {
                         return result.json();
                     })
                     .then((result) => {
-
                         setCourierData(result.courier);
                         setUserData(result.user);
                         setOrderItems(result.items);
-
+                        setOrderID(result._id);
                         setTimeout(() => {
                             setIsLoading(false);
                         }, 2000)
@@ -58,8 +64,21 @@ const OrderFind = ({ navigation }) => {
             })
     }
 
+    let [refresh, setRefresh] = useState(false);
+
+    const onRefresh = React.useCallback(() => {
+        setRefresh(true);
+        fetchOrder();
+        wait(2000).then(() => setRefresh(false))
+    }, [refresh])
+
+    const wait = (timeout) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, timeout);
+        })
+    }
     return (
-        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh}/>}>
             <StatusBar barStyle='dark-content' />
             <View style={{ padding: 16 }}>
                 <TouchableOpacity activeOpacity={0.6} onPress={() => navigation.goBack()} style={{ padding: 6 }}>
@@ -79,7 +98,7 @@ const OrderFind = ({ navigation }) => {
                         <View style={{ paddingTop: 10 }}>
                             <View style={{ flexDirection: 'row' }}>
                                 <Text>Status : </Text>
-                                <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue' }}>{ true ? 'menunggu' : 'di proses'}</Text>
+                                <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue' }}>{true ? 'menunggu' : 'di proses'}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', paddingTop: 8 }}>
                                 <Text>From : </Text>
@@ -96,10 +115,10 @@ const OrderFind = ({ navigation }) => {
                                             <Text>Ke Alamat : {v.address_detail}</Text>
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 6 }}>
                                                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, borderRadius: 5, borderColor: 'red', borderWidth: .5 }}>
-                                    <Text style={{ color: 'black', marginRight: 10 }}>status : {true ? 'belum dikirim' : 'sudah dikirim'}</Text>
-                                                    <Icon name='alert-circle-outline' size={17} color='black' />
+                                                    <Text style={{ color: v.status ? 'black' : 'red' , marginRight: 10 }}>status : {v.status ? 'sudah dikirim' : 'belum dikirim'}</Text>
+                                                    <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
                                                 </View>
-                                                <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data : v, from : userData.fullname })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
                                                     <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
                                                     <Icon name='eye-outline' size={17} color='white' />
                                                 </TouchableOpacity>
