@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import SplashScreen from '../Splash/index';
-
+import { useIsFocused } from '@react-navigation/native'
 const Home = ({ navigation }) => {
 
     // vars and invoked function
@@ -20,10 +20,13 @@ const Home = ({ navigation }) => {
 
     const logoutHandler = async () => {
         console.log('logged out');
-        dispatch({ type: 'LOGOUT' });
-        await AsyncStorage.removeItem('LOGIN_TOKEN');
+        
+        await AsyncStorage.removeItem('LOGIN_TOKEN', (err) => {
+            dispatch({ type: 'LOGOUT' })
+        });
     };
 
+    const isFocused = useIsFocused();
 
     // lifecycle method;
 
@@ -56,7 +59,7 @@ const Home = ({ navigation }) => {
                 //  - ERR01 : If the Settings change are unavailable
                 //  - ERR02 : If the popup has failed to open
             });
-    }, [])
+    }, [useIsFocused])
 
     const fetchUserByToken = async (token) => {
         console.log('this running ?');
@@ -133,10 +136,10 @@ const Home = ({ navigation }) => {
                                         <Text style={{ fontSize: 23, fontWeight: '300' }}>Welcome, {fullname.split(' ')[0]}, have a nice day!</Text>
 
                                         <View style={{ paddingTop: 16 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>My Balance</Text>
+                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>My Wallet</Text>
                                             <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
                                                 <Icon name='wallet-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Rp.xxxxx</Text>
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Rp.{userData.courier_info.balance},-</Text>
                                             </View>
                                         </View>
                                         <View style={{ paddingTop: 16 }}>
@@ -147,12 +150,13 @@ const Home = ({ navigation }) => {
                                             </View>
                                         </View>
                                     </View>
+
                                     <View style={{ paddingTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <View style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                            <Text style={{ fontSize: 18 }}>Isi Balance</Text>
-                                        </View>
+                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+                                            <Text style={{ fontSize: 18 }}>Isi Wallet</Text>
+                                        </TouchableOpacity>
                                         <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-        <Text style={{ fontSize: 18 }}>Cari Orderan ({userData.active_order ? 1 : null})</Text>
+                                            <Text style={{ fontSize: 18 }}>Cari Orderan ({userData.active_order ? 1 : null})</Text>
                                         </TouchableOpacity>
                                     </View>
 

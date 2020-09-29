@@ -3,7 +3,7 @@ import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, Activi
 import Icon from 'react-native-vector-icons/Ionicons';
 import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
-
+import { useIsFocused } from '@react-navigation/native';
 
 const OrderDetailCourier = ({ navigation, route }) => {
 
@@ -22,9 +22,9 @@ const OrderDetailCourier = ({ navigation, route }) => {
         longitudeDelta: 0.005,
         latitudeDelta: 0.005
     }
+    const isFocused = useIsFocused();
 
     useEffect(() => {
-        console.log('_id', _id, ' id ', id);
         Geolocation.getCurrentPosition(
             (position) => {
                 setCoords(position.coords);
@@ -38,25 +38,18 @@ const OrderDetailCourier = ({ navigation, route }) => {
             },
             { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
         )
-        return () => {
-            return 'cleaned up'
-        }
     }, [])
 
-    useEffect(() => {
-        return () => {
-            console.log("cleaned up");
-        };
-    }, []);
-
-    const setDoneOrder = async () => {
+    const setDoneOrder = () => {
 
         let body = {
             order_id: _id,
             id: id
         }
 
-        await fetch('http://192.168.43.178:8000/order/single/set-to-done', {
+        console.log('clicked 1 ?')
+
+        return fetch('http://192.168.43.178:8000/order/single/set-to-done', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -64,15 +57,16 @@ const OrderDetailCourier = ({ navigation, route }) => {
             body: JSON.stringify(body)
         })
             .then(res => {
+                console.log('clicked 2?')
                 return res.json();
             })
             .then(res => {
                 return navigation.goBack();
             })
             .catch(err => {
+                console.log('error occured ?');
                 throw new Error(err);
             })
-
     };
 
     const mapFitToCoordinates = () => {
@@ -109,6 +103,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
                             latitudeDelta: 0.005,
                             longitudeDelta: 0.005
                         }}
+
                         showsCompass={false}
                         onLayout={() => mapFitToCoordinates()}
                         ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} loadingEnabled={true} showsUserLocation={true}>
@@ -183,7 +178,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
                     </ScrollView>
                 </View>
                 <View style={{ position: 'absolute', left: 0, top: 0, paddingTop: barHeight + 16, paddingHorizontal: 16, }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={.7} style={{ padding: 6 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('find_order')} activeOpacity={.7} style={{ padding: 6 }}>
                         <Icon name='arrow-back-outline' size={30} />
                     </TouchableOpacity>
                 </View>

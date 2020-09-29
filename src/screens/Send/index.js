@@ -47,21 +47,14 @@ const Send = ({ navigation }) => {
                     <Image source={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', width: '100%', height: height - 500 }} />
                 </View>
                 <View style={{ padding: 16 }}>
-                    <Text style={{ fontSize: 23, fontWeight: '600', letterSpacing: 0.5 }}>(Service title here)</Text>
+                    <Text style={{ fontSize: 23, fontWeight: '600', letterSpacing: 0.5 }}>Ongqir Send</Text>
 
 
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Enter the amount of package u want to send.</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Input banyak item yg mau dikirim/ambil</Text>
 
                         <View style={{ padding: 6, borderWidth: 1, marginTop: 8, borderRadius: 10, height: 50 }}>
                             <TextInput keyboardType='numeric' value={amount} onChangeText={(v) => v > 10 ? setAmount(10) : setAmount(v)} placeholder='default 1; max 10' />
-                        </View>
-                    </View>
-                    <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Pickup Location (your current location).</Text>
-
-                        <View style={{ padding: 6, borderWidth: 1, marginTop: 8, borderRadius: 10, height: 50 }}>
-                            <TextInput keyboardType='numeric' style={{ height: '100%', width: '100%' }} placeholder='test' value='(input ini seharusnya nama lokasi sekarang tapi blum ada integrasi google map api)' />
                         </View>
                     </View>
                 </View>

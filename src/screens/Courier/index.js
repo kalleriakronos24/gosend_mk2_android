@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, RefreshControl } from 'react-native'
+import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
-
+import { useIsFocused } from '@react-navigation/native';
 
 const OrderFind = ({ navigation }) => {
     const { width, height } = Dimensions.get('window');
@@ -14,29 +14,27 @@ const OrderFind = ({ navigation }) => {
     let [orderItems, setOrderItems] = useState([]);
     let [isLoading, setIsLoading] = useState(true);
     let [orderID, setOrderID] = useState(0);
+    let [notFound, setNotFound] = useState(false);
+    const isFocused = useIsFocused();
 
     useEffect(() => {
-        fetchOrder();
+        onRefresh()
+
 
         return () => {
-            setCourierData({});
-            setUserData({})
-            setOrderItems([]);
-            setOrderID(0);
-            onRefresh();
+            console.log('un mounted');
         }
-    }, [])
+    }, [isFocused])
 
 
-    const fetchOrder = () => {
+    const fetchOrder = async () => {
 
-        AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
-            .then((res) => {
-                console.log('USER TOKEN :::: ', res);
+        return await AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
+            .then( async (res) => {
                 let body = {
                     token: res
                 }
-                fetch('http://192.168.43.178:8000/courier/order/get', {
+                return await fetch('http://192.168.43.178:8000/courier/order/get', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -47,16 +45,24 @@ const OrderFind = ({ navigation }) => {
                         return result.json();
                     })
                     .then((result) => {
-                        setCourierData(result.courier);
-                        setUserData(result.user);
-                        setOrderItems(result.items);
-                        setOrderID(result._id);
-                        setTimeout(() => {
-                            setIsLoading(false);
-                        }, 2000)
+                        console.log('is this worked ? ');
+
+                        if (result.msg) {
+                            setNotFound(true);
+                        } else {
+                            setCourierData(result.courier);
+                            setUserData(result.user);
+                            setOrderItems(result.items);
+                            setOrderID(result._id);
+
+                            setTimeout(() => {
+                                setIsLoading(false);
+                            }, 2000)
+                        }
                     })
                     .catch(error => {
-                        throw new Error(error);
+
+                        console.log('ERROR :: ', error);
                     })
             })
             .catch(err => {
@@ -69,6 +75,7 @@ const OrderFind = ({ navigation }) => {
     const onRefresh = React.useCallback(() => {
         setRefresh(true);
         fetchOrder();
+
         wait(2000).then(() => setRefresh(false))
     }, [refresh])
 
@@ -78,7 +85,7 @@ const OrderFind = ({ navigation }) => {
         })
     }
     return (
-        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh}/>}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={refresh} onRefresh={onRefresh} />}>
             <StatusBar barStyle='dark-content' />
             <View style={{ padding: 16 }}>
                 <TouchableOpacity activeOpacity={0.6} onPress={() => navigation.goBack()} style={{ padding: 6 }}>
@@ -89,54 +96,60 @@ const OrderFind = ({ navigation }) => {
                 <View style={{ paddingTop: 10 }}>
                     <Text style={{ fontSize: 20 }}>Cek Orderan masuk di bawah ini..</Text>
                 </View>
-                <View style={{ padding: 20, borderRadius: 10, marginTop: 20, width: width - (20 * 2) }}>
-                    <View style={{ padding: 6 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <Text>09/10/2020/12398123</Text>
-                            <Text>{new Date().toDateString()}</Text>
+                {
+                    notFound ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}>u dont have an orders yet</Text>
                         </View>
-                        <View style={{ paddingTop: 10 }}>
-                            <View style={{ flexDirection: 'row' }}>
-                                <Text>Status : </Text>
-                                <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue' }}>{true ? 'menunggu' : 'di proses'}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', paddingTop: 8 }}>
-                                <Text>From : </Text>
-                                <Text style={{}}>{userData.fullname}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', paddingTop: 8 }}>
-                                <Text>Item : </Text>
-                            </View>
-                            <View style={{ padding: 8 }}>
-                                {
-                                    orderItems.map((v, i) => (
-                                        <View key={i} style={{ padding: 4 }}>
-                                            <Text>{v.send_item}</Text>
-                                            <Text>Ke Alamat : {v.address_detail}</Text>
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 6 }}>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, borderRadius: 5, borderColor: 'red', borderWidth: .5 }}>
-                                                    <Text style={{ color: v.status ? 'black' : 'red' , marginRight: 10 }}>status : {v.status ? 'sudah dikirim' : 'belum dikirim'}</Text>
-                                                    <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
-                                                </View>
-                                                <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
-                                                    <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
-                                                    <Icon name='eye-outline' size={17} color='white' />
-                                                </TouchableOpacity>
-                                            </View>
+                    ) : (
+                            <View style={{ padding: 20, borderRadius: 10, marginTop: 20, width: width - (20 * 2) }}>
+                                <View style={{ padding: 6 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text>09/10/2020/12398123</Text>
+                                        <Text>{new Date().toDateString()}</Text>
+                                    </View>
+                                    <View style={{ paddingTop: 10 }}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <Text>Status : </Text>
+                                            <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue' }}>{true ? 'menunggu' : 'di proses'}</Text>
                                         </View>
-                                    ))
-                                }
+                                        <View style={{ flexDirection: 'row', paddingTop: 8 }}>
+                                            <Text>From : </Text>
+                                            <Text style={{}}>{userData.fullname}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', paddingTop: 8 }}>
+                                            <Text>Item : </Text>
+                                        </View>
+                                        <View style={{ padding: 8 }}>
+                                            {
+                                                orderItems.map((v, i) => (
+                                                    <View key={i} style={{ padding: 4 }}>
+                                                        <Text>{v.send_item}</Text>
+                                                        <Text>Ke Alamat : {v.address_detail}</Text>
+                                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 6 }}>
+                                                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, borderRadius: 5, borderColor: 'red', borderWidth: .5 }}>
+                                                                <Text style={{ color: v.status ? 'black' : 'red', marginRight: 10 }}>status : {v.status ? 'sudah dikirim' : 'belum dikirim'}</Text>
+                                                                <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
+                                                            </View>
+                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                                <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
+                                                                <Icon name='eye-outline' size={17} color='white' />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+                                                ))
+                                            }
 
-                            </View>
-                        </View>
-                    </View>
-                    <View style={{ padding: 20 }}>
-                        <View style={{ borderBottomWidth: 2, borderBottomRightRadius: 10, borderBottomLeftRadius: 10 }} />
-                        <View style={{ paddingTop: 10, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text>List orderan masuk.</Text>
-                        </View>
-                    </View>
-                    {/* <View style={{ padding: 20, justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
+                                        </View>
+                                    </View>
+                                </View>
+                                <View style={{ padding: 20 }}>
+                                    <View style={{ borderBottomWidth: 2, borderBottomRightRadius: 10, borderBottomLeftRadius: 10 }} />
+                                    <View style={{ paddingTop: 10, justifyContent: 'center', alignItems: 'center' }}>
+                                        <Text>List orderan masuk.</Text>
+                                    </View>
+                                </View>
+                                {/* <View style={{ padding: 20, justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
                         <View style={{ padding: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#91D18B', borderRadius: 4, height: 50, width: 100 }}>
                             <Text style={{ color: 'white' }}>Terima</Text>
                         </View>
@@ -144,7 +157,9 @@ const OrderFind = ({ navigation }) => {
                             <Text style={{ color: 'white' }}>Tolak</Text>
                         </View>
                     </View> */}
-                </View>
+                            </View>
+                        )
+                }
             </View>
         </ScrollView>
     )
