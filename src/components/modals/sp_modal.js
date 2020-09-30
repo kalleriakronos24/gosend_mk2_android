@@ -18,6 +18,8 @@ import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 import * as geolib from 'geolib';
 import AsyncStorage from '@react-native-community/async-storage';
+import { Picker } from '@react-native-community/picker';
+
 
 export const SendPackageModal = ({ index,
     modalHeight,
@@ -38,13 +40,16 @@ export const SendPackageModal = ({ index,
     let [addrDetail, setAddrDetail] = useState('');
     let [orderDetail, setOrderDetail] = useState('');
     let memoized_modal_height = modalHeight;
-
+    const orderCount = useSelector(state => state.orders);
+    const { count } = orderCount;
+    console.log('order Count ',count);
     let [mHeight, setMHeight] = useState(modalHeight);
     const orderReducer = useSelector(state => state.orders);
     const coordinateReducer = useSelector(state => state.coordinate);
 
     const dispatch = useDispatch();
 
+    let [selectedTipe, setSelectedTipe] = useState('antar');
 
     const selectContactHandler = () => {
         if (Platform.OS === 'android') {
@@ -83,7 +88,6 @@ export const SendPackageModal = ({ index,
         }
     }
     const orderDetailsHandler = () => {
-        console.log('is this even running lmao');
         setMHeight(height);
     }
     const onFocusLeaveHandler = () => {
@@ -113,7 +117,7 @@ export const SendPackageModal = ({ index,
             ongkir: distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000,
             date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
             order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
-            status : false
+            status: false
         }
 
         let check = orderReducer.orders.some((v, i) => i === index);
@@ -122,12 +126,13 @@ export const SendPackageModal = ({ index,
             return 'data sudah ada woi'
         }
 
+
         dispatch({ type: 'add', item: obj, from: '123213', costumer_coordinate: coordinate });
 
         if (Number(idx) !== Number(totalIndex)) {
             swipeHandler(idx, true);
         } else {
-                navigation.push('redirect_screen');
+            navigation.push('redirect_screen');
         }
     }
     useEffect(() => {
@@ -173,10 +178,27 @@ export const SendPackageModal = ({ index,
                         <Text style={{ fontSize: 16, letterSpacing: .5 }}>Ongkir : </Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000},-</Text>
                     </View>
+                    {
+                        count === '1' ? (
+                            <View style={{ paddingTop: 15 }}>
+                                <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Tipe</Text>
+                                <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
+                                    <Picker selectedValue={selectedTipe} onValueChange={(v) => setSelectedTipe(v)} style={{ height: '100%', width: '100%' }}>
+                                        <Picker.Item label="Antar" value="antar" />
+                                        <Picker.Item label="Ambil" value="ambil" />
+                                    </Picker>
+                                </View>
+                            </View>
+                        ) : null
+                    }
+
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
-                            <TextInput value={addrDetail} onChangeText={(e) => setAddrDetail(e)} style={{ height: '100%', width: '100%' }} placeholder={'e.g dekat patung kuda di taman samarendah'} />
+                            <TextInput
+                                onFocus={() => orderDetailsHandler()}
+                                onBlur={() => onFocusLeaveHandler()}
+                                value={addrDetail} onChangeText={(e) => setAddrDetail(e)} style={{ height: '100%', width: '100%' }} placeholder={'e.g dekat patung kuda di taman samarendah'} />
                         </View>
                     </View>
                     <View style={{ paddingTop: 15 }}>
@@ -187,7 +209,9 @@ export const SendPackageModal = ({ index,
                                 style={{
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
                                     height: '100%'
-                                }} placeholder={'e.g Nona Srikaya'} />
+                                }} placeholder={'e.g Nona Srikaya'}
+                                onFocus={() => orderDetailsHandler()}
+                                onBlur={() => onFocusLeaveHandler()} />
                             <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
@@ -201,7 +225,9 @@ export const SendPackageModal = ({ index,
                                 style={{
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 20,
                                     height: '100%'
-                                }} placeholder={'e.g +6289690636990'} />
+                                }} placeholder={'e.g +6289690636990'}
+                                onFocus={() => orderDetailsHandler()}
+                                onBlur={() => onFocusLeaveHandler()} />
                             <TouchableOpacity activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>

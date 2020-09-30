@@ -19,6 +19,7 @@ const Send = ({ navigation }) => {
     let dispatch = useDispatch();
 
     useEffect(() => { 
+        
         SplashScreen.hide();
         Geolocation.getCurrentPosition(
             (position) => {
@@ -30,7 +31,8 @@ const Send = ({ navigation }) => {
             },
             { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
         )
-    }, [])
+    }, []);
+
     let data = {
         amount,
         coords
@@ -181,7 +183,7 @@ const SendStep = ({ navigation, route }) => {
                 {
                     Array.from({ length: amount }).map((v, i) => {
                         return (
-                            <View style={{ flex: 1, position: 'relative' }}>
+                            <View key={i} style={{ flex: 1, position: 'relative' }}>
                                 <MapView
                                     initialRegion={{
                                         latitude : pos.latitude,

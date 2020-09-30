@@ -18,10 +18,11 @@ const FindCourer = ({ navigation, route }) => {
     let [courierData, setCourierData] = useState({});
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
+    let [notFound, setDataNotFound] = useState(false);
 
     useEffect(() => {
         getUserOrder();
-        dispatch({ type : 'reset' });
+        dispatch({ type: 'reset' });
     }, [])
 
 
@@ -43,14 +44,20 @@ const FindCourer = ({ navigation, route }) => {
                         return result.json();
                     })
                     .then((result) => {
-                        console.log('isi dari result :: ', result);
-                        setCourierData(result.courier);
-                        setUserData(result.user);
-                        setOrderItems(result.items);
 
-                        setTimeout(() => {
-                            setIsLoading(false);
-                        }, 2000)
+                        if (result.msg === 'not found') {
+                            setDataNotFound(true);
+                        } else {
+                            setDataNotFound(false);
+                            console.log('isi dari result :: ', result);
+                            setCourierData(result.courier);
+                            setUserData(result.user);
+                            setOrderItems(result.items);
+
+                            setTimeout(() => {
+                                setIsLoading(false);
+                            }, 2000)
+                        }
                     })
                     .catch(error => {
                         throw new Error(error);
@@ -101,9 +108,9 @@ const FindCourer = ({ navigation, route }) => {
                                     </View>
                                 </View>
                                 {
-                                    false ? (
-                                        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6 }}>no orders found yet, go order some!</Text>
+                                    notFound ? (
+                                        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, marginTop: 80, padding: 16 }}>
+                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6, textAlign:'center' }}>Kamu tidak punya order aktif untuk sekarang ini.</Text>
                                         </View>
                                     ) : (
                                             <View style={{ padding: 16, marginTop: 10, flex: 1 }}>

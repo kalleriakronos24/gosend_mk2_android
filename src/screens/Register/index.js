@@ -1,11 +1,13 @@
+/* eslint-disable prettier/prettier */
 import React, { useEffect, useCallback, useState } from 'react'
-import { View, Text, Dimensions, ScrollView, KeyboardAvoidingView, Alert, Image } from 'react-native'
+import { View, Text, Dimensions, ScrollView, KeyboardAvoidingView, Alert, Image, Animated, Keyboard } from 'react-native'
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler'
 import Checkbox from '@react-native-community/checkbox';
 import ImagePicker from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import RNFetchBlob from 'rn-fetch-blob';
+
 
 const Register = ({ navigation }) => {
 
@@ -22,6 +24,7 @@ const Register = ({ navigation }) => {
     let [emailErrMsg, setEmailErrMsg] = useState('');
     let [nameErrMsg, setNamaErrMsg] = useState('');
     let [alamatErrMsg, setAlamatErrMsg] = useState('');
+    let keyboardHeight = new Animated.Value(0);
 
     let data = {
         email,
@@ -42,7 +45,12 @@ const Register = ({ navigation }) => {
         setEmail(email);
     }
     let [asDriver, setAsDriver] = useState(false);
+
+
     useEffect(() => {
+        
+    const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', keyboardWillShow);
+    const keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', keyboardWillHide);
         // fetch('http://192.168.43.178:8000/id', {
         //     method : 'GET',
         //     headers : {
@@ -58,13 +66,34 @@ const Register = ({ navigation }) => {
         // .catch(err => {
         //     console.log('Err:: ',err);
         // })
+    return () => {
+        keyboardWillShowSub.remove();
+        keyboardWillHideSub.remove();
+    }
     }, []);
     const navigateHandler = () => {
         return asDriver ? navigation.push('kurir_register', { data }) : navigation.push('password', { data });
     }
+    const keyboardWillShow = (event) => {
+        Animated.parallel([
+          Animated.timing(this.keyboardHeight, {
+            duration: event.duration,
+            toValue: event.endCoordinates.height,
+          }),
+        ]).start();
+      };
+
+    const keyboardWillHide = (event) => {
+        Animated.parallel([
+          Animated.timing(keyboardHeight, {
+            duration: event.duration,
+            toValue: 0,
+          }),
+        ]).start();
+      };
+
     return (
-        <KeyboardAvoidingView style={{ flex: 1, paddingTop: '30%', backgroundColor: 'white' }}>
-            <View style={{ alignItems: 'center', flex: 1 }}>
+            <Animated.View style={{ alignItems: 'center', flex: 1, paddingBottom: keyboardHeight, justifyContent:'center', backgroundColor:'white' }}>
                 <View style={{ paddingBottom: '10%' }}>
                     <Text style={{ fontSize: 30, fontWeight: '600' }}>Register</Text>
                 </View>
@@ -98,11 +127,10 @@ const Register = ({ navigation }) => {
                     </View>
                 </View>
 
-                <TouchableOpacity onPress={() => navigateHandler()} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
+                <TouchableOpacity disabled={email === '' || name === '' || alamat === '' ? true : false} onPress={() => navigateHandler()} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: email === '' || name === '' || alamat === '' ? 'red' : 'blue', justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 17, fontWeight: '600', color: 'white', width: width - (100 * 2), textAlign: 'center' }}>Next</Text>
                 </TouchableOpacity>
-            </View>
-        </KeyboardAvoidingView>
+            </Animated.View>
     )
 }
 
@@ -122,7 +150,7 @@ const CreatePassword = ({ navigation, route }) => {
 
     const submitRegistForm = async () => {
         console.log('test');
-        
+
         let token = Math.random() * 9999 + 'abcd'
 
         // const formData = new FormData();
@@ -157,16 +185,16 @@ const CreatePassword = ({ navigation, route }) => {
             [
                 {
                     name: 'name', data: data.name
-                }, 
+                },
                 {
                     name: 'email', data: data.email
-                }, 
+                },
                 {
                     name: 'alamat', data: data.alamat
-                }, 
+                },
                 {
-                    name: 'nik', data: data.nik
-                }, 
+                    name: 'nohp', data: data.noHp
+                },
                 {
                     name: 'type', data: data.type
                 },
@@ -174,10 +202,10 @@ const CreatePassword = ({ navigation, route }) => {
                     name: 'password', data: password
                 },
                 {
-                    name: 'fotoKtp', filename: `foto-ktp-${data.name.split(' ')[0]}-${data.nik}-${Math.round(Math.random() * 9999)}.jpg`, data: data.fotoKtp.data, type: data.ktpType
+                    name: 'fotoKtp', filename: `foto-ktp-${data.name.split(' ')[0]}-${data.noHp}-${Math.round(Math.random() * 9999)}.jpg`, data: data.fotoKtp.data, type: data.ktpType
                 },
                 {
-                    name: 'fotoDiri', filename: `foto-ktp-${data.name.split(' ')[0]}-${data.nik}-${Math.round(Math.random() * 9999)}.jpg`, data: data.fotoDiri.data, type: data.fotoDiriType
+                    name: 'fotoDiri', filename: `foto-ktp-${data.name.split(' ')[0]}-${data.noHp}-${Math.round(Math.random() * 9999)}.jpg`, data: data.fotoDiri.data, type: data.fotoDiriType
                 }
             ]
         )
@@ -198,8 +226,8 @@ const CreatePassword = ({ navigation, route }) => {
     })
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: '30%' }}>
-            <View style={{ alignItems: 'center', flex: 1 }}>
+        <KeyboardAvoidingView behavior="height" style={{ flex: 1, backgroundColor:'white' }}>
+            <View style={{ alignItems: 'center', flex: 1, justifyContent:'center', backgroundColor:'white' }}>
                 <View style={{ paddingBottom: '10%' }}>
                     <Text style={{ fontSize: 30, fontWeight: '600' }}>Create Password</Text>
                 </View>
@@ -217,11 +245,11 @@ const CreatePassword = ({ navigation, route }) => {
                     </View>
                 </View>
 
-                <TouchableOpacity onPress={() => submitRegistForm()} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
+                <TouchableOpacity disabled={password === '' || retype === '' || retype !== password ? true : false} onPress={() => submitRegistForm()} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: password === '' || retype === '' || retype !== password ? 'red' : 'blue', justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 17, fontWeight: '600', color: 'white', width: width - (100 * 2), textAlign: 'center' }}>Login now</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </KeyboardAvoidingView>
     )
 }
 
@@ -240,7 +268,7 @@ const CourierRegister = ({ navigation, route }) => {
             skipBackup: true
         }
     };
-    let [nik, setNik] = useState('');
+    let [noHp, setNoHp] = useState('');
     let [fotoKtp, setFotoKtp] = useState('');
     let [fotoDiri, setFotoDiri] = useState('');
     let [ktpFilename, setKtpFilename] = useState('');
@@ -251,7 +279,7 @@ const CourierRegister = ({ navigation, route }) => {
 
     let dat = {
         ...data,
-        nik,
+        noHp,
         fotoKtp,
         fotoDiri,
         type: 'courier',
@@ -301,17 +329,16 @@ const CourierRegister = ({ navigation, route }) => {
     }
     const { width, height } = Dimensions.get('window');
     return (
-        <KeyboardAvoidingView style={{ flex: 1, paddingTop: '30%', backgroundColor: 'white' }}>
-            <View style={{ alignItems: 'center', flex: 1 }}>
+        <KeyboardAvoidingView behavior="height" style={{ flex: 1, justifyContent:'center', alignItems:'center', backgroundColor: 'white' }}>
+            <View style={{ alignItems: 'center', flex: 1, justifyContent:'center' }}>
                 <View style={{ paddingBottom: '10%' }}>
                     <Text style={{ fontSize: 30, fontWeight: '600' }}>Daftar sbg Kurir</Text>
                 </View>
-
                 <View style={{ flexDirection: 'column' }}>
                     <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                        <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>NIK</Text>
+                        <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>No. HP</Text>
                         <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2) }}>
-                            <TextInput value={nik} onChangeText={(v) => setNik(v)} style={{ width: '100%' }} placeholder={'671293812938192382'} />
+                            <TextInput value={noHp} onChangeText={(v) => setNoHp(v)} style={{ width: '100%' }} placeholder={'081234567890'} />
                         </View>
                     </View>
                     <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
@@ -345,7 +372,6 @@ const CourierRegister = ({ navigation, route }) => {
                                 </View>
                             ) : null
                         }
-
                     </View>
                 </View>
 

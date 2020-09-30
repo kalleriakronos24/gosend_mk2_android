@@ -12,12 +12,23 @@ const Login = ({ navigation }) => {
 
     let [email, setEmail] = useState('')
     let [password, setPassword] = useState('');
+    let [passwordHide, setPasswordHide] = useState(true);
+    let [errorMsg, setErrorMsg] = useState('');
+    let [isLoginError, setIsLoginError] = useState(false);
 
     let body = {
         email,
         password
-    }
+    };
+
     const submitLogin = () => {
+
+        if (password === '' || email === '') {
+            setIsLoginError(true);
+            setErrorMsg('Email atau Password tidak boleh kosong');
+            return
+        }
+
         fetch('http://192.168.43.178:8000/user/login', {
             method: "POST",
             headers: {
@@ -29,15 +40,21 @@ const Login = ({ navigation }) => {
                 return res.json()
             })
             .then(res => {
-                if (res) {
+                if (res.code !== 'ERR_LOGIN_1') {
                     const { token } = res;
                     console.log('LOGIN TOKEN : ', token);
                     dispatch({ type: 'LOGIN_TOKEN', token });
                     AsyncStorage.setItem('LOGIN_TOKEN', token);
+                } else {
+                    setIsLoginError(true);
+                    setErrorMsg('Username atau password tidak ditemukan.');
+                    return;
                 }
             })
             .catch(err => {
-                console.log(err);
+                setIsLoginError(true);
+                setErrorMsg(err);
+                return;
             })
     }
 
@@ -45,7 +62,7 @@ const Login = ({ navigation }) => {
         <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'white', paddingTop: '30%', alignItems: 'center' }}>
             <StatusBar barStyle='dark-content' backgroundColor='white' animated />
             <View style={{ paddingBottom: '20%', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 30, fontWeight: '600' }}>Test App</Text>
+                <Text style={{ fontSize: 30, fontWeight: '600' }}>Ongqir</Text>
             </View>
             <View>
                 <View style={{ borderWidth: 1, borderColor: 'blue', width: width - (16 * 2), borderRadius: 6 }}>
@@ -55,20 +72,28 @@ const Login = ({ navigation }) => {
                     }} placeholder={'Email'} />
                 </View>
 
-                <View style={{ borderWidth: 1, borderColor: 'blue', width: width - (16 * 2), borderRadius: 6, marginTop: 6 }}>
+                <View style={{ borderWidth: 1, borderColor: 'blue', width: width - (16 * 2), borderRadius: 6, marginTop: 6, flexDirection: 'row', alignItems: 'center' }}>
                     <TextInput
                         textContentType='password'
-                        secureTextEntry={true}
+                        secureTextEntry={passwordHide ? false : true}
                         onChangeText={(v) => setPassword(v)} style={{
                             height: 40,
-                            width: width - (16 * 2)
+                            width: width - (16 * 2) - 37
                         }} placeholder={'Password'} />
+                    <TouchableOpacity onPress={() => setPasswordHide(!passwordHide)} activeOpacity={.7} style={{ padding: 6 }}>
+                        <Icon name={`eye${passwordHide ? '-' : '-off-'}outline`} color='blue' size={24} />
+                    </TouchableOpacity>
                 </View>
+                {
+                    isLoginError ? (
+                        <Text style={{ marginTop: 5, letterSpacing: .5, fontWeight: 'bold', fontSize: 15, color: 'red' }}>{errorMsg}</Text>
+                    ) : null
+                }
                 <TouchableOpacity onPress={() => submitLogin()} activeOpacity={0.5} style={{ marginTop: 15, padding: 16, justifyContent: 'center', alignItems: 'center', borderRadius: 5, backgroundColor: 'blue' }}>
                     <Text style={{ fontSize: 18, color: 'white', fontWeight: '500' }}>Login</Text>
                 </TouchableOpacity>
             </View>
-            
+
             <View style={{ padding: 16 }}>
                 <Text>OR</Text>
             </View>
