@@ -22,7 +22,9 @@ const LoadingScreen = ({ navigation }) => {
                 let obj = {
                     token: res,
                     coords: orderReducer.costumer_coordinate,
-                    item: orderReducer.orders
+                    item: orderReducer.orders,
+                    type : orderReducer.type,
+                    pickupDetail : orderReducer.pickupDetail
                 };
 
                 fetch('http://192.168.43.178:8000/add-order', {

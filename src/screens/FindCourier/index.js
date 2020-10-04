@@ -19,6 +19,8 @@ const FindCourer = ({ navigation, route }) => {
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
     let [notFound, setDataNotFound] = useState(false);
+    let [type, setType] = useState('antar');
+    let [pickup, setPickup] = useState({});
 
     useEffect(() => {
         getUserOrder();
@@ -53,6 +55,8 @@ const FindCourer = ({ navigation, route }) => {
                             setCourierData(result.courier);
                             setUserData(result.user);
                             setOrderItems(result.items);
+                            setPickup(result.pickup);
+                            setType(result.type);
 
                             setTimeout(() => {
                                 setIsLoading(false);
@@ -110,7 +114,7 @@ const FindCourer = ({ navigation, route }) => {
                                 {
                                     notFound ? (
                                         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, marginTop: 80, padding: 16 }}>
-                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6, textAlign:'center' }}>Kamu tidak punya order aktif untuk sekarang ini.</Text>
+                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6, textAlign: 'center' }}>Kamu tidak punya order aktif untuk sekarang ini.</Text>
                                         </View>
                                     ) : (
                                             <View style={{ padding: 16, marginTop: 10, flex: 1 }}>
@@ -129,12 +133,29 @@ const FindCourer = ({ navigation, route }) => {
                                                 <View style={{ marginTop: 15 }}>
                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Courier details</Text>
                                                     <View style={{ padding: 6 }}>
-                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}> Estimate time to arrive : 0 ~ 4 mins at 40km/h</Text>
+                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textDecorationLine: 'line-through' }}> Estimate time to arrive : 0 ~ 4 mins at 40km/h</Text>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                             <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10, textDecorationLine: 'line-through' }}> View courier location on maps </Text>
                                                             <Text style={{ marginLeft: 5, color: 'red', fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textAlign: 'center' }}>not available yet</Text>
                                                         </View>
                                                     </View>
+                                                </View>
+                                                <View style={{ marginTop: 15, flex: 1 }}>
+                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === 'antar' ? 'Detail Pengambilan' : 'Detail Penerima'} </Text>
+                                                    <View key={10} style={{ padding: 6, borderWidth: 1, borderRadius: 10, borderColor: 'blue', marginBottom: 20 }}>
+                                                        <View style={{ padding: 4 }}>
+                                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 }}>
+                                                                <Text>{123}</Text>
+                                                                <Text>123123</Text>
+                                                            </View>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>{userData.fullname}</Text>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>No.HP : {userData.no_hp}</Text>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Detail Alamat : {pickup.detailAlamat}</Text>
+
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Order Tipe : {type === 'antar' ? 'Antar' : 'Ambil'}</Text>
+                                                        </View>
+                                                    </View>
+
                                                 </View>
                                                 <View style={{ marginTop: 15, flex: 1 }}>
                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Your items </Text>
@@ -148,27 +169,25 @@ const FindCourer = ({ navigation, route }) => {
                                                                             <Text>{v.date}</Text>
                                                                         </View>
                                                                         <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>{v.send_item}</Text>
-
                                                                         <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Ongkir : Rp.{v.ongkir},-</Text>
 
                                                                         <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Jarak : {v.distance} km</Text>
 
                                                                         <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Ke (Alamat) : </Text>
+                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === 'antar' ? 'Kirim Paket ke' : 'Ambil Paket dari '}(Alamat) : </Text>
                                                                             <View style={{ padding: 2 }}>
                                                                                 <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.address_detail}</Text>
                                                                             </View>
                                                                         </View>
                                                                         <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Ke (Orang) : </Text>
+                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === 'antar' ? 'Kirim Paket ke' : 'Ambil Paket dari '} (Orang) : </Text>
                                                                             <View style={{ padding: 2, flexDirection: 'column' }}>
                                                                                 <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.contact_name}</Text>
 
                                                                                 <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.phone}</Text>
                                                                             </View>
                                                                         </View>
-
-                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {true ? 'belum dikirim' : 'sudah terkirim'}</Text>
+                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? `sudah ${type === 'antar' ? 'dikirim' : 'diambil'}` : `belum ${type === 'antar' ? 'dikirim' : 'diambil'}`}</Text>
                                                                     </View>
                                                                 </View>
                                                             )

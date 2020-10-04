@@ -10,37 +10,45 @@ import SplashScreen from 'react-native-splash-screen';
 import { useDispatch } from 'react-redux';
 Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
 import * as geolib from 'geolib';
+import { PickupOrReceiverModal } from '../../components/modals/pickup';
+import { useIsFocused } from '@react-navigation/native';
 
-const Send = ({ navigation }) => {
+
+//first
+const Send = ({ navigation, route }) => {
+
+    const { data } = route.params;
     const { navigate, push } = navigation;
     const { width, height } = Dimensions.get('window');
     let [amount, setAmount] = useState('1');
     let [coords, setCoords] = useState(0);
     let dispatch = useDispatch();
+    const isFocused = useIsFocused();
+    console.log(data);
 
-    useEffect(() => { 
-        
-        SplashScreen.hide();
+    useEffect(() => {
         Geolocation.getCurrentPosition(
             (position) => {
-                console.log('current region is : ', position)
+                console.log('current region isz : ', position.coords)
                 setCoords(position);
             },
             (err) => {
                 console.log('failed to retreive user location', err)
             },
-            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
+            { enableHighAccuracy: true, distanceFilter: 100, timeout: 8000 }
         )
-    }, []);
+    }, [isFocused]);
 
-    let data = {
+    let data1 = {
         amount,
         coords
     }
+
     const nextSreenHandler = () => {
-        dispatch({ type : 'add_count', count: amount });
-        push('send_step', { data: data })
+        dispatch({ type: 'add_count', count: amount });
+        push('pickup', { data: data1, userData: data, coordinate: coords })
     }
+
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar translucent backgroundColor='transparent' barStyle='default' />
@@ -70,36 +78,16 @@ const Send = ({ navigation }) => {
     )
 }
 
-
+// last
 const SendStep = ({ navigation, route }) => {
 
     let mapRef = useRef(null);
-    const { data } = route.params;
+    const { data, _coords, pickupDetail, type } = route.params;
     const { amount } = data;
     const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
-
-    const NextButton = ({ nextHandler }) => (
-        <View style={{ position: 'absolute', bottom: 0, left: 0, zIndex: 20 }}>
-            <TouchableOpacity onPress={() => nextHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 30, height: 60, width: 60, backgroundColor: 'red' }}>
-                <Icon name='arrow-forward-outline' color='white' size={30} />
-            </TouchableOpacity>
-        </View>
-    )
-    const PrevButton = () => (
-        <View style={{ marginTop: height - 100, left: 10 }}>
-            <View style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 30, height: 60, width: 60, backgroundColor: 'red' }}>
-                <Icon name='arrow-back-outline' color='white' size={30} />
-            </View>
-        </View>
-    )
-
-    let region = {
-        latitude: -0.454063,
-        longitude: 117.167437,
-        longitudeDelta: 0.005,
-        latitudeDelta: 0.005
-    }
+    const isFocused = useIsFocused();
+    console.log('pickupDetail :: ', pickupDetail);
     let [pos, setPos] = useState(0);
 
     const mapFitToCoordinates = () => {
@@ -118,31 +106,9 @@ const SendStep = ({ navigation, route }) => {
         );
     };
 
-    let [reg, setReg] = useState({
-        latitude: '',
-        longitude: '',
-        latitudeDelta: '',
-        longitudeDelta: ''
-    });
-
     useEffect(() => {
-        setTimeout(() => {
-            SplashScreen.hide();
-        }, 2000);
-
-        Geolocation.getCurrentPosition(
-            (position) => {
-                console.log('current region is : ', position.coords)
-                setTimeout(() => {
-                    setPos(pos = position.coords)
-                }, 2000)
-            },
-            (err) => {
-                console.log('failed to retreive user location', err)
-            },
-            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
-        )
-    }, []);
+        SplashScreen.hide();
+    }, [isFocused]);
 
     let [regionChange, setRegionChange] = useState(0);
     let [isRegionMoving, setRegionMove] = useState(false);
@@ -154,18 +120,24 @@ const SendStep = ({ navigation, route }) => {
     const regionChangeHandler = (coords) => {
 
         let { latitude, longitude } = coords;
-        console.log('region changed, coords:::', coords);
-        console.log('position :: ', pos);
 
-        setDistance(distance = geolib.getDistance(pos, {
+        console.log('region changed, coords:::', coords);
+        console.log('position :: ', _coords.latitude, _coords.longitude);
+
+        setDistance(distance = geolib.getDistance({
+            latitude: _coords.latitude,
+            longitude: _coords.longitude
+        }, {
             latitude: latitude,
-            longitude
+            longitude: longitude
         }));
+
         setCoords(coords);
-        
+
         setRegionChange(300)
         setRegionMove(false)
-    }
+    };
+
     const onRegionChangeHandler = () => {
         setRegionChange(130)
         setRegionMove(true);
@@ -176,7 +148,7 @@ const SendStep = ({ navigation, route }) => {
         swiperRef.scrollBy(index, true)
     }
 
-    return pos !== 0 ? (
+    return _coords !== 0 ? (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
             <Swiper scrollEnabled={true} ref={(ref) => swiperRef = ref} bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false}>
@@ -186,8 +158,8 @@ const SendStep = ({ navigation, route }) => {
                             <View key={i} style={{ flex: 1, position: 'relative' }}>
                                 <MapView
                                     initialRegion={{
-                                        latitude : pos.latitude,
-                                        longitude : pos.longitude,
+                                        latitude: _coords.latitude,
+                                        longitude: _coords.longitude,
                                         latitudeDelta: 0.005,
                                         longitudeDelta: 0.005
                                     }}
@@ -207,9 +179,11 @@ const SendStep = ({ navigation, route }) => {
                                     totalIndex={amount}
                                     modalHeight={regionChange}
                                     isRegionRunning={isRegionMoving}
-                                    coordinate={pos}
+                                    coordinate={_coords}
                                     distance={distance}
-                                    targetCoord={coords} />
+                                    targetCoord={coords}
+                                    type={type}
+                                    pickupDetail={pickupDetail} />
                             </View>
                         )
                     })
@@ -223,9 +197,95 @@ const SendStep = ({ navigation, route }) => {
         )
 }
 
+
+//second
+const PickupOrReceiverScreen = ({ navigation, route }) => {
+
+    let mapRef = useRef(null);
+
+    const { data, userData, coordinate } = route.params;
+    const { amount } = data;
+    const { width, height } = Dimensions.get('window');
+    const dispatch = useDispatch();
+    const isFocused = useIsFocused();
+
+    console.log('positions :: ', coordinate.coords);
+
+    const mapFitToCoordinates = () => {
+        return mapRef.fitToSuppliedMarkers(
+            [
+                'tujuan',
+            ],
+            {
+                edgePadding: {
+                    top: 150,
+                    right: 150,
+                    left: 150,
+                    bottom: 150
+                }
+            }
+        );
+    };
+
+    useEffect(() => {
+
+        console.log('Route params data :: ', data);
+        // Geolocation.getCurrentPosition(
+        //     (position) => {
+        //         console.log('current location coords', position.coords);
+        //         setPos(pos = position.coords)
+        //     },
+        //     (err) => {
+        //         console.log('failed to retreive user location', err)
+        //     },
+        //     { enableHighAccuracy: true, distanceFilter: 900, timeout: 8000 }
+        // )
+        return () => {
+            console.log('cleaned up');
+        }
+    }, [isFocused]);
+
+    let [coords, setCoords] = useState({});
+
+    let [distance, setDistance] = useState(0);
+
+    return (
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+            <View key={1} style={{ flex: 1, position: 'relative' }}>
+                <MapView
+                    initialRegion={{
+                        latitude: coordinate.coords.latitude,
+                        longitude: coordinate.coords.longitude,
+                        latitudeDelta: 0.005,
+                        longitudeDelta: 0.005
+                    }}
+                    onLayout={() => mapFitToCoordinates()}
+                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
+                    <MapView.Marker
+                        identifier='Tujan'
+                        title='Lokasi Mu'
+                        description='Lokasi mu sekarang ini.'
+                        coordinate={coordinate.coords}
+                        key={2}
+                    />
+                </MapView>
+                <PickupOrReceiverModal
+                    navigation={navigation}
+                    index={0}
+                    totalIndex={amount}
+                    coordinate={coordinate}
+                    params={route.params}
+                    userData={userData} />
+            </View>
+        </View>
+    )
+}
+
 export {
     Send,
-    SendStep
+    SendStep,
+    PickupOrReceiverScreen
 };
 
 //  {/* <MapView.Marker
@@ -234,3 +294,9 @@ export {
 //                                                 <Icon name='pin-sharp' size={80} color='red'/>
 //                                             </View>
 //                                         </MapView.Marker> *
+
+// (
+//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+//         <ActivityIndicator size='large' color='blue' />
+//     </View>
+// )

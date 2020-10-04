@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useSelector, useDispatch } from 'react-redux';
 import { SplashScreen } from '../screens/Splash';
 import Home from '../screens/Home';
-import { Send, SendStep } from '../screens/Send';
+import { Send, SendStep, PickupOrReceiverScreen } from '../screens/Send';
 import FindCourer from '../screens/FindCourier';
 import OrderFind from '../screens/Courier';
 import OrderDetailCourier from '../screens/Courier/DetailOrder';
@@ -122,6 +122,12 @@ const Router = React.memo((props) => {
                             cardOverlay: false
                         }} />
                          <Stack.Screen name="transaction_history" component={TransactionHistory} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
+                         <Stack.Screen name="pickup" component={PickupOrReceiverScreen} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,

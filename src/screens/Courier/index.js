@@ -20,7 +20,6 @@ const OrderFind = ({ navigation }) => {
     useEffect(() => {
         onRefresh()
 
-
         return () => {
             console.log('un mounted');
         }

@@ -1,7 +1,9 @@
 let initialState = {
     costumer_coordinate : 0,
     orders : [],
-    count: 0
+    count: 0,
+    type : '',
+    pickupDetail : null
 }
 
 
@@ -16,7 +18,9 @@ export const orderReducers = (state = initialState, action) => {
                         ...state.orders,
                         action.item
                     ],
-                    costumer_coordinate : action.costumer_coordinate
+                    costumer_coordinate : action.costumer_coordinate,
+                    type : action.tipe,
+                    pickupDetail : action.pickup
                 }
         case 'reset':
             return {

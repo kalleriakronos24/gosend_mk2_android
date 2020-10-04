@@ -40,20 +40,25 @@ const Login = ({ navigation }) => {
                 return res.json()
             })
             .then(res => {
-                if (res.code !== 'ERR_LOGIN_1') {
-                    const { token } = res;
-                    console.log('LOGIN TOKEN : ', token);
-                    dispatch({ type: 'LOGIN_TOKEN', token });
-                    AsyncStorage.setItem('LOGIN_TOKEN', token);
-                } else {
+                if (res.code === 'ERR_LOGIN_1') {
                     setIsLoginError(true);
                     setErrorMsg('Username atau password tidak ditemukan.');
                     return;
                 }
+                if (res.code === 'ERR_LOGIN_2') {
+                    setIsLoginError(true);
+                    setErrorMsg('Password do not match');
+                    return;
+                }
+                
+                const { token } = res;
+                console.log('LOGIN TOKEN : ', token);
+                dispatch({ type: 'LOGIN_TOKEN', token });
+                AsyncStorage.setItem('LOGIN_TOKEN', token);
             })
             .catch(err => {
                 setIsLoginError(true);
-                setErrorMsg(err);
+                setErrorMsg('Network Error');
                 return;
             })
     }
@@ -75,13 +80,13 @@ const Login = ({ navigation }) => {
                 <View style={{ borderWidth: 1, borderColor: 'blue', width: width - (16 * 2), borderRadius: 6, marginTop: 6, flexDirection: 'row', alignItems: 'center' }}>
                     <TextInput
                         textContentType='password'
-                        secureTextEntry={passwordHide ? false : true}
+                        secureTextEntry={passwordHide ? true : false}
                         onChangeText={(v) => setPassword(v)} style={{
                             height: 40,
                             width: width - (16 * 2) - 37
                         }} placeholder={'Password'} />
                     <TouchableOpacity onPress={() => setPasswordHide(!passwordHide)} activeOpacity={.7} style={{ padding: 6 }}>
-                        <Icon name={`eye${passwordHide ? '-' : '-off-'}outline`} color='blue' size={24} />
+                        <Icon name={`eye${passwordHide ? '-off-' : '-'}outline`} color='blue' size={24} />
                     </TouchableOpacity>
                 </View>
                 {

@@ -29,7 +29,9 @@ export const SendPackageModal = ({ index,
     navigation,
     coordinate,
     distance,
-    targetCoord
+    targetCoord,
+    type,
+    pickupDetail
 }) => {
 
     const modalizeRef = useRef(null);
@@ -49,9 +51,10 @@ export const SendPackageModal = ({ index,
 
     const dispatch = useDispatch();
 
-    let [selectedTipe, setSelectedTipe] = useState('antar');
+    let [selectedTipe, setSelectedTipe] = useState(type);
 
     const selectContactHandler = () => {
+
         if (Platform.OS === 'android') {
             const granted = PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
@@ -99,6 +102,7 @@ export const SendPackageModal = ({ index,
         let idx = index + 1;
 
         let { latitude, longitude } = targetCoord;
+
         let obj = {
             id: index,
             coords: {
@@ -126,8 +130,7 @@ export const SendPackageModal = ({ index,
             return 'data sudah ada woi'
         }
 
-
-        dispatch({ type: 'add', item: obj, from: '123213', costumer_coordinate: coordinate });
+        dispatch({ type: 'add', item: obj, from: '123213', costumer_coordinate: coordinate, tipe : type, pickup : pickupDetail });
 
         if (Number(idx) !== Number(totalIndex)) {
             swipeHandler(idx, true);
@@ -170,6 +173,7 @@ export const SendPackageModal = ({ index,
                                 </View>
                             )
                     }
+                    
                     <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jarak : </Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{distance < 1000 ? distance + ' m' : Math.round(distance / 1000) + ' km'}</Text>
@@ -178,19 +182,10 @@ export const SendPackageModal = ({ index,
                         <Text style={{ fontSize: 16, letterSpacing: .5 }}>Ongkir : </Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000},-</Text>
                     </View>
-                    {
-                        count === '1' ? (
-                            <View style={{ paddingTop: 15 }}>
-                                <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Tipe</Text>
-                                <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
-                                    <Picker selectedValue={selectedTipe} onValueChange={(v) => setSelectedTipe(v)} style={{ height: '100%', width: '100%' }}>
-                                        <Picker.Item label="Antar" value="antar" />
-                                        <Picker.Item label="Ambil" value="ambil" />
-                                    </Picker>
-                                </View>
-                            </View>
-                        ) : null
-                    }
+                    <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>{selectedTipe === 'antar' ? 'Kirim' : 'Ambil'} paket {selectedTipe === 'antar' ? 'ke' : 'dari'} alamat ini : </Text>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign:'center', textDecorationLine:'underline' }}>Iya</Text>
+                    </View>
 
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
@@ -202,7 +197,7 @@ export const SendPackageModal = ({ index,
                         </View>
                     </View>
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Penerima (Nama Lengkap)</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Penerima' : 'Pengirim'}</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 50, padding: 6, backgroundColor: '#F7F7F9' }}>
                             <TextInput
                                 value={contactName}
@@ -218,7 +213,7 @@ export const SendPackageModal = ({ index,
                         </View>
                     </View>
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Penerima (No. HP)</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Penerima' : 'Pengirim'} (No. HP)</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
                             <TextInput
                                 value={phone}
@@ -234,7 +229,7 @@ export const SendPackageModal = ({ index,
                         </View>
                     </View>
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Mau Ngirim Apa ?</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Mau {selectedTipe === 'antar' ? 'Kirim ' : 'Ambil '} Apa ?</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 70, backgroundColor: '#F7F7F9' }}>
                             <TextInput
                                 value={orderDetail}
@@ -254,7 +249,7 @@ export const SendPackageModal = ({ index,
             </KeyboardAvoidingView>
         )
     }
-    console.log(modalHeight);
+
     return (
         <Modalize
             ref={modalizeRef}
