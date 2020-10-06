@@ -1,21 +1,19 @@
-import React, { useEffect, useLayoutEffect } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { View, Text, StatusBar } from 'react-native'
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const LoadingScreen = ({ navigation }) => {
     const orderReducer = useSelector((state) => state.orders);
+    let [error, setError] = useState(false);
 
     useEffect(() => {
         addOrder();
-        setTimeout(() => {
-            navigation.push('find_courier');
-        }, 2000)
     }, [])
 
 
     const addOrder = async () => {
-
         await AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
             .then(res => {
                 console.log('is this wokring ??')
@@ -23,8 +21,8 @@ const LoadingScreen = ({ navigation }) => {
                     token: res,
                     coords: orderReducer.costumer_coordinate,
                     item: orderReducer.orders,
-                    type : orderReducer.type,
-                    pickupDetail : orderReducer.pickupDetail
+                    type: orderReducer.type,
+                    pickupDetail: orderReducer.pickupDetail
                 };
 
                 fetch('http://192.168.43.178:8000/add-order', {
@@ -38,8 +36,11 @@ const LoadingScreen = ({ navigation }) => {
                         return res.json();
                     })
                     .then(res => {
+                        if (res.return === true) {
+                            setError(true);
+                            return;
+                        }
                         navigation.push('find_courier');
-                        console.log('fetched successfully');
                     })
                     .catch(err => {
                         throw new Error(err);
@@ -50,10 +51,20 @@ const LoadingScreen = ({ navigation }) => {
             })
     }
     return (
-        <View style={{ flex: 1, backgroundColor:'white',justifyContent:'center', alignItems:'center' }}>
-            <StatusBar barStyle='default' backgroundColor='rgba(0,0,0,0.251)' translucent animated/>
-            <Text style={{ fontWeight: '600', fontSize: 18, letterSpacing: .5 }}>Mengalihkan ...</Text>
-        </View>
+        error ? (
+            <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+                <StatusBar barStyle='default' backgroundColor='rgba(0,0,0,0.251)' translucent animated />
+                <Text style={{ fontWeight: '600', fontSize: 18, letterSpacing: .5, textAlign:'center' }}>Tidak ada Kurir Ditemukan, klik Coba Lagi untuk mencari ulang</Text>
+                <TouchableOpacity onPress={() => addOrder()} style={{ marginTop: 15, padding: 10, borderRadius: 6, justifyContent:'center', alignItems:'center', borderColor: 'blue' }}>
+                    <Text style={{ letterSpacing: .5, fontWeight:'bold', fontSize: 16 }}>Coba Lagi</Text>
+                </TouchableOpacity>
+            </View>
+        ) : (
+                <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+                    <StatusBar barStyle='default' backgroundColor='rgba(0,0,0,0.251)' translucent animated />
+                    <Text style={{ fontWeight: '600', fontSize: 18, letterSpacing: .5 }}>Mengalihkan ...</Text>
+                </View>
+            )
     )
 }
 

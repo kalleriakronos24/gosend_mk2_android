@@ -29,6 +29,15 @@ export const orderReducers = (state = initialState, action) => {
                 costumer_coordinate : 0,
                 count : 0
             }
+        case 'update_distance':
+            return {
+                ...state,
+                orders: state.orders.map((v,i) => i === action.id ? {
+                    ...v,
+                    distance : action.distance,
+                    ongkir : action.ongkir
+                } : v)
+            };
         case 'add_count' : 
             return {
                 ...state,

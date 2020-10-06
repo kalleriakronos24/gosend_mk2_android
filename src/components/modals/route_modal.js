@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { Picker } from '@react-native-community/picker';
 
 
-export const SendPackageModal = ({ index,
+export const RouteModal = ({ index,
     modalHeight,
     isRegionRunning,
     swipeHandler,
@@ -33,7 +33,10 @@ export const SendPackageModal = ({ index,
     type,
     pickupDetail,
     isRouteMap,
-    data
+    alamat,
+    penerima,
+    nohp,
+    barang
 }) => {
 
     const modalizeRef = useRef(null);
@@ -46,11 +49,10 @@ export const SendPackageModal = ({ index,
     let memoized_modal_height = modalHeight;
     const orderCount = useSelector(state => state.orders);
     const { count } = orderCount;
-    console.log('coordinate __ ', coordinate);
+    console.log('order Count ', count);
     let [mHeight, setMHeight] = useState(modalHeight);
     const orderReducer = useSelector(state => state.orders);
     const coordinateReducer = useSelector(state => state.coordinate);
-    let [errMsg, setErrorMsg] = useState('');
 
     const dispatch = useDispatch();
 
@@ -100,50 +102,21 @@ export const SendPackageModal = ({ index,
         setMHeight(memoized_modal_height);
     }
 
-    const nextScreenHandler = () => {
+    const nextScreenHandler = (id) => {
 
         let idx = index + 1;
 
-        let { latitude, longitude } = targetCoord;
+        const ongkir = distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000;
+        const dist = Math.round(distance / 1000);
 
-        let obj = {
-            id: index,
-            coords: {
-                latitude,
-                longitude
-            },
-            ordered_by: 'test',
-            to: {
-                contact_name: contactName,
-                phone,
-                set_this_as_recipient: true
-            },
-            address_detail: addrDetail,
-            send_item: orderDetail,
-            distance: Math.round(distance / 1000),
-            ongkir: distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000,
-            date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
-            order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
-            status: false
-        }
-
-        let check = orderReducer.orders.some((v, i) => i === index);
-
-        if (check) {
-            setErrorMsg('Data sudah ada, harap geser layer ke kiri untuk melanjutkan');
-            return;
-        }
-
-        dispatch({ type: 'add', item: obj, from: '123213', costumer_coordinate: coordinate, tipe: type, pickup: pickupDetail });
+        dispatch({ type: 'update_distance', id : index, distance : dist, ongkir: ongkir });
 
         if (Number(idx) !== Number(totalIndex)) {
             swipeHandler(idx, true);
         } else {
-            navigation.push('route_step', { data: data, _coords: coordinate, pickupDetail, type: selectedTipe });
-        }
+            navigation.push('redirect_screen');
+        };
     }
-
-
     useEffect(() => {
 
 
@@ -169,9 +142,6 @@ export const SendPackageModal = ({ index,
                                         <View style={{ justifyContent: 'center', flexDirection: 'column', margin: 6 }}>
                                             <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
                                                 <Text style={{ fontSize: 17.2, fontWeight: 'bold' }}>Gg. Kasah 11 no.1</Text>
-                                                <TouchableOpacity activeOpacity={.4} onPress={() => console.log(distance)} style={{ padding: 2, borderWidth: 0.4, borderColor: 'blue', borderRadius: 5, width: 60, marginRight: 10 }}>
-                                                    <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: 'blue' }}>Edit</Text>
-                                                </TouchableOpacity>
                                             </View>
                                             <Text style={{ fontSize: 14 }}>Gg. Kasah no.11, Sungai Kapih, Kec. Sambutan, Samarinda, Kalimantan Timur, Indonesia.</Text>
                                         </View>
@@ -180,70 +150,53 @@ export const SendPackageModal = ({ index,
                             )
                     }
 
+                    {
+                        isRouteMap ? (
+                            <>
+                                <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                                    <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jarak : </Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{distance < 1000 ? distance + ' m' : Math.round(distance / 1000) + ' km'}</Text>
+                                </View>
+                                <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                                    <Text style={{ fontSize: 16, letterSpacing: .5 }}>Ongkir : </Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000},-</Text>
+                                </View>
+                            </>
+                        ) : null
+                    }
                     <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ fontSize: 16, letterSpacing: .5 }}>{selectedTipe === 'antar' ? 'Kirim' : 'Ambil'} paket {selectedTipe === 'antar' ? 'ke' : 'dari'} alamat ini : </Text>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', textDecorationLine: 'underline' }}>Iya</Text>
                     </View>
 
-                    <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
-                        <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
-                            <TextInput
-                                onFocus={() => orderDetailsHandler()}
-                                onBlur={() => onFocusLeaveHandler()}
-                                value={addrDetail} onChangeText={(e) => setAddrDetail(e)} style={{ height: '100%', width: '100%' }} placeholder={'e.g dekat patung kuda di taman samarendah'} />
+                    <View style={{ marginTop: 10 }}>
+                        <Text style={{ fontSize: 17, fontWeight:'bold', letterSpacing: .5 }}>Detail Alamat</Text>
+                        <View style={{ padding: 17 }}>
+                            <Text>{alamat}</Text>
                         </View>
                     </View>
 
-                    <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Penerima' : 'Pengirim'}</Text>
-                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 50, padding: 6, backgroundColor: '#F7F7F9' }}>
-                            <TextInput
-                                value={contactName}
-                                style={{
-                                    width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
-                                    height: '100%'
-                                }} placeholder={'e.g Nona Srikaya'}
-                                onFocus={() => orderDetailsHandler()}
-                                onBlur={() => onFocusLeaveHandler()} />
-                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
-                                <Icon name='call-outline' size={16} color='blue' />
-                            </TouchableOpacity>
+                    <View style={{ marginTop: 10 }}>
+                        <Text style={{ fontSize: 17, fontWeight:'bold', letterSpacing: .5 }}>{selectedTipe === 'antar' ? 'Penerima Barang' : 'Pengirim Barang'}</Text>
+                        <View style={{ padding: 17 }}>
+                            <Text>{penerima}</Text>
                         </View>
                     </View>
 
-                    <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Penerima' : 'Pengirim'} (No. HP)</Text>
-                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
-                            <TextInput
-                                value={phone}
-                                style={{
-                                    width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 20,
-                                    height: '100%'
-                                }} placeholder={'e.g +6289690636990'}
-                                onFocus={() => orderDetailsHandler()}
-                                onBlur={() => onFocusLeaveHandler()} />
-                            <TouchableOpacity activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
-                                <Icon name='call-outline' size={16} color='blue' />
-                            </TouchableOpacity>
+                    <View style={{ marginTop: 10 }}>
+                        <Text style={{ fontSize: 17, fontWeight:'bold', letterSpacing: .5 }}>{selectedTipe === 'antar' ? 'Penerima No.HP' : 'Pengirim No.HP'}</Text>
+                        <View style={{ padding: 17 }}>
+                            <Text>{nohp}</Text>
                         </View>
                     </View>
 
-                    <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Mau {selectedTipe === 'antar' ? 'Kirim ' : 'Ambil '} Apa ?</Text>
-                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 70, backgroundColor: '#F7F7F9' }}>
-                            <TextInput
-                                value={orderDetail}
-                                onFocus={() => orderDetailsHandler()}
-                                onBlur={() => onFocusLeaveHandler()}
-                                onChangeText={(v) => setOrderDetail(v)}
-                                multiline={true} style={{
-                                    height: '100%',
-                                    width: '100%'
-                                }} placeholder={'e.g nasi goreng ayam, ayam kecap, nasi bungkus'} />
+                    <View style={{ marginTop: 10 }}>
+                        <Text style={{ fontSize: 17, fontWeight:'bold', letterSpacing: .5 }}>{selectedTipe === 'antar' ? 'Barang yg dikirim' : 'Barang yg mau diambil'}</Text>
+                        <View style={{ padding: 17 }}>
+                            <Text>{barang}</Text>
                         </View>
                     </View>
-                    {errMsg === '' ? null : <Text>{errMsg}</Text>}
+
                     <TouchableOpacity onPress={() => nextScreenHandler()} style={{ padding: 16, borderRadius: 5, backgroundColor: 'blue', marginTop: 40 }}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Next</Text>
                     </TouchableOpacity>

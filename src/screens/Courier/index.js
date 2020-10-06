@@ -14,7 +14,11 @@ const OrderFind = ({ navigation }) => {
     let [orderItems, setOrderItems] = useState([]);
     let [isLoading, setIsLoading] = useState(true);
     let [orderID, setOrderID] = useState(0);
+    let [orderDate, setOrderDate] = useState(0);
+    let [order_id, setOrderId] = useState(0);
     let [notFound, setNotFound] = useState(false);
+    let [tipe, setTipe] = useState('');
+
     const isFocused = useIsFocused();
 
     useEffect(() => {
@@ -53,7 +57,9 @@ const OrderFind = ({ navigation }) => {
                             setUserData(result.user);
                             setOrderItems(result.items);
                             setOrderID(result._id);
-
+                            setOrderId(result.id);
+                            setOrderDate(result.date);
+                            setTipe(result.tipe);
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
@@ -104,8 +110,8 @@ const OrderFind = ({ navigation }) => {
                             <View style={{ padding: 20, borderRadius: 10, marginTop: 20, width: width - (20 * 2) }}>
                                 <View style={{ padding: 6 }}>
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                        <Text>09/10/2020/12398123</Text>
-                                        <Text>{new Date().toDateString()}</Text>
+                                        <Text>{order_id}</Text>
+                                        <Text>{orderDate}</Text>
                                     </View>
                                     <View style={{ paddingTop: 10 }}>
                                         <View style={{ flexDirection: 'row' }}>
@@ -115,6 +121,10 @@ const OrderFind = ({ navigation }) => {
                                         <View style={{ flexDirection: 'row', paddingTop: 8 }}>
                                             <Text>From : </Text>
                                             <Text style={{}}>{userData.fullname}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', paddingTop: 8 }}>
+                                            <Text>Tipe Orderan : </Text>
+                                            <Text style={{}}>{tipe}</Text>
                                         </View>
                                         <View style={{ flexDirection: 'row', paddingTop: 8 }}>
                                             <Text>Item : </Text>
@@ -127,10 +137,10 @@ const OrderFind = ({ navigation }) => {
                                                         <Text>Ke Alamat : {v.address_detail}</Text>
                                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 6 }}>
                                                             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, borderRadius: 5, borderColor: 'red', borderWidth: .5 }}>
-                                                                <Text style={{ color: v.status ? 'black' : 'red', marginRight: 10 }}>status : {v.status ? 'sudah dikirim' : 'belum dikirim'}</Text>
+                                                                <Text style={{ color: v.status ? 'black' : 'red', marginRight: 10 }}>status : {v.status ? `sudah ${tipe === 'antar' ? 'di antar' : 'di ambil'}` : `belum ${tipe === 'antar' ? 'di antar' : 'di ambil'}`}</Text>
                                                                 <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
                                                             </View>
-                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe : tipe, order_id : v.order_id, date : v.date })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
                                                                 <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
                                                                 <Icon name='eye-outline' size={17} color='white' />
                                                             </TouchableOpacity>

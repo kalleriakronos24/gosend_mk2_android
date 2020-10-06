@@ -51,13 +51,11 @@ const FindCourer = ({ navigation, route }) => {
                             setDataNotFound(true);
                         } else {
                             setDataNotFound(false);
-                            console.log('isi dari result :: ', result);
                             setCourierData(result.courier);
                             setUserData(result.user);
                             setOrderItems(result.items);
                             setPickup(result.pickup);
                             setType(result.type);
-
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
@@ -145,14 +143,14 @@ const FindCourer = ({ navigation, route }) => {
                                                     <View key={10} style={{ padding: 6, borderWidth: 1, borderRadius: 10, borderColor: 'blue', marginBottom: 20 }}>
                                                         <View style={{ padding: 4 }}>
                                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 }}>
-                                                                <Text>{123}</Text>
-                                                                <Text>123123</Text>
+                                                                <Text>-</Text>
+                                                                <Text>-----</Text>
                                                             </View>
                                                             <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>{userData.fullname}</Text>
                                                             <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>No.HP : {userData.no_hp}</Text>
                                                             <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Detail Alamat : {pickup.detailAlamat}</Text>
 
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Order Tipe : {type === 'antar' ? 'Antar' : 'Ambil'}</Text>
+                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Order Tipe : {type === 'antar' ? 'Antar Barang' : 'Ambil Barang'}</Text>
                                                         </View>
                                                     </View>
 

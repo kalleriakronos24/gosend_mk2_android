@@ -11,7 +11,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
     let [isLoading, setIsLoading] = useState(true);
-    let { data, from, _id, id } = route.params;
+    let { data, from, _id, id, tipe, order_id, date } = route.params;
     let [coords, setCoords] = useState(0);
 
     let mapRef = useRef(null);
@@ -47,8 +47,6 @@ const OrderDetailCourier = ({ navigation, route }) => {
             id: id
         }
 
-        console.log('clicked 1 ?')
-
         return fetch('http://192.168.43.178:8000/order/single/set-to-done', {
             method: 'POST',
             headers: {
@@ -57,7 +55,6 @@ const OrderDetailCourier = ({ navigation, route }) => {
             body: JSON.stringify(body)
         })
             .then(res => {
-                console.log('clicked 2?')
                 return res.json();
             })
             .then(res => {
@@ -130,9 +127,9 @@ const OrderDetailCourier = ({ navigation, route }) => {
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
                                     <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Order ID : </Text>
-                                    <Text style={{ marginLeft: 10, fontWeight: 'bold', fontSize: 16 }}>XI/20201/1231239</Text>
+                                    <Text style={{ marginLeft: 10, fontWeight: 'bold', fontSize: 16 }}>{order_id}</Text>
                                 </View>
-                                <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'blue' }}>{new Date().toDateString()}</Text>
+                                <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'blue' }}>{date}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
                                 <Text style={{ fontSize: 18 }}>Dari : </Text>
@@ -147,9 +144,9 @@ const OrderDetailCourier = ({ navigation, route }) => {
                                 <Text style={{ marginLeft: 10, fontSize: 16 }}>Rp. {data.ongkir}</Text>
                             </View>
 
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', paddingTop: 10 }}>Informasi Penerima : </Text>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', paddingTop: 10 }}>Informasi {tipe === 'antar' ? 'Penerima' : 'Pengirim'} : </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                                <Text style={{ fontSize: 18 }}>Nama Penerima : </Text>
+                                <Text style={{ fontSize: 18 }}>Nama {tipe === 'antar' ? 'Penerima' : 'Pengirim'} : </Text>
                                 <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.to.contact_name}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
@@ -163,7 +160,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                                <Text style={{ fontSize: 18 }}>Brg yg dikirim : </Text>
+                                <Text style={{ fontSize: 18 }}>Brg yg {tipe === 'antar' ? 'di kirim' : 'di ambil'} : </Text>
                                 <View style={{ padding: 4, flex: 1 }}>
                                     <Text style={{ textAlign: 'justify', fontSize: 16 }}>{data.send_item}</Text>
                                 </View>

@@ -7,11 +7,12 @@ import Geocoder from 'react-native-geocoding';
 import { SendPackageModal } from '../../components/modals/sp_modal';
 import Geolocation from '@react-native-community/geolocation';
 import SplashScreen from 'react-native-splash-screen';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
 import * as geolib from 'geolib';
 import { PickupOrReceiverModal } from '../../components/modals/pickup';
 import { useIsFocused } from '@react-navigation/native';
+import { RouteModal } from '../../components/modals/route_modal';
 
 
 //first
@@ -42,12 +43,12 @@ const Send = ({ navigation, route }) => {
     let data1 = {
         amount,
         coords
-    }
+    };
 
     const nextSreenHandler = () => {
         dispatch({ type: 'add_count', count: amount });
         push('pickup', { data: data1, userData: data, coordinate: coords })
-    }
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -78,37 +79,21 @@ const Send = ({ navigation, route }) => {
     )
 }
 
-// last
+// third
 const SendStep = ({ navigation, route }) => {
 
-    let mapRef = useRef(null);
     const { data, _coords, pickupDetail, type } = route.params;
     const { amount } = data;
     const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
     const isFocused = useIsFocused();
-    console.log('pickupDetail :: ', pickupDetail);
-    let [pos, setPos] = useState(0);
+    console.log('coordinate :: ', _coords);
 
-    const mapFitToCoordinates = () => {
-        return mapRef.fitToSuppliedMarkers(
-            [
-                'tujuan',
-            ],
-            {
-                edgePadding: {
-                    top: 150,
-                    right: 150,
-                    left: 150,
-                    bottom: 150
-                }
-            }
-        );
-    };
 
     useEffect(() => {
         SplashScreen.hide();
     }, [isFocused]);
+
 
     let [regionChange, setRegionChange] = useState(0);
     let [isRegionMoving, setRegionMove] = useState(false);
@@ -163,10 +148,9 @@ const SendStep = ({ navigation, route }) => {
                                         latitudeDelta: 0.005,
                                         longitudeDelta: 0.005
                                     }}
-                                    onLayout={() => mapFitToCoordinates()}
                                     onRegionChangeComplete={(e) => regionChangeHandler(e)}
                                     onRegionChange={(e) => onRegionChangeHandler()}
-                                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} />
+                                    style={{ flex: 1 }} zoomEnabled={true} />
                                 <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: -100, left: 0, bottom: 0, right: 0 }}>
                                     <View style={{ padding: 10 }}>
                                         <Icon name='pin-sharp' size={80} color='red' />
@@ -183,8 +167,148 @@ const SendStep = ({ navigation, route }) => {
                                     distance={distance}
                                     targetCoord={coords}
                                     type={type}
-                                    pickupDetail={pickupDetail} />
+                                    pickupDetail={pickupDetail}
+                                    isRouteMap={false}
+                                    data={data}
+                                />
                             </View>
+                        )
+                    })
+                }
+            </Swiper>
+        </View>
+    ) : (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+                <ActivityIndicator size='large' color='blue' />
+            </View>
+        )
+}
+
+
+// last / fourth
+
+const RouteStep = ({ navigation, route }) => {
+
+    let mapRef = useRef(null);
+    const { data, _coords, pickupDetail, type } = route.params;
+    const { amount } = data;
+    console.log('count of map to render :: ', amount);
+    const { width, height } = Dimensions.get('window');
+    const dispatch = useDispatch();
+    const orders = useSelector(state => state.orders);
+
+    const isFocused = useIsFocused();
+    console.log('coordinate :: ', _coords);
+
+    const mapFitToCoordinates = (coords) => {
+        regionChangeHandler(coords);
+        return mapRef.fitToSuppliedMarkers(
+            [
+                'dari',
+                'ke'
+            ],
+            {
+                edgePadding: {
+                    top: 250,
+                    right: 250,
+                    left: 250,
+                    bottom: 250
+                },
+                animated: true
+            }
+        );
+    };
+
+
+
+    useEffect(() => {
+        SplashScreen.hide();
+    }, [isFocused]);
+
+    let [regionChange, setRegionChange] = useState(0);
+    let [isRegionMoving, setRegionMove] = useState(false);
+
+    let [coords, setCoords] = useState({});
+
+    let [distance, setDistance] = useState(0);
+
+    const regionChangeHandler = (coords) => {
+
+        let { latitude, longitude } = coords;
+
+        console.log('region changed, coords:::', coords);
+        console.log('position :: ', _coords.latitude, _coords.longitude);
+
+        setDistance(distance = geolib.getDistance({
+            latitude: _coords.latitude,
+            longitude: _coords.longitude
+        }, {
+            latitude: latitude,
+            longitude: longitude
+        }));
+
+        setCoords(coords);
+
+        setRegionChange(300)
+        setRegionMove(false)
+    };
+
+    const onRegionChangeHandler = () => {
+        setRegionChange(130)
+        setRegionMove(true);
+    }
+    let swiperRef = useRef(null);
+
+    const swipeRight = (index) => {
+        swiperRef.scrollBy(index, true)
+    }
+
+    return _coords !== 0 ? (
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+            <Swiper scrollEnabled={true} ref={(ref) => swiperRef = ref} bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false}>
+                {
+                    orders.orders.map((v, i) => {
+                        console.log('order item :: ', v);
+                        return (
+                            <View key={i} style={{ flex: 1, position: 'relative' }}>
+                                <MapView
+                                    initialRegion={{
+                                        latitude: _coords.latitude,
+                                        longitude: _coords.longitude,
+                                        latitudeDelta: 0.005,
+                                        longitudeDelta: 0.005
+                                    }}
+                                    onLayout={() => mapFitToCoordinates(v.coords)}
+                                    pitchEnabled={false}
+                                    scrollEnabled={false}
+                                    zoomEnabled={false}
+                                    rotateEnabled={false}
+                                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
+
+                                    <MapView.Marker identifier="dari" coordinate={{ latitude: _coords.latitude, longitude: _coords.longitude }} />
+                                    <MapView.Marker identifier="ke" coordinate={{ latitude: v.coords.latitude, longitude: v.coords.longitude }} />
+                                </MapView>
+
+                                <RouteModal
+                                    navigation={navigation}
+                                    swipeHandler={swipeRight}
+                                    index={i}
+                                    totalIndex={amount}
+                                    modalHeight={regionChange}
+                                    isRegionRunning={isRegionMoving}
+                                    coordinate={_coords}
+                                    distance={distance}
+                                    targetCoord={coords}
+                                    type={type}
+                                    pickupDetail={pickupDetail}
+                                    isRouteMap={true}
+                                    penerima={v.to.contact_name}
+                                    nohp={v.to.phone}
+                                    barang={v.send_item}
+                                    alamat={v.address_detail} />
+                            </View>
+
                         )
                     })
                 }
@@ -285,7 +409,8 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
 export {
     Send,
     SendStep,
-    PickupOrReceiverScreen
+    PickupOrReceiverScreen,
+    RouteStep
 };
 
 //  {/* <MapView.Marker
