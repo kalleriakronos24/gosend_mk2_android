@@ -132,7 +132,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
                                 <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'blue' }}>{date}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                                <Text style={{ fontSize: 18 }}>Dari : </Text>
+                                <Text style={{ fontSize: 18 }}>{tipe === 'antar' ? 'Pengirim' : 'Penerima'} : </Text>
                                 <Text style={{ marginLeft: 10, fontSize: 16 }}>{from}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
@@ -160,14 +160,14 @@ const OrderDetailCourier = ({ navigation, route }) => {
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                                <Text style={{ fontSize: 18 }}>Brg yg {tipe === 'antar' ? 'di kirim' : 'di ambil'} : </Text>
+                                <Text style={{ fontSize: 18 }}>Brg yg {tipe === 'antar' ? 'bakal di kirim' : 'bakal di ambil'} : </Text>
                                 <View style={{ padding: 4, flex: 1 }}>
                                     <Text style={{ textAlign: 'justify', fontSize: 16 }}>{data.send_item}</Text>
                                 </View>
                             </View>
                             <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
                                 <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ color: 'white', fontSize: 17 }}>{data.status ? 'Sudah Terkirim' : 'Ttpkan sbg telah terkirim'}</Text>
+                                    <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>{data.status ? 'Selesai' : 'Ttpkan sbg telah selesai'}</Text>
                                     <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
                                 </View>
                             </TouchableOpacity>

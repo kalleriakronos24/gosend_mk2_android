@@ -12,7 +12,7 @@ import io from 'socket.io-client';
 
 const socket = io('http://192.168.43.178:8000/', {
     "transports": ['websocket'],
-    upgrade : false
+    upgrade: false
 });
 
 
@@ -29,12 +29,14 @@ const Home = ({ navigation }) => {
     let [id, setId] = useState('');
     let [name, setName] = useState('');
 
-    const logoutHandler = async () => {
+    const logoutHandler = () => {
         console.log('logged out');
 
-        return await AsyncStorage.removeItem('LOGIN_TOKEN', (err) => {
-            dispatch({ type: 'LOGOUT' })
-        });
+        dispatch({ type: 'LOGOUT' });
+
+        AsyncStorage.removeItem('LOGIN_TOKEN');
+
+        navigation.replace('landing');
     };
 
     const isFocused = useIsFocused();
