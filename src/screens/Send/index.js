@@ -5,7 +5,7 @@ import Swiper from 'react-native-swiper';
 import MapView, { MarkerAnimated, AnimatedRegion } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import { SendPackageModal } from '../../components/modals/sp_modal';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from 'react-native-geolocation-service';
 import SplashScreen from 'react-native-splash-screen';
 import { useDispatch, useSelector } from 'react-redux';
 Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
@@ -25,7 +25,9 @@ const Send = ({ navigation, route }) => {
     let [coords, setCoords] = useState(0);
     let dispatch = useDispatch();
     const isFocused = useIsFocused();
-    console.log(data);
+
+    let [error, setError] = useState('');
+
 
     useEffect(() => {
         Geolocation.getCurrentPosition(
@@ -34,9 +36,10 @@ const Send = ({ navigation, route }) => {
                 setCoords(position);
             },
             (err) => {
+                setError('Terjadi kesalahan koneksi dalam memproses lokasi anda. tidak dapat melanjutkan')
                 console.log('failed to retreive user location', err)
             },
-            { enableHighAccuracy: true, distanceFilter: 100, timeout: 8000 }
+            { timeout: 2000 }
         )
     }, [isFocused]);
 
@@ -54,8 +57,8 @@ const Send = ({ navigation, route }) => {
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar translucent backgroundColor='transparent' barStyle='default' />
             <View style={{ flex: 1 }}>
-                <View style={{ width: '100%', height: height - 500 }}>
-                    <Image source={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', width: '100%', height: height - 500 }} />
+                <View style={{ width: '100%', height: 220 }}>
+                    <Image source={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', width: '100%', height: 220 }} />
                 </View>
                 <View style={{ padding: 16 }}>
                     <Text style={{ fontSize: 23, fontWeight: '600', letterSpacing: 0.5 }}>Ongqir Send</Text>
@@ -68,10 +71,16 @@ const Send = ({ navigation, route }) => {
                             <TextInput keyboardType='numeric' value={amount} onChangeText={(v) => v > 10 ? setAmount(10) : setAmount(v)} placeholder='default 1; max 10' />
                         </View>
                     </View>
+
+                    {error !== '' ? (
+                        <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={{ textAlign:'center', fontSize: 16, fontWeight:'bold', letterSpacing: .5, color: 'red' }}>{error}</Text>
+                        </View>
+                    ) : null}
                 </View>
             </View>
-            <TouchableOpacity onPress={() => nextSreenHandler()} style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent: 'center', alignItems: 'center' }}>
-                <View style={{ padding: 8, height: 60, width: 60, justifyContent: 'center', alignItems: 'center', borderRadius: 30, backgroundColor: '#1F4788', shadowColor: "#000" }}>
+            <TouchableOpacity disabled={coords === 0 || coords === undefined || coords === null ? true : false} onPress={() => nextSreenHandler()} style={{ position: 'absolute', right: 0, bottom: 0, zIndex: 10, marginRight: 40, marginBottom: 40, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ padding: 8, height: 60, width: 60, justifyContent: 'center', alignItems: 'center', borderRadius: 30, backgroundColor: coords === 0 || coords === undefined || coords === null ? 'red' : '#1F4788', shadowColor: "#000" }}>
                     <Icon name='arrow-forward-outline' size={40} color='white' />
                 </View>
             </TouchableOpacity>
@@ -200,8 +209,8 @@ const RouteStep = ({ navigation, route }) => {
     const isFocused = useIsFocused();
     console.log('coordinate :: ', _coords);
 
-    const mapFitToCoordinates = (coords) => {
-        regionChangeHandler(coords);
+    const mapFitToCoordinates = (i, coords) => {
+        regionChangeHandler(i, coords);
         return mapRef.fitToSuppliedMarkers(
             [
                 'dari',
@@ -213,8 +222,7 @@ const RouteStep = ({ navigation, route }) => {
                     right: 250,
                     left: 250,
                     bottom: 250
-                },
-                animated: true
+                }
             }
         );
     };
@@ -232,12 +240,10 @@ const RouteStep = ({ navigation, route }) => {
 
     let [distance, setDistance] = useState(0);
 
-    const regionChangeHandler = (coords) => {
+    const regionChangeHandler = (index, coords) => {
 
         let { latitude, longitude } = coords;
 
-        console.log('region changed, coords:::', coords);
-        console.log('position :: ', _coords.latitude, _coords.longitude);
 
         setDistance(distance = geolib.getDistance({
             latitude: _coords.latitude,
@@ -247,10 +253,34 @@ const RouteStep = ({ navigation, route }) => {
             longitude: longitude
         }));
 
+        const ongkir = geolib.getDistance({
+            latitude: _coords.latitude,
+            longitude: _coords.longitude
+        }, {
+            latitude: latitude,
+            longitude: longitude
+        }) < 5000 ? 10000 : (Math.round((geolib.getDistance({
+            latitude: _coords.latitude,
+            longitude: _coords.longitude
+        }, {
+            latitude: latitude,
+            longitude: longitude
+        }) / 1000) / 5) * 5000) + 5000;
+
+        const dist = Math.round(geolib.getDistance({
+            latitude: _coords.latitude,
+            longitude: _coords.longitude
+        }, {
+            latitude: latitude,
+            longitude: longitude
+        }) / 1000);
+
+
+        dispatch({ type: 'update_distance', id: index, distance: dist, ongkir: ongkir });
+
         setCoords(coords);
 
         setRegionChange(300)
-        setRegionMove(false)
     };
 
     const onRegionChangeHandler = () => {
@@ -279,10 +309,10 @@ const RouteStep = ({ navigation, route }) => {
                                         latitudeDelta: 0.005,
                                         longitudeDelta: 0.005
                                     }}
-                                    onLayout={() => mapFitToCoordinates(v.coords)}
-                                    pitchEnabled={false}
-                                    scrollEnabled={false}
-                                    zoomEnabled={false}
+                                    onLayout={() => mapFitToCoordinates(i, v.coords)}
+                                    pitchEnabled={true}
+                                    scrollEnabled={true}
+                                    zoomEnabled={true}
                                     rotateEnabled={false}
                                     ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
 
@@ -298,7 +328,7 @@ const RouteStep = ({ navigation, route }) => {
                                     modalHeight={regionChange}
                                     isRegionRunning={isRegionMoving}
                                     coordinate={_coords}
-                                    distance={distance}
+                                    distance={v.distance}
                                     targetCoord={coords}
                                     type={type}
                                     pickupDetail={pickupDetail}
@@ -306,7 +336,8 @@ const RouteStep = ({ navigation, route }) => {
                                     penerima={v.to.contact_name}
                                     nohp={v.to.phone}
                                     barang={v.send_item}
-                                    alamat={v.address_detail} />
+                                    alamat={v.address_detail}
+                                    ongkirz={v.ongkir} />
                             </View>
 
                         )

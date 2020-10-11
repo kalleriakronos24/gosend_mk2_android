@@ -19,25 +19,26 @@ import Root from './src/redux/reducers/index.reducers';
 const store = createStore(Root);
 
 const App = () => {
-  useEffect(() => {
-    
-    // hide the splash screen from native ui
-    setTimeout(() => SplashScreen.hide() , 2000);
 
-    // listen for internet changes or connectivity
-    NetInfo.addEventListener(state => {
-      console.log("Connection type", state.type);
-      console.log("Is connected?", state.isConnected);
-    })
-    
+  console.reportErrorsAsExceptions = false;
+  useEffect(() => {
+    // hide the splash screen from native ui
+    setTimeout(() => SplashScreen.hide(), 2000);
+
+  })
+  // listen for internet changes or connectivity
+  NetInfo.addEventListener(state => {
+
+    // do something when user is connected to the internet or when disconnected
+
     LogBox.ignoreAllLogs(true);
 
   }, [])
   return (
     <>
-    <Provider store={store}>
-      <Router/>
-    </Provider>
+      <Provider store={store}>
+        <Router />
+      </Provider>
     </>
   );
 };

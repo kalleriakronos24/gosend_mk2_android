@@ -6,7 +6,16 @@ import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import SplashScreen from '../Splash/index';
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from '@react-navigation/native';
+import io from 'socket.io-client';
+
+
+const socket = io('http://192.168.43.178:8000/', {
+    "transports": ['websocket'],
+    upgrade : false
+});
+
+
 const Home = ({ navigation }) => {
 
     // vars and invoked function
@@ -17,6 +26,8 @@ const Home = ({ navigation }) => {
     let [index, setIndex] = useState(0);
     let [isLoading, setIsLoading] = useState(true);
     let [userData, setUserData] = useState({});
+    let [id, setId] = useState('');
+    let [name, setName] = useState('');
 
     const logoutHandler = async () => {
         console.log('logged out');
@@ -28,6 +39,7 @@ const Home = ({ navigation }) => {
 
     const isFocused = useIsFocused();
 
+
     // lifecycle method;
 
     useEffect(() => {
@@ -38,7 +50,6 @@ const Home = ({ navigation }) => {
                 return fetchUserByToken(r)
             return new Error(e);
         })
-
 
         RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({ interval: 10000, fastInterval: 5000 })
             .then(data => {
@@ -59,7 +70,10 @@ const Home = ({ navigation }) => {
                 //  - ERR01 : If the Settings change are unavailable
                 //  - ERR02 : If the popup has failed to open
             });
-    }, [isFocused])
+        return () => {
+
+        }
+    }, [])
 
     const fetchUserByToken = async (token) => {
         console.log('this running ?');
@@ -70,7 +84,6 @@ const Home = ({ navigation }) => {
             }
         })
             .then(res => {
-                console.log('this too as well ?');
                 return res.json();
             })
             .then(res => {
@@ -79,9 +92,8 @@ const Home = ({ navigation }) => {
                     setTimeout(() => {
                         setIsLoading(false);
                     }, 2000)
-                console.log('user data fetched successfully', '\n');
-                console.log('User Data :: ', res);
                 setUserData(res.data);
+                socket.emit('userConnected', res.data._id, res.data.fullname);
             })
             .catch(err => {
                 throw new Error(err);
@@ -91,7 +103,8 @@ const Home = ({ navigation }) => {
     const { width, height } = Dimensions.get('window');
 
     const switchScreenHandler = () => {
-        if (userData.user_order === "" || userData.user_order === null) {
+        console.log('user have order ? ', userData.user_order);
+        if (userData.user_order === "" || userData.user_order === null || userData.user_order === undefined) {
             navigation.push('send', { data: { name: userData.fullname, no_hp: userData.no_hp } });
         } else {
             ToastAndroid.showWithGravity('Tidak dapat membuat order, kamu masih punya order aktif', ToastAndroid.LONG, ToastAndroid.BOTTOM);
@@ -107,9 +120,9 @@ const Home = ({ navigation }) => {
         ) : type === 'courier' ? (
             <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
                 <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent' />
-                <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={1}>
+                <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={0}>
                     {/* Main Feature */}
-                    <View style={{ flex: 1 }}>
+                    <ScrollView style={{ flex: 1 }}>
                         <View style={{ height: 300, backgroundColor: '#1F4788', borderBottomRightRadius: 70, paddingTop: barHeight }}>
 
                             <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -154,7 +167,7 @@ const Home = ({ navigation }) => {
                                         <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                             <Text style={{ fontSize: 18 }}>Isi Wallet</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order', { id: userData._id })} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                             <Text style={{ fontSize: 18 }}>Cari Orderan {userData.active_order ? `( 1 )` : null}</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -168,9 +181,9 @@ const Home = ({ navigation }) => {
                                 </View>
                             </View>
                         </View>
-                    </View>
+                    </ScrollView>
                     {/* Account Page including check order */}
-                    <View style={{ flex: 1 }}>
+                    <ScrollView style={{ flex: 1 }}>
                         <View style={{ height: 300, backgroundColor: '#1F4788', borderBottomRightRadius: 70, paddingTop: barHeight }}>
 
                             <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -210,7 +223,7 @@ const Home = ({ navigation }) => {
                                             <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Penggunaan Wallet</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                            <Text style={{ fontSize: 18 }}>Cek Riwayat Order</Text>
+                                            <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Order</Text>
                                         </TouchableOpacity>
                                     </View>
 
@@ -223,15 +236,15 @@ const Home = ({ navigation }) => {
                                 </View>
                             </View>
                         </View>
-                    </View>
+                    </ScrollView>
                 </Swiper>
             </View>
         ) : (
                 <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
                     <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent' />
-                    <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={1}>
+                    <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={0}>
                         {/* Main Feature */}
-                        <View style={{ flex: 1 }}>
+                        <ScrollView style={{ flex: 1 }}>
                             <View style={{ height: 300, backgroundColor: '#1F4788', borderBottomRightRadius: 70, paddingTop: barHeight }}>
 
                                 <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -285,9 +298,9 @@ const Home = ({ navigation }) => {
                                     </View>
                                 </View>
                             </View>
-                        </View>
+                        </ScrollView>
                         {/* Account Page including check order */}
-                        <View style={{ flex: 1 }}>
+                        <ScrollView style={{ flex: 1 }}>
                             <View style={{ height: 300, backgroundColor: '#1F4788', borderBottomRightRadius: 70, paddingTop: barHeight }}>
 
                                 <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -327,7 +340,7 @@ const Home = ({ navigation }) => {
                                                 <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Penggunaan Wallet</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                                <Text style={{ fontSize: 18 }}>Cek Riwayat Order</Text>
+                                                <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Order</Text>
                                             </TouchableOpacity>
                                         </View>
 
@@ -340,7 +353,7 @@ const Home = ({ navigation }) => {
                                     </View>
                                 </View>
                             </View>
-                        </View>
+                        </ScrollView>
                     </Swiper>
                 </View>
             )

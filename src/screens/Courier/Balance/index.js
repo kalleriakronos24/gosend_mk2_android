@@ -405,6 +405,7 @@ const TransactionHistory = ({ navigation }) => {
                                 data.map((v, i) => {
                                     return (
                                         <View
+                                            key={i}
                                             style={{
                                                 padding: 10,
                                                 flexDirection: "column",

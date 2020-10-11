@@ -36,7 +36,8 @@ export const RouteModal = ({ index,
     alamat,
     penerima,
     nohp,
-    barang
+    barang,
+    ongkirz
 }) => {
 
     const modalizeRef = useRef(null);
@@ -58,58 +59,14 @@ export const RouteModal = ({ index,
 
     let [selectedTipe, setSelectedTipe] = useState(type);
 
-    const selectContactHandler = () => {
-
-        if (Platform.OS === 'android') {
-            const granted = PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-                {
-                    title: 'Test App Read Contact Permission',
-                    message: 'Test App needs access to your contact',
-                    buttonPositive: 'OK',
-                    buttonNegative: 'CANCEL'
-                }
-            ).then(res => {
-                if (res)
-                    return selectContactPhone()
-                        .then(selection => {
-                            if (!selection) {
-                                return null;
-                            }
-                            let { contact, selectedPhone } = selection;
-                            console.log(`Selected ${selectedPhone.type} phone number ${selectedPhone.number} from ${contact.name}`);
-                            setContactName(contact.name);
-                            setPhone(selectedPhone.number);
-                        });
-            })
-                .catch(err => {
-                    console.log('something went from when trying to granting access to read contact:: ', err);
-                });
-
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                console.log('you can now access contact');
-            } else {
-                console.log(' user do not have a grant access to access contact ');
-            }
-        } else {
-            console.log('non Android User can access contact');
-        }
-    }
-    const orderDetailsHandler = () => {
-        setMHeight(height);
-    }
-    const onFocusLeaveHandler = () => {
-        setMHeight(memoized_modal_height);
-    }
-
     const nextScreenHandler = (id) => {
 
         let idx = index + 1;
 
-        const ongkir = distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000;
-        const dist = Math.round(distance / 1000);
+        // const ongkir = distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000;
+        // const dist = Math.round(distance / 1000);
 
-        dispatch({ type: 'update_distance', id : index, distance : dist, ongkir: ongkir });
+        // dispatch({ type: 'update_distance', id : index, distance : dist, ongkir: ongkir });
 
         if (Number(idx) !== Number(totalIndex)) {
             swipeHandler(idx, true);
@@ -155,11 +112,11 @@ export const RouteModal = ({ index,
                             <>
                                 <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                                     <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jarak : </Text>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{distance < 1000 ? distance + ' m' : Math.round(distance / 1000) + ' km'}</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{distance + ' km'}</Text>
                                 </View>
                                 <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                                     <Text style={{ fontSize: 16, letterSpacing: .5 }}>Ongkir : </Text>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000},-</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Rp.{ongkirz},-</Text>
                                 </View>
                             </>
                         ) : null

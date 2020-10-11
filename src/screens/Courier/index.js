@@ -3,12 +3,14 @@ import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, Refres
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useIsFocused } from '@react-navigation/native';
+import io from 'socket.io-client';
 
-const OrderFind = ({ navigation }) => {
+const OrderFind = ({ navigation, route }) => {
+
     const { width, height } = Dimensions.get('window');
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
-
+    const { id } = route.params;
     let [courierData, setCourierData] = useState({});
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
@@ -16,24 +18,39 @@ const OrderFind = ({ navigation }) => {
     let [orderID, setOrderID] = useState(0);
     let [orderDate, setOrderDate] = useState(0);
     let [order_id, setOrderId] = useState(0);
-    let [notFound, setNotFound] = useState(false);
+    let [notFound, setNotFound] = useState(true);
     let [tipe, setTipe] = useState('');
+    let [pickup, setPickup] = useState({});
 
     const isFocused = useIsFocused();
 
+
+
     useEffect(() => {
-        onRefresh()
+
+        let intervalOrder = setInterval(() => {
+            console.log('this is running every 10 s');
+            fetchOrder();
+        }, 1000 * 10) // 10 seconds
+
+
+        if (orderItems.length > 0) {
+            clearInterval(intervalOrder);
+        };
 
         return () => {
             console.log('un mounted');
-        }
-    }, [isFocused])
+            clearInterval(intervalOrder);
+        };
+
+    }, [isFocused]);
+
 
 
     const fetchOrder = async () => {
 
         return await AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
-            .then( async (res) => {
+            .then(async (res) => {
                 let body = {
                     token: res
                 }
@@ -48,8 +65,6 @@ const OrderFind = ({ navigation }) => {
                         return result.json();
                     })
                     .then((result) => {
-                        console.log('is this worked ? ');
-
                         if (result.msg) {
                             setNotFound(true);
                         } else {
@@ -60,13 +75,14 @@ const OrderFind = ({ navigation }) => {
                             setOrderId(result.id);
                             setOrderDate(result.date);
                             setTipe(result.tipe);
+                            setPickup(result.pickup);
+                            setNotFound(false);
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
                         }
                     })
                     .catch(error => {
-
                         console.log('ERROR :: ', error);
                     })
             })
@@ -126,21 +142,33 @@ const OrderFind = ({ navigation }) => {
                                             <Text>Tipe Orderan : </Text>
                                             <Text style={{}}>{tipe}</Text>
                                         </View>
+                                        <View style={{ paddingTop: 8 }}>
+                                            <Text>{tipe === 'antar' ? 'Detail Pengambilan Barang' : 'Detail Penerimaan Barang'} : </Text>
+                                            <View style={{ padding: 6 }}>
+                                                <Text>Detail Alamat : {pickup.detailAlamat} </Text>
+                                                <Text>Lokasi : </Text>
+                                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                    <Text style={{ fontSize: 15, fontWeight:'bold', letterSpacing: .5, color: 'white', marginRight: 10 }}>Lihat di Map</Text>
+                                                    <Icon name="map-outline" size={20} color='white'/>
+                                                </View>
+                                            </View>
+                                        </View>
                                         <View style={{ flexDirection: 'row', paddingTop: 8 }}>
                                             <Text>Item : </Text>
                                         </View>
+
                                         <View style={{ padding: 8 }}>
                                             {
                                                 orderItems.map((v, i) => (
                                                     <View key={i} style={{ padding: 4 }}>
                                                         <Text>{v.send_item}</Text>
-                                                        <Text>Ke Alamat : {v.address_detail}</Text>
+                                                        <Text>{tipe === 'antar' ? "Antar Ke " : "Ambil Dari "} Alamat : {v.address_detail}</Text>
                                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 6 }}>
                                                             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, borderRadius: 5, borderColor: 'red', borderWidth: .5 }}>
                                                                 <Text style={{ color: v.status ? 'black' : 'red', marginRight: 10 }}>status : {v.status ? `sudah ${tipe === 'antar' ? 'di antar' : 'di ambil'}` : `belum ${tipe === 'antar' ? 'di antar' : 'di ambil'}`}</Text>
                                                                 <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
                                                             </View>
-                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe : tipe, order_id : v.order_id, date : v.date })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.push('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe: tipe, order_id: v.order_id, date: v.date })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
                                                                 <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
                                                                 <Icon name='eye-outline' size={17} color='white' />
                                                             </TouchableOpacity>
