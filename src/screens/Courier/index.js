@@ -43,8 +43,12 @@ const OrderFind = ({ navigation, route }) => {
             clearInterval(intervalOrder);
         };
 
-    }, [isFocused]);
+    }, []);
 
+
+    useEffect(() => {
+        fetchOrder();
+    }, [isFocused])
 
 
     const fetchOrder = async () => {
@@ -132,24 +136,26 @@ const OrderFind = ({ navigation, route }) => {
                                     <View style={{ paddingTop: 10 }}>
                                         <View style={{ flexDirection: 'row' }}>
                                             <Text>Status : </Text>
-                                            <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue' }}>{true ? 'menunggu' : 'di proses'}</Text>
+                                            <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue', textTransform:'capitalize' }}>{true ? 'menunggu' : 'di proses'}</Text>
                                         </View>
-                                        <View style={{ flexDirection: 'row', paddingTop: 8 }}>
+                                        <View style={{ flexDirection: 'row', paddingTop: 8, alignItems:'center' }}>
                                             <Text>From : </Text>
-                                            <Text style={{}}>{userData.fullname}</Text>
+                                            <Text style={{ fontWeight:'bold', fontSize: 16.5, letterSpacing: .5, textTransform:'capitalize' }}>{userData.fullname}</Text>
                                         </View>
-                                        <View style={{ flexDirection: 'row', paddingTop: 8 }}>
+
+                                        <View style={{ flexDirection: 'row', paddingTop: 8, alignItems:'center' }}>
                                             <Text>Tipe Orderan : </Text>
-                                            <Text style={{}}>{tipe}</Text>
+                                            <Text style={{ fontWeight:'bold', fontSize: 16.5, letterSpacing: .5, textTransform:'capitalize' }}>{tipe} Barang</Text>
                                         </View>
+
                                         <View style={{ paddingTop: 8 }}>
-                                            <Text>{tipe === 'antar' ? 'Detail Pengambilan Barang' : 'Detail Penerimaan Barang'} : </Text>
+                                            <Text>{tipe === 'antar' ? 'Detail Pengambilan Barang' : 'Detail Penerima Barang'} : </Text>
                                             <View style={{ padding: 6 }}>
                                                 <Text>Detail Alamat : {pickup.detailAlamat} </Text>
-                                                <Text>Lokasi : </Text>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight:'bold', letterSpacing: .5, color: 'white', marginRight: 10 }}>Lihat di Map</Text>
-                                                    <Icon name="map-outline" size={20} color='white'/>
+                                                <Text style={{ marginTop: 10 }}>Lokasi : </Text>
+                                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
+                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .5, color: 'white', marginRight: 10 }}>Lihat di Map</Text>
+                                                    <Icon name="map-outline" size={20} color='white' />
                                                 </View>
                                             </View>
                                         </View>

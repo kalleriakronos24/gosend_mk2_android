@@ -95,6 +95,7 @@ const Home = ({ navigation }) => {
                         setIsLoading(false);
                     }, 2000)
                 setUserData(res.data);
+                console.log('userdata', res.data);
                 socket.emit('userConnected', res.data._id, res.data.fullname);
             })
             .catch(err => {
@@ -160,7 +161,7 @@ const Home = ({ navigation }) => {
                                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Item Dikirim Hari ini</Text>
                                             <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
                                                 <Icon name='bicycle-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>0</Text>
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{userData.todayCount || 0}</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -215,7 +216,7 @@ const Home = ({ navigation }) => {
                                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Total Order Berhasil</Text>
                                             <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
                                                 <Icon name='bicycle-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>0</Text>
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{userData.totalSuccessOrder}</Text>
                                             </View>
                                         </View>
                                     </View>

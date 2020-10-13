@@ -5,7 +5,7 @@ import MapView from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import { useIsFocused } from '@react-navigation/native';
 
-const OrderDetailCourier = ({ navigation, route }) => {
+const PickupDetail = ({ navigation, route }) => {
 
     const { width, height } = Dimensions.get('window');
     const barHeight = StatusBar.currentHeight;
@@ -116,8 +116,8 @@ const OrderDetailCourier = ({ navigation, route }) => {
                         />
                         <MapView.Marker
                             identifier='penerima'
-                            title={tipe === 'antar' ? 'Penerima Barang' : 'Ambil Barang'}
-                            description={tipe === 'antar' ? 'Lokasi Penerima Barang' : 'Titik Pengambilan Barang'}
+                            title='Penerima'
+                            description='Lokasi Penerima'
                             coordinate={{ latitude: data.coords.latitude, longitude: data.coords.longitude }}
                             key={2}
                         />
@@ -183,4 +183,4 @@ const OrderDetailCourier = ({ navigation, route }) => {
         )
 }
 
-export default OrderDetailCourier;
+export default PickupDetail;

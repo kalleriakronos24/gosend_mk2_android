@@ -22,6 +22,7 @@ import Testing from '../screens/Test/test';
 import LoadingScreen from '../screens/Misc/loading_screen';
 import UserOrderHistory from '../screens/User/History';
 import { CourierBalance, AddBalanceForm, TransactionHistory } from '../screens/Courier/Balance';
+import { CourierOrderHistory, CourierOrderHistoryDetail } from '../screens/Courier/History/Order';
 
 const Stack = createStackNavigator();
 
@@ -139,6 +140,18 @@ const Router = React.memo((props) => {
                             cardOverlay: false
                         }} />
                         <Stack.Screen name="user_order_history" component={UserOrderHistory} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
+                        <Stack.Screen name="all_order_done_by_courier" component={CourierOrderHistory} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
+                        <Stack.Screen name="all_order_done_by_courier_detail" component={CourierOrderHistoryDetail} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
