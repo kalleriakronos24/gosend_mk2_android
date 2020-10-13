@@ -81,6 +81,7 @@ const OrderFind = ({ navigation, route }) => {
                             setTipe(result.tipe);
                             setPickup(result.pickup);
                             setNotFound(false);
+
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
@@ -153,10 +154,10 @@ const OrderFind = ({ navigation, route }) => {
                                             <View style={{ padding: 6 }}>
                                                 <Text>Detail Alamat : {pickup.detailAlamat} </Text>
                                                 <Text style={{ marginTop: 10 }}>Lokasi : </Text>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
+                                                <TouchableOpacity onPress={() => navigation.navigate('pickup_detail', { data : orderItems[0], tipe, order_id, date : orderDate, pickup : pickup, user_no_hp : userData.no_hp, user_name : userData.fullname })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .5, color: 'white', marginRight: 10 }}>Lihat di Map</Text>
                                                     <Icon name="map-outline" size={20} color='white' />
-                                                </View>
+                                                </TouchableOpacity>
                                             </View>
                                         </View>
                                         <View style={{ flexDirection: 'row', paddingTop: 8 }}>

@@ -41,7 +41,6 @@ const Home = ({ navigation }) => {
 
     const isFocused = useIsFocused();
 
-
     // lifecycle method;
 
     useEffect(() => {
@@ -51,11 +50,10 @@ const Home = ({ navigation }) => {
             if (r)
                 return fetchUserByToken(r)
             return new Error(e);
-        })
+        });
 
         RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({ interval: 10000, fastInterval: 5000 })
             .then(data => {
-
                 if (data === 'already-enabled')
                     return
                 console.log('is this running ?')
@@ -75,7 +73,7 @@ const Home = ({ navigation }) => {
         return () => {
 
         }
-    }, [])
+    }, [isFocused]);
 
     const fetchUserByToken = async (token) => {
         console.log('this running ?');
@@ -101,7 +99,9 @@ const Home = ({ navigation }) => {
             .catch(err => {
                 throw new Error(err);
             })
-    }
+    };
+
+
     const { type, fullname } = userData;
     const { width, height } = Dimensions.get('window');
 
@@ -113,7 +113,7 @@ const Home = ({ navigation }) => {
             ToastAndroid.showWithGravity('Tidak dapat membuat order, kamu masih punya order aktif', ToastAndroid.LONG, ToastAndroid.BOTTOM);
             return;
         }
-    }
+    };
 
     return isLoading ?
         (
@@ -220,7 +220,6 @@ const Home = ({ navigation }) => {
                                             </View>
                                         </View>
                                     </View>
-
                                     <View style={{ paddingTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                             <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Penggunaan Wallet</Text>

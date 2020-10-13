@@ -116,7 +116,7 @@ const OrderDetailCourier = ({ navigation, route }) => {
                         />
                         <MapView.Marker
                             identifier='penerima'
-                            title={tipe === 'antar' ? 'Penerima Barang' : 'Ambil Barang'}
+                            title={tipe === 'antar' ? 'Titik Penerima' : 'Titik Ambil Barang'}
                             description={tipe === 'antar' ? 'Lokasi Penerima Barang' : 'Titik Pengambilan Barang'}
                             coordinate={{ latitude: data.coords.latitude, longitude: data.coords.longitude }}
                             key={2}
@@ -133,21 +133,28 @@ const OrderDetailCourier = ({ navigation, route }) => {
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
                                 <Text style={{ fontSize: 18 }}>{tipe === 'antar' ? 'Pengirim' : 'Penerima'} : </Text>
-                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{from}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                                <Text style={{ fontSize: 18 }}>Jarak : </Text>
-                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.distance} km</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
-                                <Text style={{ fontSize: 18 }}>Ongkir : </Text>
-                                <Text style={{ marginLeft: 10, fontSize: 16 }}>Rp. {data.ongkir}</Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16, textTransform:'capitalize' }}>{from}</Text>
                             </View>
 
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', paddingTop: 10 }}>Informasi {tipe === 'antar' ? 'Penerima' : 'Pengirim'} : </Text>
+                            {
+                                tipe === 'antar' ? (
+                                    <>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                            <Text style={{ fontSize: 18 }}>Ongkir : </Text>
+                                            <Text style={{ marginLeft: 10, fontSize: 16 }}>Rp. {data.ongkir}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
+                                            <Text style={{ fontSize: 18 }}>Jarak : </Text>
+                                            <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.distance} km</Text>
+                                        </View>
+                                    </>
+                                ) : null
+                            }
+
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', paddingTop: 10 }}>Informasi {tipe === 'antar' ? 'Penerima' : 'Pengirim'} ({tipe === 'antar' ? 'Kirim Barang' : 'Ambil Barang'}): </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
                                 <Text style={{ fontSize: 18 }}>Nama {tipe === 'antar' ? 'Penerima' : 'Pengirim'} : </Text>
-                                <Text style={{ marginLeft: 10, fontSize: 16 }}>{data.to.contact_name}</Text>
+                                <Text style={{ marginLeft: 10, fontSize: 16, textTransform:'capitalize' }}>{data.to.contact_name}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
                                 <Text style={{ fontSize: 18 }}>No.HP : </Text>
