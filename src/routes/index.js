@@ -6,6 +6,10 @@ import {
     CardStyleInterpolators,
     CardAnimationContext
 } from '@react-navigation/stack';
+import {
+    AppState
+} from 'react-native';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { Landing } from '../screens/Landing/index';
 import Login from '../screens/Login';
@@ -24,6 +28,14 @@ import UserOrderHistory from '../screens/User/History';
 import { CourierBalance, AddBalanceForm, TransactionHistory } from '../screens/Courier/Balance';
 import { CourierOrderHistory, CourierOrderHistoryDetail } from '../screens/Courier/History/Order';
 import PickupDetail from '../screens/Courier/Pickup';
+import io from 'socket.io-client';
+import BackgroundTimer from 'react-native-background-timer';
+
+const socket = io('http://192.168.43.178:8000/', {
+    "transports": ['websocket'],
+    upgrade: false
+});
+
 
 const Stack = createStackNavigator();
 
@@ -34,17 +46,46 @@ const Router = React.memo((props) => {
     let [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     let count = useSelector(state => state.orders.count);
+    let appState = useRef(AppState.currentState);
 
-    useEffect(() => {
+    var interval;
+
+    const handleAppStateChange = (nextAppState) => {
         AsyncStorage.getItem('LOGIN_TOKEN', (err, res) => res)
             .then((res) => {
                 console.log('ini res dari logintoken storage', res);
                 setToken(res);
                 setIsLoading(false);
+
+                if (
+                    appState.current.match(/inactive|background/) &&
+                    nextAppState === "active"
+                ) {
+                    console.log("App has come to the foreground!");
+                    //clearInterval when your app has come back to the foreground
+                    socket.emit('userConnected', res);
+                    BackgroundTimer.clearInterval(interval);
+
+                } else {
+                    //app goes to background
+                    console.log('app goes to background');
+                    //tell the server that your app is still online when your app detect that it goes to background
+                    interval = BackgroundTimer.setInterval(() => {
+                        socket.emit('userConnected', res);
+                    }, 9000);
+                    appState.current = nextAppState;
+                };
+
+
+                console.log("AppState", appState.current);
             })
             .catch(err => {
                 console.log(err);
             })
+    }
+
+    useEffect(() => {
+        AppState.addEventListener("change", handleAppStateChange);
     }, []);
 
     return (
@@ -122,13 +163,13 @@ const Router = React.memo((props) => {
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
-                         <Stack.Screen name="transaction_history" component={TransactionHistory} options={{
+                        <Stack.Screen name="transaction_history" component={TransactionHistory} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
-                         <Stack.Screen name="pickup" component={PickupOrReceiverScreen} options={{
+                        <Stack.Screen name="pickup" component={PickupOrReceiverScreen} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
                             cardOverlayEnabled: false,

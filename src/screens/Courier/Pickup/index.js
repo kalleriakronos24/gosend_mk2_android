@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator, Alert } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import MapView from 'react-native-maps';
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation from '@react-native-community/geolocation';
 import { useIsFocused } from '@react-navigation/native';
 
 const PickupDetail = ({ navigation, route }) => {
@@ -27,8 +27,10 @@ const PickupDetail = ({ navigation, route }) => {
     const isFocused = useIsFocused();
 
     useEffect(() => {
+        console.log('mounted pickup');
         Geolocation.getCurrentPosition(
             (position) => {
+                console.log('pickup not working', position.coords);
                 setCoords(position.coords);
                 setTimeout(() => {
                     setIsLoading(false)
@@ -84,7 +86,7 @@ const PickupDetail = ({ navigation, route }) => {
         );
     };
 
-    return coords === 0 || isLoading === true ? (
+    return isLoading ? (
         <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
             <ActivityIndicator color='blue' size='large' />

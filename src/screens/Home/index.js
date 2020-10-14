@@ -7,13 +7,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import SplashScreen from '../Splash/index';
 import { useIsFocused } from '@react-navigation/native';
-import io from 'socket.io-client';
-
-
-const socket = io('http://192.168.43.178:8000/', {
-    "transports": ['websocket'],
-    upgrade: false
-});
 
 
 const Home = ({ navigation }) => {
@@ -93,8 +86,6 @@ const Home = ({ navigation }) => {
                         setIsLoading(false);
                     }, 2000)
                 setUserData(res.data);
-                console.log('userdata', res.data);
-                socket.emit('userConnected', res.data._id, res.data.fullname);
             })
             .catch(err => {
                 throw new Error(err);

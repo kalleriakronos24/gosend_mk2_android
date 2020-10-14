@@ -21,16 +21,15 @@ const store = createStore(Root);
 const App = () => {
 
   console.reportErrorsAsExceptions = false;
+
   useEffect(() => {
     // hide the splash screen from native ui
-    setTimeout(() => SplashScreen.hide(), 2000);
+    SplashScreen.hide();
 
   })
   // listen for internet changes or connectivity
   NetInfo.addEventListener(state => {
-
     // do something when user is connected to the internet or when disconnected
-
     LogBox.ignoreAllLogs(true);
 
   }, [])

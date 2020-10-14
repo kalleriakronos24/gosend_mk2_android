@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import MapView from 'react-native-maps';
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation from '@react-native-community/geolocation';
 import { useIsFocused } from '@react-navigation/native';
 
 const OrderDetailCourier = ({ navigation, route }) => {

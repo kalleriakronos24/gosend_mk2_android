@@ -26,6 +26,7 @@
     "react": "16.13.1",
     "react-native": "0.63.2",
     "react-native-android-location-enabler": "^1.2.1",
+    "react-native-background-timer": "^2.4.1",
     "react-native-checkbox": "^2.0.0",
     "react-native-geocoder": "^0.5.0",
     "react-native-geocoding": "^0.4.0",
