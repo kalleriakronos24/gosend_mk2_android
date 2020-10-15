@@ -332,7 +332,7 @@ const Home = ({ navigation }) => {
                                             <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                                 <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Penggunaan Wallet</Text>
                                             </TouchableOpacity>
-                                            <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+                                            <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('user_order_history')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                                 <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Order</Text>
                                             </TouchableOpacity>
                                         </View>

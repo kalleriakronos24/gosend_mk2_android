@@ -4,6 +4,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import { useIsFocused } from '@react-navigation/native';
+import * as geolib from 'geolib';
+
 
 const PickupDetail = ({ navigation, route }) => {
 
@@ -11,9 +13,16 @@ const PickupDetail = ({ navigation, route }) => {
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
     let [isLoading, setIsLoading] = useState(true);
-    let { data, tipe, order_id, date, pickup, user_no_hp, user_name } = route.params;
+    let { data, tipe, order_id, date, pickup, user_no_hp, user_name, status, id } = route.params;
     let [coords, setCoords] = useState(0);
     let [ishide, setIsHide] = useState(true);
+
+    let [isWithinRadius, setIsWithinRadius] = useState(false);
+
+    let [sudahSampai, setSudahSampai] = useState(status === "sudah sampai" ? true : false);
+    let [sudahDiAmbil, setSudahDiAmbil] = useState(status === "sudah di ambil" ? true : false);
+    let [sedangDiAntar, setSedangDiAntar] = useState(status === "sedang di antar" ? true : false);
+
 
     let mapRef = useRef(null);
 
@@ -26,11 +35,37 @@ const PickupDetail = ({ navigation, route }) => {
 
     const isFocused = useIsFocused();
 
+
+    useEffect(() => {
+
+        let interval = setInterval(() => Geolocation.getCurrentPosition(
+            (position) => {
+                // console.log('watch for position running every 5s', position.coords);
+                let check = geolib.getDistance(position.coords,
+                    {
+                        latitude: -0.530862,
+                        longitude: 117.168398
+                    }) // checks if courier is within 20m radius of the target destination
+                setIsWithinRadius(check < 60 ? true : false);
+            },
+            (err) => {
+                console.log('failed to retreive user location', err)
+            },
+            { enableHighAccuracy: true, distanceFilter: 500, timeout: 8000 }
+        ), 1000 * 5) // 5s;
+
+        return () => {
+            clearInterval(interval);
+        };
+
+
+    }, []);
+
+
     useEffect(() => {
         console.log('mounted pickup');
         Geolocation.getCurrentPosition(
             (position) => {
-                console.log('pickup not working', position.coords);
                 setCoords(position.coords);
                 setTimeout(() => {
                     setIsLoading(false)
@@ -39,14 +74,15 @@ const PickupDetail = ({ navigation, route }) => {
             (err) => {
                 console.log('failed to retreive user location', err)
             },
-            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
-        )
+            { enableHighAccuracy: true, distanceFilter: 500, timeout: 8000 }
+        );
+
     }, []);
 
     const setDoneOrder = async () => {
 
         let body = {
-            order_id: _id,
+            order_id: order_id,
             id: id
         }
 
@@ -62,6 +98,102 @@ const PickupDetail = ({ navigation, route }) => {
             })
             .then(async res => {
                 return await navigation.goBack();
+            })
+            .catch(err => {
+                console.log('error occured ?');
+                throw new Error(err);
+            })
+    };
+
+    const setDeliverStatusToSudahSampai = async (status) => {
+
+        setSudahSampai(false);
+        setSudahDiAmbil(true);
+        setSedangDiAntar(false);
+
+        let body = {
+            order_id: _id,
+            status: status
+        }
+
+        await fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(async res => {
+                return await res.json();
+            })
+            .then(async res => {
+                // return await navigation.goBack();
+                console.log('return dari set deliver status', res);
+            })
+            .catch(err => {
+                console.log('error occured ?');
+                throw new Error(err);
+            })
+    };
+
+    const setDeliverStatusToSudahDiAmbil = async (status) => {
+
+
+        setSudahSampai(false);
+        setSudahDiAmbil(false);
+        setSedangDiAntar(true);
+
+
+        let body = {
+            order_id: _id,
+            status: status
+        }
+
+        await fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(async res => {
+                return await res.json();
+            })
+            .then(async res => {
+                // return await navigation.goBack();
+                console.log('return dari set deliver status', res);
+            })
+            .catch(err => {
+                console.log('error occured ?');
+                throw new Error(err);
+            })
+    };
+
+    const setDeliverStatusToSedangDiAntar = async (status) => {
+
+
+        setSudahSampai(false);
+        setSudahDiAmbil(false);
+        setSedangDiAntar(false);
+
+        let body = {
+            order_id: _id,
+            status: status
+        }
+
+        await fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(async res => {
+                return await res.json();
+            })
+            .then(async res => {
+                // return await navigation.goBack();
+                console.log('return dari set deliver status', res);
             })
             .catch(err => {
                 console.log('error occured ?');
@@ -195,12 +327,64 @@ const PickupDetail = ({ navigation, route }) => {
                                 )
                             }
 
-                            <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
-                                <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>{data.status ? 'Selesai' : 'Ttpkan sbg telah selesai'}</Text>
-                                    <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
-                                </View>
-                            </TouchableOpacity>
+                            {
+                                isWithinRadius ? (
+                                    <>
+                                        {tipe === 'ambil' ? (
+                                            <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>{data.status ? 'Selesai' : 'Ttpkan sbg telah di Antar'}</Text>
+                                                    <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                </View>
+                                            </TouchableOpacity>
+                                        ) : (
+                                                <>
+                                                    {
+                                                        sudahSampai ? (
+                                                            <>
+                                                                <Text style={{ marginTop: 20 }}>*Tekan TELAH SAMPAI jika kamu sudah sampai di lokasi pengambilan Barang.</Text>
+                                                                <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSudahSampai('sudah sampai')} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Telah Sampai</Text>
+                                                                        <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            </>
+                                                        ) : null
+                                                    }
+                                                    {
+                                                        sudahDiAmbil ? (
+                                                            <>
+
+                                                                <Text style={{ marginTop: 20 }}>*Tekan BARANG TELAH DI AMBIL jika kamu sudah Mengambil Barang dari si Pengirim.</Text>
+                                                                <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSudahDiAmbil('sudah di ambil')} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Barang Telah Di Ambil</Text>
+                                                                        <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            </>
+                                                        ) : null
+                                                    }
+                                                    {
+                                                        sedangDiAntar ? (
+                                                            <>
+
+                                                                <Text style={{ marginTop: 20 }}>*Tekan BARANG SEDANG DI KIRIM KE TUJUAN jika kamu siap Mengantar Barang Tersebut Ke Target Tujuan.</Text>
+                                                                <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSedangDiAntar("sedang di antar")} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Barang sedang Di Kirim ke tujuan</Text>
+                                                                        <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            </>
+                                                        ) : null
+                                                    }
+                                                </>
+                                            )}
+                                    </>
+                                ) : null
+                            }
                         </View>
                     </ScrollView>
                 </View>

@@ -91,7 +91,7 @@ const UserOrderHistory = ({ navigation, route }) => {
 
                                 <View style={{ padding: 10 }}>
                                     <View style={{ padding: 6, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6 }}>
+                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.navigate('home')} style={{ padding: 6 }}>
                                             <Icon name='home-outline' size={25} />
                                         </TouchableOpacity>
                                         <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}> Your Orders History </Text>
@@ -163,7 +163,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                                                                                 </View>
                                                                             </View>
 
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? 'belum dikirim' : 'sudah terkirim'}</Text>
+                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? 'sudah dikirim' : 'belum terkirim'}</Text>
                                                                         </View>
                                                                     </View>
                                                                 )

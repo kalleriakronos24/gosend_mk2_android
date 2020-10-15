@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { View, Text, StatusBar, TouchableOpacity, Dimensions, ScrollView, RefreshControl, ActivityIndicator, Alert } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useIsFocused } from '@react-navigation/native';
@@ -25,6 +25,7 @@ const OrderFind = ({ navigation, route }) => {
     let [loop, setLoop] = useState();
     let [online, setOnline] = useState(false);
     let [isUserCancel, setIsUserCancel] = useState(true);
+    let [deliveryStatus, setDeliveryStatus] = useState("");
 
     const isFocused = useIsFocused();
 
@@ -121,7 +122,8 @@ const OrderFind = ({ navigation, route }) => {
                             setTipe(result.tipe);
                             setPickup(result.pickup);
                             setNotFound(false);
-                            setOnline(result.courier.online)
+                            setOnline(result.courier.online);
+                            setDeliveryStatus(result.delivery_status);
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
@@ -162,10 +164,27 @@ const OrderFind = ({ navigation, route }) => {
                 <View style={{ paddingTop: 10 }}>
                     <Text style={{ fontSize: 20 }}>Cek Orderan masuk di bawah ini..</Text>
                 </View>
+
                 {
                     notFound ? (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}>u dont have an orders yet</Text>
+                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}>Kamu belum dapat orderan.. harap menunggu</Text>
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                                <Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5 }}>Status : </Text>
+                                <Text style={{ marginLeft: 5, letterSpacing: .5, fontSize: 16, fontWeight: 'bold', color: online ? 'green' : 'red' }}>{online ? 'Online' : 'Disconnected'}</Text>
+                            </View>
+                            <View style={{ padding: 16 }}>
+                                <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .5 }}>Catatan* : </Text>
+
+                                <Text>1. Lokasi-mu akan ter update otomatis setiap 10 detik jika kamu berdiam di halaman ini.</Text>
+                                <Text>2. Orderan akan masuk otomatis ke halaman ini, pastikan bertetap di halaman ini jika mencari orderan</Text>
+
+                                <Text>3. Orderan masuk berdasarkan status Online kamu, jika statusmu Disconnected maka kamu tidak akan bisa mendapatkan orderan</Text>
+                                <Text>4. Orderan masuk juga berdasarkan jumlah Wallet Kamu, jika kamu merasa walletmu sedikit , semisal di bawah Rp. 10,000 maka segera isi walletmu, karena walletmu juga termasuk faktor terbesar dalam mendapatkan orderam</Text>
+
+                                <Text>5. Cek status online kamu di atas Catatan</Text>
+                            </View>
                         </View>
                     ) : (
                             <View style={{ padding: 20, borderRadius: 10, marginTop: 20, width: width - (20 * 2) }}>
@@ -177,7 +196,7 @@ const OrderFind = ({ navigation, route }) => {
                                     <View style={{ paddingTop: 10 }}>
                                         <View style={{ flexDirection: 'row' }}>
                                             <Text>Status : </Text>
-                                            <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue', textTransform: 'capitalize' }}>{true ? 'menunggu' : 'di proses'}</Text>
+                                            <Text style={{ borderBottomWidth: 1, borderColor: isPending ? 'red' : 'blue', color: isPending ? 'red' : 'blue', textTransform: 'capitalize' }}>{deliveryStatus === "belum di ambil" ? "Orderan belum di Ambil" : deliveryStatus === "sudah sampai" ? "Kurir sudah sampai di lokasi pengambilan Barang" : deliveryStatus === "sudah di ambil" ? "Orderan sudah di Ambil" : deliveryStatus === "sedang di antar" ? "Orderan sedang di Antar" : null}</Text>
                                         </View>
                                         <View style={{ flexDirection: 'row', paddingTop: 8, alignItems: 'center' }}>
                                             <Text>Dari : </Text>
@@ -194,7 +213,7 @@ const OrderFind = ({ navigation, route }) => {
                                             <View style={{ padding: 6 }}>
                                                 <Text>Detail Alamat : {pickup.detailAlamat} </Text>
                                                 <Text style={{ marginTop: 10 }}>Lokasi : </Text>
-                                                <TouchableOpacity onPress={() => navigation.navigate('pickup_detail', { data: orderItems[0], tipe, order_id, date: orderDate, pickup: pickup, user_no_hp: userData.no_hp, user_name: userData.fullname })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
+                                                <TouchableOpacity onPress={() => navigation.navigate('pickup_detail', { data: orderItems[0], tipe, order_id : orderID, date: orderDate, pickup: pickup, user_no_hp: userData.no_hp, user_name: userData.fullname, status: deliveryStatus, id : 0 })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .5, color: 'white', marginRight: 10 }}>Lihat di Map</Text>
                                                     <Icon name="map-outline" size={20} color='white' />
                                                 </TouchableOpacity>
@@ -215,7 +234,7 @@ const OrderFind = ({ navigation, route }) => {
                                                                 <Text style={{ color: v.status ? 'black' : 'red', marginRight: 10 }}>status : {v.status ? `sudah ${tipe === 'antar' ? 'di antar' : 'di ambil'}` : `belum ${tipe === 'antar' ? 'di antar' : 'di ambil'}`}</Text>
                                                                 <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
                                                             </View>
-                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.navigate('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe: tipe, order_id: v.order_id, date: v.date })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.navigate('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe: tipe, order_id: v.order_id, date: v.date, status: deliveryStatus })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
                                                                 <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
                                                                 <Icon name='eye-outline' size={17} color='white' />
                                                             </TouchableOpacity>
@@ -232,20 +251,26 @@ const OrderFind = ({ navigation, route }) => {
                                     <Text>
                                         *Tekan Teruskan jika kamu punya kendala dalam orderan ini.
                                     </Text>
-                                    <View style={{ justifyContent: 'center', alignItems: 'center', padding: 7, borderWidth: 1, borderRadius: 5, borderColor: 'blue', marginTop: 4 }}>
+                                    <TouchableOpacity activeOpacity={.7} onPress={() => isUserCancel ? Alert.alert('Pesan', 'Kamu tidak dapat meneruskan orderan ini karena telah di cancel oleh si yg order.') : null} style={{ justifyContent: 'center', alignItems: 'center', padding: 7, borderWidth: 1, borderRadius: 5, borderColor: isUserCancel ? 'red' : 'blue', marginTop: 4 }}>
                                         <Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5, textTransform: 'uppercase' }}>Teruskan</Text>
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
 
                                 <View style={{ marginTop: 10 }}>
                                     <Text>
-                                        *Jika si yg order nge cancel orderannya, maka akan muncul di bawah sini, dan kamu memiliki beberapa opsi
+                                        *Jika si yg order nge cancel orderannya, maka akan muncul di bawah sini, dan kamu memiliki satu pilihan
                                     </Text>
                                     <View style={{ padding: 20, borderWidth: 1, borderRadius: 5, borderColor: 'red', marginTop: 4 }}>
                                         {isUserCancel ? (
-                                            <View>
-                                                <Text>qwe</Text>
-                                            </View>
+                                            <>
+                                                <View>
+                                                    <Text>Alasan : Lu Bau</Text>
+                                                </View>
+                                                <Text style={{ marginTop: 10 }}>*Klik OK untuk mengakhiri order ini.</Text>
+                                                <View style={{ padding: 10, borderRadius: 6, borderColor: 'blue', borderWidth: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>OK</Text>
+                                                </View>
+                                            </>
                                         ) : (<Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5, textTransform: 'uppercase', textAlign: 'center' }}>- Tidak Ada -</Text>)}
                                     </View>
                                 </View>
@@ -266,12 +291,13 @@ const OrderFind = ({ navigation, route }) => {
                                     <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .5 }}>Catatan* : </Text>
 
                                     <Text>1. Lokasi-mu akan ter update otomatis setiap 10 detik jika kamu berdiam di halaman ini.</Text>
-
                                     <Text>2. Orderan akan masuk otomatis ke halaman ini, pastikan bertetap di halaman ini jika mencari orderan</Text>
 
                                     <Text>3. Orderan masuk berdasarkan status Online kamu, jika statusmu Disconnected maka kamu tidak akan bisa mendapatkan orderan</Text>
+                                    <Text>4. Orderan masuk juga berdasarkan jumlah Wallet Kamu, jika kamu merasa walletmu sedikit , semisal di bawah Rp. 10,000 maka segera isi walletmu, karena walletmu juga termasuk faktor terbesar dalam mendapatkan orderam</Text>
 
-                                    <Text>4. Cek status online kamu di atas Catatan</Text>
+                                    <Text>5. Cek status online kamu di atas Catatan</Text>
+                                    <Text>6. Status akan terupdate otomatis</Text>
                                 </View>
                                 {/* <View style={{ padding: 20, justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
                         <View style={{ padding: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#91D18B', borderRadius: 4, height: 50, width: 100 }}>
