@@ -12,14 +12,15 @@ const OrderDetailCourier = ({ navigation, route }) => {
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
     let [isLoading, setIsLoading] = useState(true);
-    let { data, from, _id, id, tipe, order_id, date, status } = route.params;
+    let { data, from, _id, id, tipe, order_id, date, status, pickedup } = route.params;
+    console.log('pickedup ', pickedup);
     let [coords, setCoords] = useState(0);
     let [isWithinRadius, setIsWithinRadius] = useState(false);
     let mapRef = useRef(null);
 
     console.log('DELIVERY STATUS :: ', status);
 
-    let [sudahSampai, setSudahSampai] = useState(status === "sudah sampai" ? false : true);
+    let [sudahSampai, setSudahSampai] = useState(status === "belum di ambil" ? true : false);
     let [sudahDiAmbil, setSudahDiAmbil] = useState(status === "sudah sampai" ? true : false);
     let [sedangDiAntar, setSedangDiAntar] = useState(status === "sudah di ambil" ? true : false);
 
@@ -40,8 +41,8 @@ const OrderDetailCourier = ({ navigation, route }) => {
                 // console.log('watch for position running every 5s', position.coords);
                 let check = geolib.getDistance(position.coords,
                     {
-                        latitude: -0.530862,
-                        longitude: 117.168398
+                        latitude: data.coords.latitude,
+                        longitude: data.coords.longitude,
                     }) // checks if courier is within 20m radius of the target destination
                 setIsWithinRadius(check < 60 ? true : false);
 
@@ -300,59 +301,66 @@ const OrderDetailCourier = ({ navigation, route }) => {
                                 </View>
                             </View>
                             {
-                                tipe === 'antar' ? (
-                                    <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
-                                        <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                            <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>{data.status ? 'Selesai' : 'Ttpkan sbg telah di Antar'}</Text>
-                                            <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
-                                        </View>
-                                    </TouchableOpacity>
-                                ) : isWithinRadius ? (
+                                isWithinRadius ? (
                                     <>
-                                        {
-                                            sudahSampai ? (
+                                        {tipe === 'antar' && pickedup ? (
+                                            <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>{data.status ? 'Selesai' : 'Ttpkan sbg telah di Antar'}</Text>
+                                                    <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                </View>
+                                            </TouchableOpacity>
+                                        ) : (
                                                 <>
-                                                    <Text style={{ marginTop: 20 }}>*Tekan TELAH SAMPAI jika kamu sudah sampai di lokasi pengambilan Barang.</Text>
-                                                    <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSudahSampai('sudah sampai')} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
-                                                        <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                                            <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Telah Sampai</Text>
-                                                            <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                </>
-                                            ) : null
-                                        }
-                                        {
-                                            sudahDiAmbil ? (
-                                                <>
+                                                    {
+                                                        sudahSampai ? (
+                                                            <>
+                                                                <Text style={{ marginTop: 20 }}>*Tekan TELAH SAMPAI jika kamu sudah sampai di lokasi pengambilan Barang.</Text>
+                                                                <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSudahSampai('sudah sampai')} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Telah Sampai</Text>
+                                                                        <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            </>
+                                                        ) : null
+                                                    }
+                                                    {
+                                                        sudahDiAmbil ? (
+                                                            <>
 
-                                                    <Text style={{ marginTop: 20 }}>*Tekan BARANG TELAH DI AMBIL jika kamu sudah Mengambil Barang dari si Pengirim.</Text>
-                                                    <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSudahDiAmbil('sudah di ambil')} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
-                                                        <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                                            <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Barang Telah Di Ambil</Text>
-                                                            <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                </>
-                                            ) : null
-                                        }
+                                                                <Text style={{ marginTop: 20 }}>*Tekan BARANG TELAH DI AMBIL jika kamu sudah Mengambil Barang dari si Pengirim.</Text>
+                                                                <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSudahDiAmbil('sudah di ambil')} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Barang Telah Di Ambil</Text>
+                                                                        <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            </>
+                                                        ) : null
+                                                    }
+                                                    {
+                                                        sedangDiAntar ? (
+                                                            <>
 
-                                        {
-                                            sedangDiAntar ? (
-                                                <>
-
-                                                    <Text style={{ marginTop: 20 }}>*Tekan BARANG SEDANG DI KIRIM KE TUJUAN jika kamu siap Mengantar Barang Tersebut Ke Target Tujuan.</Text>
-                                                    <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSedangDiAntar("sedang di antar")} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
-                                                        <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                                            <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Barang sedang Di Kirim ke tujuan</Text>
-                                                            <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
-                                                        </View>
-                                                    </TouchableOpacity>
+                                                                <Text style={{ marginTop: 20 }}>*Tekan BARANG SEDANG DI KIRIM KE TUJUAN jika kamu siap Mengantar Barang Tersebut Ke Target Tujuan.</Text>
+                                                                <TouchableOpacity activeOpacity={.7} onPress={() => setDeliverStatusToSedangDiAntar("sedang di antar")} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
+                                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>Barang sedang Di Kirim ke tujuan</Text>
+                                                                        <Icon name={`${data.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={30} color='white' />
+                                                                    </View>
+                                                                </TouchableOpacity>
+                                                            </>
+                                                        ) : null
+                                                    }
                                                 </>
-                                            ) : null
-                                        }
+                                            )}
                                     </>
-                                ) : null
+                                ) : (
+                                        <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
+                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .5, textAlign: 'center' }}>Tombol " {tipe === "antar" ? "Ttpkan sbg telah di Antar" : "TELAH SAMPAI DI TEMPAT PENGAMBILAN BARANG"} " Akan muncul otomatis disini jika kamu sudah di lokasi {tipe === "antar" ? "Pengantaran" : "Pengambilan"} dan pastikan kamu jujur dan {tipe === "antar" ? "Mengantar Barang Tsb." : "Mengambil Barang tsb"} sebelum menekan tombol </Text>
+                                        </View>
+                                    )
                             }
 
                         </View>

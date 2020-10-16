@@ -13,13 +13,13 @@ const PickupDetail = ({ navigation, route }) => {
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
     let [isLoading, setIsLoading] = useState(true);
-    let { data, tipe, order_id, date, pickup, user_no_hp, user_name, status, id } = route.params;
+    let { data, tipe, order_id, orderID, date, pickup, user_no_hp, user_name, status, id, pickedup } = route.params;
     let [coords, setCoords] = useState(0);
     let [ishide, setIsHide] = useState(true);
 
     let [isWithinRadius, setIsWithinRadius] = useState(false);
 
-    let [sudahSampai, setSudahSampai] = useState(status === "sudah sampai" ? true : false);
+    let [sudahSampai, setSudahSampai] = useState(status === "belum di ambil" ? true : false);
     let [sudahDiAmbil, setSudahDiAmbil] = useState(status === "sudah di ambil" ? true : false);
     let [sedangDiAntar, setSedangDiAntar] = useState(status === "sedang di antar" ? true : false);
 
@@ -57,8 +57,6 @@ const PickupDetail = ({ navigation, route }) => {
         return () => {
             clearInterval(interval);
         };
-
-
     }, []);
 
 
@@ -112,7 +110,7 @@ const PickupDetail = ({ navigation, route }) => {
         setSedangDiAntar(false);
 
         let body = {
-            order_id: _id,
+            order_id,
             status: status
         }
 
@@ -145,7 +143,7 @@ const PickupDetail = ({ navigation, route }) => {
 
 
         let body = {
-            order_id: _id,
+            order_id,
             status: status
         }
 
@@ -177,7 +175,7 @@ const PickupDetail = ({ navigation, route }) => {
         setSedangDiAntar(false);
 
         let body = {
-            order_id: _id,
+            order_id,
             status: status
         }
 
@@ -262,7 +260,7 @@ const PickupDetail = ({ navigation, route }) => {
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
                                     <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Order ID : </Text>
-                                    <Text style={{ marginLeft: 10, fontWeight: 'bold', fontSize: 16 }}>{order_id}</Text>
+                                    <Text style={{ marginLeft: 10, fontWeight: 'bold', fontSize: 16 }}>{orderID}</Text>
                                 </View>
                                 <Text style={{ textDecorationLine: 'underline', textDecorationColor: 'blue' }}>{date}</Text>
                             </View>
@@ -330,7 +328,7 @@ const PickupDetail = ({ navigation, route }) => {
                             {
                                 isWithinRadius ? (
                                     <>
-                                        {tipe === 'ambil' ? (
+                                        {tipe === 'ambil' && pickedup ? (
                                             <TouchableOpacity activeOpacity={.7} onPress={() => data.status ? console.log('no action') : setDoneOrder()} style={{ justifyContent: 'center', alignItems: "center", padding: 16, backgroundColor: data.status ? '#28DF99' : 'blue', borderRadius: 5, height: '15%', marginTop: 10 }}>
                                                 <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                                                     <Text style={{ color: 'white', fontSize: 17, marginRight: 10 }}>{data.status ? 'Selesai' : 'Ttpkan sbg telah di Antar'}</Text>
@@ -383,7 +381,11 @@ const PickupDetail = ({ navigation, route }) => {
                                                 </>
                                             )}
                                     </>
-                                ) : null
+                                ) : (
+                                        <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
+                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .5, textAlign: 'center' }}>Tombol " {tipe === "antar" ? "TELAH SAMPAI DI TEMPAT PENGAMBILAN BARANG" : "Ttpkan sbg telah di Antar"} " Akan muncul otomatis disini jika kamu sudah di lokasi {tipe === "antar" ? "Pengambilan" : "Pengantaran"} dan pastikan kamu jujur dan {tipe === "antar" ? "Mengambil Barang tsb" : "Mengantar Barang Tsb."} sebelum menekan tombol </Text>
+                                        </View>
+                                    )
                             }
                         </View>
                     </ScrollView>

@@ -9,7 +9,7 @@ const UserOrderHistory = ({ navigation, route }) => {
 
 
     let [initText, setInitText] = useState('Searching for nearest Courier...')
-    let [isLoading, setIsLoading] = useState(false);
+    let [isLoading, setIsLoading] = useState(true);
 
     let userReducer = useSelector(state => state.orders);
     let dispatch = useDispatch();
@@ -79,7 +79,7 @@ const UserOrderHistory = ({ navigation, route }) => {
             <StatusBar barStyle='dark-content' translucent backgroundColor='rgba(0,0,0,0.251)' animated />
             {
                 isLoading ? (
-                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                         <Text style={{ fontSize: 20, fontWeight: '600', letterSpacing: 0.5 }}>Loading...</Text>
                         <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
                             <ActivityIndicator size='large' color='blue' />

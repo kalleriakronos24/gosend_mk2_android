@@ -7,6 +7,15 @@ import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import SplashScreen from '../Splash/index';
 import { useIsFocused } from '@react-navigation/native';
+import io from 'socket.io-client';
+
+
+const socket = io('http://192.168.43.178:8000/', {
+    "transports": ['websocket'],
+    upgrade: false
+});
+
+
 
 
 const Home = ({ navigation }) => {
@@ -39,10 +48,8 @@ const Home = ({ navigation }) => {
     useEffect(() => {
 
         AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => {
-            console.log('does this fuckin working ', r)
-            if (r)
-                return fetchUserByToken(r)
-            return new Error(e);
+            socket.emit('userConnected', r);
+            return fetchUserByToken(r)
         });
 
         RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({ interval: 10000, fastInterval: 5000 })

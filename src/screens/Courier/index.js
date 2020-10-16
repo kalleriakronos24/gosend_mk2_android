@@ -24,8 +24,9 @@ const OrderFind = ({ navigation, route }) => {
     let [pickup, setPickup] = useState({});
     let [loop, setLoop] = useState();
     let [online, setOnline] = useState(false);
-    let [isUserCancel, setIsUserCancel] = useState(true);
+    let [isUserCancel, setIsUserCancel] = useState(false);
     let [deliveryStatus, setDeliveryStatus] = useState("");
+    let [pickedUp, setPickedUp] = useState(false);
 
     const isFocused = useIsFocused();
 
@@ -72,7 +73,6 @@ const OrderFind = ({ navigation, route }) => {
                     })
                 })
                     .then(res => {
-                        console.log('update location also running every 10s');
                         return res.json();
                     })
                     .then(res => {
@@ -85,21 +85,21 @@ const OrderFind = ({ navigation, route }) => {
             (err) => {
                 console.log('failed to retreive user location', err);
             },
-            { enableHighAccuracy: false, distanceFilter: 100, timeout: 8000 }
+            { enableHighAccuracy: true, distanceFilter: 100, timeout: 8000 }
         )
     };
 
 
-    const fetchOrder = async () => {
+    const fetchOrder = () => {
 
-        return await AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
+        return AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => r)
             .then(async (res) => {
                 let body = {
                     token: res
                 }
-
-                await updateLocation(res);
-                return await fetch('http://192.168.43.178:8000/courier/order/get', {
+                console.log('test');
+                // updateLocation(res);
+                return fetch('http://192.168.43.178:8000/courier/order/get', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -111,6 +111,8 @@ const OrderFind = ({ navigation, route }) => {
                     })
                     .then((result) => {
                         if (result.msg) {
+                            console.log('this one working ?? ', result.online);
+                            setOnline(result.online);
                             setNotFound(true);
                         } else {
                             setCourierData(result.courier);
@@ -124,6 +126,9 @@ const OrderFind = ({ navigation, route }) => {
                             setNotFound(false);
                             setOnline(result.courier.online);
                             setDeliveryStatus(result.delivery_status);
+                            setIsUserCancel(result.user_cancel);
+                            setPickedUp(result.pickedup);
+
                             setTimeout(() => {
                                 setIsLoading(false);
                             }, 2000)
@@ -213,7 +218,7 @@ const OrderFind = ({ navigation, route }) => {
                                             <View style={{ padding: 6 }}>
                                                 <Text>Detail Alamat : {pickup.detailAlamat} </Text>
                                                 <Text style={{ marginTop: 10 }}>Lokasi : </Text>
-                                                <TouchableOpacity onPress={() => navigation.navigate('pickup_detail', { data: orderItems[0], tipe, order_id : orderID, date: orderDate, pickup: pickup, user_no_hp: userData.no_hp, user_name: userData.fullname, status: deliveryStatus, id : 0 })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
+                                                <TouchableOpacity onPress={() => navigation.navigate('pickup_detail', { data: orderItems[0], tipe, order_id: orderID, orderID: order_id, date: orderDate, pickup: pickup, user_no_hp: userData.no_hp, user_name: userData.fullname, status: deliveryStatus, id: 0, pickedup: pickedUp })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5, marginTop: 5 }}>
                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .5, color: 'white', marginRight: 10 }}>Lihat di Map</Text>
                                                     <Icon name="map-outline" size={20} color='white' />
                                                 </TouchableOpacity>
@@ -234,7 +239,7 @@ const OrderFind = ({ navigation, route }) => {
                                                                 <Text style={{ color: v.status ? 'black' : 'red', marginRight: 10 }}>status : {v.status ? `sudah ${tipe === 'antar' ? 'di antar' : 'di ambil'}` : `belum ${tipe === 'antar' ? 'di antar' : 'di ambil'}`}</Text>
                                                                 <Icon name={`${v.status ? 'checkmark-circle' : 'alert-circle'}-outline`} size={17} color='black' />
                                                             </View>
-                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.navigate('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe: tipe, order_id: v.order_id, date: v.date, status: deliveryStatus })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
+                                                            <TouchableOpacity activeOpacity={.6} onPress={() => navigation.navigate('courier_order_detail', { data: v, from: userData.fullname, _id: orderID, id: v.id, tipe: tipe, order_id: v.order_id, date: v.date, status: deliveryStatus, pickedup: pickedUp })} style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 8, backgroundColor: 'blue', borderRadius: 5 }}>
                                                                 <Text style={{ color: 'white', marginRight: 10 }}>Lihat detail</Text>
                                                                 <Icon name='eye-outline' size={17} color='white' />
                                                             </TouchableOpacity>
@@ -298,6 +303,7 @@ const OrderFind = ({ navigation, route }) => {
 
                                     <Text>5. Cek status online kamu di atas Catatan</Text>
                                     <Text>6. Status akan terupdate otomatis</Text>
+                                    <Text>7. Orderan tidak dapat di cancel oleh si PengOrder jika setelah kamu telah mengambil barang antaran tersebut</Text>
                                 </View>
                                 {/* <View style={{ padding: 20, justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
                         <View style={{ padding: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#91D18B', borderRadius: 4, height: 50, width: 100 }}>
