@@ -8,7 +8,7 @@ import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import SplashScreen from '../Splash/index';
 import { useIsFocused } from '@react-navigation/native';
 import io from 'socket.io-client';
-
+import { formatRupiah } from '../../utils/functionality';
 
 const socket = io('http://192.168.43.178:8000/', {
     "transports": ['websocket'],
@@ -31,15 +31,13 @@ const Home = ({ navigation }) => {
     let [id, setId] = useState('');
     let [name, setName] = useState('');
 
-    const logoutHandler = () => {
+    const logoutHandler = async () => {
         console.log('logged out');
-
         dispatch({ type: 'LOGOUT' });
 
-        AsyncStorage.removeItem('LOGIN_TOKEN');
-
-        navigation.replace('landing');
+        await AsyncStorage.removeItem('LOGIN_TOKEN')
     };
+
 
     const isFocused = useIsFocused();
 
@@ -71,8 +69,9 @@ const Home = ({ navigation }) => {
                 //  - ERR02 : If the popup has failed to open
             });
         return () => {
-
+            console.log('unmounted home');
         }
+
     }, [isFocused]);
 
     const fetchUserByToken = async (token) => {
@@ -104,9 +103,8 @@ const Home = ({ navigation }) => {
     const { width, height } = Dimensions.get('window');
 
     const switchScreenHandler = () => {
-        console.log('user have order ? ', userData.user_order);
         if (userData.user_order === "" || userData.user_order === null || userData.user_order === undefined) {
-            navigation.push('send', { data: { name: userData.fullname, no_hp: userData.no_hp } });
+            navigation.navigate('send_step', { data: { name: userData.fullname, no_hp: userData.no_hp } });
         } else {
             ToastAndroid.showWithGravity('Tidak dapat membuat order, kamu masih punya order aktif', ToastAndroid.LONG, ToastAndroid.BOTTOM);
             return;
@@ -152,7 +150,7 @@ const Home = ({ navigation }) => {
                                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>My Wallet</Text>
                                             <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
                                                 <Icon name='wallet-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Rp.{userData.courier_info.balance},-</Text>
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{formatRupiah(String(userData.courier_info.balance), "Rp. ")},-</Text>
                                             </View>
                                         </View>
                                         <View style={{ paddingTop: 16 }}>
@@ -168,7 +166,7 @@ const Home = ({ navigation }) => {
                                         <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                             <Text style={{ fontSize: 18 }}>Isi Wallet</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order', { id: userData._id })} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order', { id: userData._id, wallet: userData.courier_info.balance })} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                             <Text style={{ fontSize: 18 }}>Cari Orderan {userData.active_order ? `( 1 )` : null}</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -270,7 +268,7 @@ const Home = ({ navigation }) => {
                                 <View style={{ backgroundColor: 'white', borderTopLeftRadius: 70, flex: 1, zIndex: 10 }}>
                                     <View style={{ paddingTop: 20, paddingHorizontal: 32 }}>
                                         <View style={{ padding: 16 }}>
-                                            <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>Our Service</Text>
+                                            <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>Fitur Kami</Text>
 
                                             <View style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
                                                 <TouchableOpacity activeOpacity={0.7} onPress={() => switchScreenHandler()} style={{ backgroundColor: '#1F4788', padding: 6, height: 150, width: 150, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
@@ -278,7 +276,7 @@ const Home = ({ navigation }) => {
                                                         <Icon name="bicycle-outline" size={35} color='white' />
                                                     </View>
                                                     <View style={{ paddingTop: 20 }}>
-                                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color: 'white' }}>TEST SEND</Text>
+                                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color: 'white' }}>Kirim Barang</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity activeOpacity={0.4} onPress={() => switchScreenHandler()} style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
@@ -287,14 +285,14 @@ const Home = ({ navigation }) => {
                                             </View>
                                         </View>
 
-                                        <View style={{ padding: 16 }}>
+                                        {/* <View style={{ padding: 16 }}>
                                             <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>About Our Service</Text>
                                             <View style={{ padding: 6 }}>
                                                 <Text style={{ letterSpacing: 0.4, fontSize: 16 }}>
                                                     Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                                                 </Text>
                                             </View>
-                                        </View>
+                                        </View> */}
                                     </View>
                                 </View>
                             </View>

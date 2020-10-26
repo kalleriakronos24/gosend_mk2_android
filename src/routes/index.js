@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useSelector, useDispatch } from 'react-redux';
 import { SplashScreen } from '../screens/Splash';
 import Home from '../screens/Home';
-import { Send, SendStep, PickupOrReceiverScreen, RouteStep } from '../screens/Send';
+import { Send, SendStep, PickupOrReceiverScreen, RouteStep, ConfirmOrder } from '../screens/Send';
 import FindCourer from '../screens/FindCourier';
 import OrderFind from '../screens/Courier';
 import OrderDetailCourier from '../screens/Courier/DetailOrder';
@@ -30,6 +30,8 @@ import { CourierOrderHistory, CourierOrderHistoryDetail } from '../screens/Couri
 import PickupDetail from '../screens/Courier/Pickup';
 import io from 'socket.io-client';
 import BackgroundTimer from 'react-native-background-timer';
+import { NewLogin, LoginPassword } from '../screens/Login/new';
+import { NewRegister, EmailVerification } from '../screens/Register/new';
 
 const socket = io('http://192.168.43.178:8000/', {
     "transports": ['websocket'],
@@ -114,24 +116,25 @@ const Router = React.memo((props) => {
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
-                        {
-                            count !== 0 ? (
-                                <>
-                                    <Stack.Screen name="send_step" component={SendStep} options={{
-                                        headerShown: false,
-                                        cardShadowEnabled: false,
-                                        cardOverlayEnabled: false,
-                                        cardOverlay: false
-                                    }} />
-                                    <Stack.Screen name="redirect_screen" component={LoadingScreen} options={{
-                                        headerShown: false,
-                                        cardShadowEnabled: false,
-                                        cardOverlayEnabled: false,
-                                        cardOverlay: false
-                                    }} />
-                                </>
-                            ) : null
-                        }
+                        <Stack.Screen name="send_step" component={SendStep} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
+
+                        <Stack.Screen name="confirm_order" component={ConfirmOrder} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
+                        <Stack.Screen name="redirect_screen" component={LoadingScreen} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
 
                         <Stack.Screen name="find_courier" component={FindCourer} options={{
                             headerShown: false,
@@ -223,7 +226,31 @@ const Router = React.memo((props) => {
                                     cardOverlayEnabled: false,
                                     cardOverlay: false
                                 }} />
+                                <Stack.Screen name="new_login" component={NewLogin} options={{
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay: false
+                                }} />
+                                <Stack.Screen name="login_pass" component={LoginPassword} options={{
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay: false
+                                }} />
                                 <Stack.Screen name="register" component={Register} options={{
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay: false
+                                }} />
+                                <Stack.Screen name="new_register" component={NewRegister} options={{
+                                    headerShown: false,
+                                    cardShadowEnabled: false,
+                                    cardOverlayEnabled: false,
+                                    cardOverlay: false
+                                }} />
+                                <Stack.Screen name="email_verif" component={EmailVerification} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,

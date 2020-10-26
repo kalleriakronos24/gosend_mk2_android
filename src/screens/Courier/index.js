@@ -11,7 +11,8 @@ const OrderFind = ({ navigation, route }) => {
     const { width, height } = Dimensions.get('window');
     const barHeight = StatusBar.currentHeight;
     const isPending = true;
-    const { id } = route.params;
+    const { id, wallet } = route.params;
+    console.log('courier wallet : ', wallet);
     let [courierData, setCourierData] = useState({});
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
@@ -27,6 +28,7 @@ const OrderFind = ({ navigation, route }) => {
     let [isUserCancel, setIsUserCancel] = useState(false);
     let [deliveryStatus, setDeliveryStatus] = useState("");
     let [pickedUp, setPickedUp] = useState(false);
+    let [alasanCancel, setAlasanCancel] = useState("");
 
     const isFocused = useIsFocused();
 
@@ -128,6 +130,7 @@ const OrderFind = ({ navigation, route }) => {
                             setDeliveryStatus(result.delivery_status);
                             setIsUserCancel(result.user_cancel);
                             setPickedUp(result.pickedup);
+                            setAlasanCancel(result.alasan);
 
                             setTimeout(() => {
                                 setIsLoading(false);
@@ -141,7 +144,39 @@ const OrderFind = ({ navigation, route }) => {
             .catch(err => {
                 throw new Error(err);
             })
+    };
+
+    const setCancel = async () => {
+
+        let body = {
+            id: orderID
+        }
+
+
+        await fetch('http://192.168.43.178:8000/order/courier/cancel_order', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        })
+            .then(res => {
+                return res.json();
+            })
+            .then(async res => {
+                if (res.error) {
+                    console.log('ada error');
+                }
+                Alert.alert('Pesan', "Orderan Baru saja di batalkan oleh kedua pihak.");
+                await fetchOrder();
+            })
+            .catch(error => {
+                throw new Error(error);
+            })
+
     }
+
+
 
     let [refresh, setRefresh] = useState(false);
 
@@ -173,7 +208,7 @@ const OrderFind = ({ navigation, route }) => {
                 {
                     notFound ? (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}>Kamu belum dapat orderan.. harap menunggu</Text>
+                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold', textAlign:'center' }}>{wallet === 0 || wallet < 5000 ? "Wallet kamu kurang untuk mendapatkan orderan, harap isi wallet mu agar kamu bisa mendapatkan orderan." : "Kamu belum dapat orderan.. harap menunggu, orderan akan masuk di bawah ini secara otomatis"}</Text>
 
                             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
                                 <Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5 }}>Status : </Text>
@@ -269,12 +304,12 @@ const OrderFind = ({ navigation, route }) => {
                                         {isUserCancel ? (
                                             <>
                                                 <View>
-                                                    <Text>Alasan : Lu Bau</Text>
+                                                    <Text>Alasan : {alasanCancel}</Text>
                                                 </View>
                                                 <Text style={{ marginTop: 10 }}>*Klik OK untuk mengakhiri order ini.</Text>
-                                                <View style={{ padding: 10, borderRadius: 6, borderColor: 'blue', borderWidth: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                <TouchableOpacity activeOpacity={.7} onPress={() => setCancel()} style={{ padding: 10, borderRadius: 6, borderColor: 'blue', borderWidth: 1, justifyContent: 'center', alignItems: 'center' }}>
                                                     <Text>OK</Text>
-                                                </View>
+                                                </TouchableOpacity>
                                             </>
                                         ) : (<Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5, textTransform: 'uppercase', textAlign: 'center' }}>- Tidak Ada -</Text>)}
                                     </View>
@@ -286,7 +321,6 @@ const OrderFind = ({ navigation, route }) => {
                                         <Text>List orderan masuk.</Text>
                                     </View>
                                 </View>
-
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
                                     <Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5 }}>Status : </Text>
@@ -305,6 +339,8 @@ const OrderFind = ({ navigation, route }) => {
                                     <Text>6. Status akan terupdate otomatis</Text>
                                     <Text>7. Orderan tidak dapat di cancel oleh si PengOrder jika setelah kamu telah mengambil barang antaran tersebut</Text>
                                 </View>
+
+
                                 {/* <View style={{ padding: 20, justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
                         <View style={{ padding: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#91D18B', borderRadius: 4, height: 50, width: 100 }}>
                             <Text style={{ color: 'white' }}>Terima</Text>

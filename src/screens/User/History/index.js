@@ -150,7 +150,7 @@ const UserOrderHistory = ({ navigation, route }) => {
 
                                                                             <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
                                                                                 <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{x.tipe === 'antar' ? 'Antar ke ' : 'Ambil dari '}(Alamat) : </Text>
-                                                                                <View style={{ padding: 2 }}>
+                                                                                <View style={{ padding: 6, flex: 1 }}>
                                                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.address_detail}</Text>
                                                                                 </View>
                                                                             </View>
@@ -162,8 +162,17 @@ const UserOrderHistory = ({ navigation, route }) => {
                                                                                     <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.phone}</Text>
                                                                                 </View>
                                                                             </View>
+                                                                            {
+                                                                                x.user_cancel && x.courier_cancel ? (
+                                                                                    <>
+                                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : Orderan Di batalkan </Text>
+                                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Alasan : {x.alasan_user}</Text>
+                                                                                    </>
+                                                                                ) : (
 
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? 'sudah dikirim' : 'belum terkirim'}</Text>
+                                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? 'sudah dikirim' : 'belum terkirim'}</Text>
+                                                                                    )
+                                                                            }
                                                                         </View>
                                                                     </View>
                                                                 )

@@ -13,7 +13,7 @@ export const Landing = ({ navigation }) => {
             <StatusBar barStyle='dark-content' animated backgroundColor='white' />
             <Text>Welcome Screen</Text>
             <View style={{ paddingTop: 5 }}>
-                <TouchableOpacity onPress={() => navigation.navigate('login')} style={{
+                <TouchableOpacity onPress={() => navigation.navigate('new_login')} style={{
                     padding: 16,
                     borderRadius: 4,
                     borderColor: 'blue',

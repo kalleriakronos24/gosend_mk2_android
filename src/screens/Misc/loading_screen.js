@@ -1,13 +1,16 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { View, Text, StatusBar } from 'react-native'
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import io from 'socket.io-client';
 
-const LoadingScreen = ({ navigation }) => {
+const LoadingScreen = ({ navigation, route }) => {
     const orderReducer = useSelector((state) => state.orders);
     let [error, setError] = useState(false);
+    const { detail } = route.params;
+
+    const dispatch = useDispatch();
+
 
     useEffect(() => {
         addOrder();
@@ -19,10 +22,11 @@ const LoadingScreen = ({ navigation }) => {
                 console.log('is this wokring ??')
                 let obj = {
                     token: token,
-                    coords: orderReducer.costumer_coordinate,
-                    item: orderReducer.orders,
-                    type: orderReducer.type,
-                    pickupDetail: orderReducer.pickupDetail
+                    penerima: orderReducer.penerima,
+                    pengirim: orderReducer.pengirim,
+                    ongkirz: orderReducer.ongkir,
+                    distance: orderReducer.distance,
+                    brg: detail
                 };
 
                 fetch('http://192.168.43.178:8000/add-order', {
@@ -51,6 +55,10 @@ const LoadingScreen = ({ navigation }) => {
             })
     };
 
+    const backToHome = () => {
+        dispatch({ type: 'reset' });
+        navigation.navigate('home');
+    }
 
 
     return (
@@ -60,6 +68,10 @@ const LoadingScreen = ({ navigation }) => {
                 <Text style={{ fontWeight: '600', fontSize: 18, letterSpacing: .5, textAlign: 'center' }}>Tidak ada Kurir Ditemukan, klik Coba Lagi untuk mencari ulang</Text>
                 <TouchableOpacity onPress={() => addOrder()} style={{ marginTop: 15, padding: 10, borderRadius: 6, justifyContent: 'center', alignItems: 'center', borderColor: 'blue' }}>
                     <Text style={{ letterSpacing: .5, fontWeight: 'bold', fontSize: 16 }}>Coba Lagi</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => backToHome()} style={{ marginTop: 15, padding: 10, borderRadius: 6, justifyContent: 'center', alignItems: 'center', borderColor: 'blue' }}>
+                    <Text style={{ letterSpacing: .5, fontWeight: 'bold', fontSize: 16 }}>Back to Home</Text>
                 </TouchableOpacity>
             </View>
         ) : (

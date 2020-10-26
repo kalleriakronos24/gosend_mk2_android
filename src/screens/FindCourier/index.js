@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, ActivityIndicator, StatusBar, Image, ScrollView, RefreshControl, Alert, TextInput, ToastAndroid } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
+import { View, Text, ActivityIndicator, StatusBar, Image, ScrollView, RefreshControl, Alert, TextInput, ToastAndroid, TouchableOpacity, Platform, Linking } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { formatRupiah } from '../../utils/functionality';
+
+import RBSheet from "react-native-raw-bottom-sheet";
+
 
 const FindCourer = ({ navigation, route }) => {
 
@@ -29,27 +32,21 @@ const FindCourer = ({ navigation, route }) => {
 
     useEffect(() => {
         console.log('mounted, find courier');
-        let intervalOrder = setInterval(() => {
-            console.log('this is running every 10 s');
-            getUserOrder();
-        }, 1000 * 10) // 10 seconds
+        // let intervalOrder = setInterval(() => {
+        //     console.log('this is running every 10 s');
+        //     getUserOrder();
+        // }, 1000 * 10) // 10 seconds
 
-
-        if (orderItems.length > 0) {
-            console.log('this working ?');
-            clearInterval(intervalOrder);
-        };
-
-        return () => {
-            console.log('un mounted find order');
-            clearInterval(intervalOrder);
-        };
+        // return () => {
+        //     console.log('un mounted find order');
+        //     clearInterval(intervalOrder);
+        // };
 
     }, []);
 
     useEffect(() => {
-        getUserOrder();
-        dispatch({ type: 'reset' });
+        // getUserOrder();
+        // dispatch({ type: 'reset' });
     }, [])
 
 
@@ -114,6 +111,49 @@ const FindCourer = ({ navigation, route }) => {
         })
     };
 
+    let [alasan1, setAlasan1] = useState(true);
+    let [alasan2, setAlasan2] = useState(false);
+    let [alasan3, setAlasan3] = useState(false);
+    let [alasan4, setAlasan4] = useState(false);
+    let [selectedAlasan, setSelectedAlasan] = useState("");
+
+
+
+    const alasanOneHandler = () => {
+        setAlasan1(true);
+        setAlasan2(false);
+        setAlasan3(false);
+        setAlasan4(false);
+
+        setSelectedAlasan("Driver terlalu lama");
+    }
+
+    const alasanTwoHandler = () => {
+        setAlasan1(false);
+        setAlasan2(true);
+        setAlasan3(false);
+        setAlasan4(false);
+
+        setSelectedAlasan("Driver minta di batalkan");
+    }
+    const alasanThreeHandler = () => {
+        setAlasan1(false);
+        setAlasan2(false);
+        setAlasan3(true);
+        setAlasan4(false);
+
+        setSelectedAlasan("Ingin merubah alamat pengiriman");
+    }
+    const alasanFourHandler = () => {
+        setAlasan1(false);
+        setAlasan2(false);
+        setAlasan3(false);
+        setAlasan4(true);
+
+        setSelectedAlasan("Lain lain");
+    }
+
+
     const sendAlasan = async () => {
 
         let body = {
@@ -136,183 +176,148 @@ const FindCourer = ({ navigation, route }) => {
     };
 
 
+    const callNumber = (phone) => {
+        console.log('callNumber ----> ', phone);
+        let phoneNumber = phone;
+        if (Platform.OS !== 'android') {
+            phoneNumber = `telprompt:${phone}`;
+        }
+        else {
+            phoneNumber = `tel:${phone}`;
+        }
+        Linking.canOpenURL(phoneNumber)
+            .then(supported => {
+                if (!supported) {
+                    Alert.alert('Phone number is not available');
+                } else {
+                    return Linking.openURL(phoneNumber);
+                }
+            })
+            .catch(err => console.log(err));
+    };
+
+
+    const actionSheetRef = useRef();
+
     return (
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
-            <StatusBar barStyle='dark-content' translucent backgroundColor='rgba(0,0,0,0.251)' animated />
-            {
-                isLoading ? (
-                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 20, fontWeight: '600', letterSpacing: 0.5 }}>Loading...</Text>
-                        <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
-                            <ActivityIndicator size='large' color='blue' />
+            <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
+            <View style={{ padding: 16, flex: 1 }}>
+                <View style={{ flexDirection: 'row' }}>
+                    <View style={{ height: 80, width: 120, borderRadius: 10 }}>
+                        <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={require('../../assets/banner/q3.png')} />
+                    </View>
+                    <View style={{ paddingHorizontal: 40, flex: 1 }}>
+                        <Text style={{ fontSize: 17, fontWeight: '700', letterSpacing: .5, textAlign: 'justify' }}>Data orderan belum bisa di ambil dari server.</Text>
+                    </View>
+                </View>
+
+                <View style={{
+                    marginTop: 10,
+                    borderBottomWidth: 1,
+                    borderBottomColor: 'black'
+                }} />
+
+                <View style={{ flexDirection: 'row', marginTop: 20 }}>
+                    <View style={{ height: 140, width: 140, borderRadius: 10 }}>
+                        <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={require('../../assets/banner/warlock.jpg')} />
+                    </View>
+                    <View style={{ flex: 1, paddingHorizontal: 20 }}>
+                        <Text style={{ fontSize: 20, letterSpacing: .6 }}>KT 1717 NA</Text>
+                        <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>Testing</Text>
+                        <View style={{ padding: 16, flexDirection: 'row' }}>
+                            <TouchableOpacity activeOpacity={.8} onPress={() => callNumber("081253077489")} style={{ padding: 10, borderRadius: 8, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red', width: 80 }}>
+                                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Call</Text>
+                            </TouchableOpacity>
+                            <View style={{ padding: 10, borderRadius: 8, justifyContent: 'center', alignItems: 'center', backgroundColor: 'green', width: 80, marginLeft: 10 }}>
+                                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Chat</Text>
+                            </View>
                         </View>
                     </View>
-                ) : (
-                        <>
-                            <ScrollView style={{ flex: 1 }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}>
+                </View>
+                <View style={{
+                    marginTop: 20,
+                    borderBottomWidth: 1,
+                    borderBottomColor: 'black'
+                }} />
 
-                                <View style={{ padding: 10 }}>
-                                    <View style={{ padding: 6, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6 }}>
-                                            <Icon name='home-outline' size={25} />
-                                        </TouchableOpacity>
-                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}> Your Orders </Text>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => console.log('no effect')} style={{ padding: 6 }}>
-                                            <Icon name='help-circle-outline' size={25} />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                                {
-                                    notFound ? (
-                                        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, marginTop: 80, padding: 16 }}>
-                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6, textAlign: 'center' }}>Kamu tidak punya order aktif untuk sekarang ini.</Text>
-                                        </View>
-                                    ) : (
-                                            <View style={{ padding: 16, marginTop: 10, flex: 1 }}>
-                                                <View style={{ flex: 1 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Menunggu Kurir sampai di Tempat Pengambilan</Text>
-                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <View>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{courierData.fullname}</Text>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10 }}>Sebagai {courierData.type}</Text>
-                                                        </View>
-                                                        <View style={{ height: 100, width: 100, borderWidth: 1, borderRadius: 10 }}>
-                                                            <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10, flex: 1 }} source={{ uri: courierData.foto_diri }} />
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                                <View style={{ marginTop: 15 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Detail Kurir</Text>
-                                                    <View style={{ padding: 6 }}>
-                                                        {/* <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textDecorationLine: 'line-through' }}> Estimate time to arrive : 0 ~ 4 mins at 40km/h</Text> */}
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10, textDecorationLine: 'line-through' }}>Lacak Lokasi Kurir di Google Maps </Text>
-                                                            <Text style={{ marginLeft: 5, color: 'red', fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textAlign: 'center' }}>Belum Tersedia</Text>
-                                                        </View>
-                                                    </View>
-                                                    <Text style={{ margin: 6, fontWeight: 'bold' }}>Orderan mu akan otomatis terupdate setiap 10 Detik !</Text>
-                                                </View>
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15 }}>
-                                                    <Text style={{ fontWeight: 'bold', letterSpacing: .5, fontSize: 18 }}>Status : </Text>
-                                                    <Text style={{ fontSize: 16, fontWeight: 'bold', textDecorationLine: 'underline' }}>{deliveryStatus === "belum di ambil" ? "Orderan belum di Ambil" : deliveryStatus === "sudah sampai" ? "Kurir sudah sampai di lokasi pengambilan Barang" : deliveryStatus === "sudah di ambil" ? "Orderan sudah di Ambil" : deliveryStatus === "sedang di antar" ? "Orderan sedang di Antar" : null}</Text>
-                                                </View>
-                                                <View style={{ marginTop: 15, flex: 1 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === 'antar' ? 'Detail Pengambilan Barang' : 'Detail Penerima Barang'} </Text>
-                                                    <View key={10} style={{ padding: 6, borderWidth: 1, borderRadius: 10, borderColor: 'blue', marginBottom: 20 }}>
-                                                        <View style={{ padding: 4 }}>
-                                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 }}>
-                                                                <Text>-</Text>
-                                                                <Text>-----</Text>
-                                                            </View>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>{userData.fullname}</Text>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>No.HP : {userData.no_hp}</Text>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Detail Alamat : {pickup.detailAlamat}</Text>
+                <View style={{ marginTop: 40 }}>
+                    <View>
+                        <Text style={{ fontSize: 20, letterSpacing: .4 }}>Pengirim</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>John</Text>
+                        <Text style={{ fontSize: 14.4, letterSpacing: .5 }}>Jalan testing kaarena blum ada kartu kredit buat google map</Text>
+                    </View>
+                    <View style={{ marginTop: 20 }}>
+                        <Text style={{ fontSize: 20, letterSpacing: .4 }}>Penerima</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Doe</Text>
+                        <Text style={{ fontSize: 14.4, letterSpacing: .5 }}>Jalan testing kaarena blum ada kartu kredit buat google map</Text>
+                    </View>
 
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Order Tipe : {type === 'antar' ? 'Antar Barang' : 'Ambil Barang'}</Text>
-                                                            {
-                                                                type === "ambil" ? (
-                                                                    <>
-                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Ongkir : Rp.{penerima.ongkir},-</Text>
-                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Jarak : {penerima.distance} km</Text>
-                                                                        <TouchableOpacity onPress={() => Alert.alert('Detail Jarak', `Jarak antara Pengirim ke Penerima adalah ${penerima.distance} kilometer`)} activeOpacity={.7} style={{ padding: 6, marginLeft: 15, borderColor: 'blue', borderRadius: 6, borderWidth: 1 }}>
-                                                                            <Text style={{ letterSpacing: .5, fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Cek</Text>
-                                                                        </TouchableOpacity>
-                                                                    </>
-                                                                ) : null
-                                                            }
-                                                            {
-                                                                type === "ambil" ? (
-                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {ambilStatus ? "barang sudah diterima" : "barang belum diterima"}</Text>
-                                                                ) : (
-                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {deliveryStatus === "belum di ambil" ? "Orderan belum di Ambil" : deliveryStatus === "sudah sampai" ? "Kurir sudah sampai di lokasi pengambilan Barang" : deliveryStatus === "sudah di ambil" ? "Orderan sudah di Ambil" : deliveryStatus === "sedang di antar" ? "Orderan sedang di Antar" : null}</Text>
-                                                                    )
-                                                            }
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                                <View style={{ marginTop: 15, flex: 1 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === "antar" ? "Target Alamat / Penerima" : "Detail Pengambilan Barang"} </Text>
-                                                    {
-                                                        orderItems.map((v, i) => {
-                                                            return (
-                                                                <View key={i} style={{ padding: 6, borderWidth: 1, borderRadius: 10, borderColor: 'blue', marginBottom: 20 }}>
-                                                                    <View style={{ padding: 4 }}>
-                                                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 }}>
-                                                                            <Text>{v.order_id}</Text>
-                                                                            <Text>{v.date}</Text>
-                                                                        </View>
-                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Barang yang di {type === "antar" ? "Antar" : "Ambil"} : {v.send_item}</Text>
-                                                                        {
-                                                                            type === "antar" ? (
-                                                                                <>
-                                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Ongkir : Rp.{v.ongkir},-</Text>
+                    <View style={{ marginTop: 40 }}>
+                        <Text
+                            style={{
+                                padding: 10,
+                                borderRadius: 7,
+                                borderWidth: 1,
+                                textAlign: 'center',
+                                fontSize: 20
+                            }}>
+                            Baju
+                            </Text>
+                    </View>
 
-                                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Jarak : {v.distance} km</Text>
-                                                                                </>
-                                                                            ) : null
-                                                                        }
+                    <View style={{ marginTop: 30, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text>Biaya Ongkir</Text>
+                        <View>
+                            <View style={{ padding: 20 }}>
+                                <Text style={{ fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>{formatRupiah(String(12000), "Rp. ")}</Text>
+                            </View>
+                        </View>
+                    </View>
 
-                                                                        <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === 'antar' ? 'Kirim Paket ke' : 'Ambil Paket dari '}(Alamat) : </Text>
-                                                                            <View style={{ padding: 2 }}>
-                                                                                <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.address_detail}</Text>
-                                                                            </View>
-                                                                        </View>
-                                                                        <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{type === 'antar' ? 'Kirim Paket ke' : 'Ambil Paket dari '} (Orang) : </Text>
-                                                                            <View style={{ padding: 2, flexDirection: 'column' }}>
-                                                                                <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.contact_name}</Text>
+                    <TouchableOpacity onPress={() => actionSheetRef.current.open()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red' }}>
+                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: 'white' }}>Batalkan</Text>
+                    </TouchableOpacity>
 
-                                                                                <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.phone}</Text>
-                                                                            </View>
-                                                                        </View>
-                                                                        {
-                                                                            type === "antar" ? (
-                                                                                <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? "sudah dikirim" : "belum dikirim"}</Text>
-                                                                            ) : (
-                                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {deliveryStatus === "belum di ambil" ? "Orderan belum di Ambil" : deliveryStatus === "sudah sampai" ? "Kurir sudah sampai di lokasi pengambilan Barang" : deliveryStatus === "sudah di ambil" ? "Orderan sudah di Ambil" : deliveryStatus === "sedang di antar" ? "Orderan sedang di Antar" : null}</Text>
-                                                                                )
-                                                                        }
+                    <RBSheet
+                        ref={actionSheetRef}
+                        height={350}
+                        openDuration={250}
+                        animationType="fade"
+                        customStyles={{
+                            container: {
+                                padding: 16,
+                                flex: 1
+                            }
+                        }}
+                    >
+                        <Text style={{ fontWeight: 'bold', fontSize: 26, letterSpacing: .5 }}>Alasan : </Text>
+                        <View style={{ padding: 10, marginTop: 10 }}>
+                            <TouchableOpacity onPress={() => alasanOneHandler()} activeOpacity={.8} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Text style={{ fontSize: 22, fontWeight: '400' }}>Driver terlalu lama</Text>
+                                <Icon size={22} style={{ marginLeft: 10 }} name={alasan1 ? "checkmark-circle-outline" : "ellipse-outline"} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => alasanTwoHandler()} activeOpacity={.8} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                                <Text style={{ fontSize: 22, fontWeight: '400' }}>Driver minta di batalkan</Text>
+                                <Icon size={22} style={{ marginLeft: 10 }} name={alasan2 ? "checkmark-circle-outline" : "ellipse-outline"} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => alasanThreeHandler()} activeOpacity={.8} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                                <Text style={{ fontSize: 22, fontWeight: '400' }}>Ingin merubah alamat Pengiriman</Text>
+                                <Icon size={22} style={{ marginLeft: 10 }} name={alasan3 ? "checkmark-circle-outline" : "ellipse-outline"} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => alasanFourHandler()} activeOpacity={.8} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                                <Text style={{ fontSize: 22, fontWeight: '400' }}>Lain lain</Text>
+                                <Icon size={22} style={{ marginLeft: 10 }} name={alasan4 ? "checkmark-circle-outline" : "ellipse-outline"} />
+                            </TouchableOpacity>
+                        </View>
 
-                                                                    </View>
-                                                                </View>
-                                                            )
-                                                        })
-                                                    }
+                        <TouchableOpacity onPress={() => actionSheetRef.current.open()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red' }}>
+                            <Text style={{ fontSize: 17, fontWeight: 'bold', color: 'white' }}>Batalkan</Text>
+                        </TouchableOpacity>
+                    </RBSheet>
+                </View>
 
-                                                </View>
-                                                {
-                                                    cancelable ? (
-                                                        <>
-                                                            <Text>*Isi Input isi dengan Alasan yang tepat dan masuk akal jika anda ingin membatalkan orderan ini.</Text>
-                                                            <Text>*Tombol Batalkan Orderan akan hilang setelah si Kurir sampai di lokasi pengambilan Barang.</Text>
-                                                            <View style={{ flex: 1, borderRadius: 10, borderWidth: 1 }}>
-                                                                <TextInput style={{
-                                                                    flex: 1,
-                                                                    borderRadius: 10,
-                                                                    padding: 8
-                                                                }}
-                                                                    value={alasan}
-                                                                    onChangeText={(v) => setAlasan(v)} multiline={true} />
-                                                            </View>
-                                                            <TouchableOpacity onPress={() => alasan.length < 16 || alasan === "" ? ToastAndroid.showWithGravity("Alasan harus setidaknya 15 huruf atau lebih, dan tidak boleh kosong sama sekali", ToastAndroid.LONG, ToastAndroid.BOTTOM) : sendAlasan()} activeOpacity={.7} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red', height: 45, borderRadius: 10, marginBottom: 10, marginTop: 10 }}>
-                                                                <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Batalkan Orderan</Text>
-                                                            </TouchableOpacity>
-                                                        </>
-                                                    ) : null
-                                                }
-                                            </View>
-                                        )
-                                }
-                                <View style={{ marginHorizontal: 15, marginBottom: 5 }}>
-                                    <TouchableOpacity onPress={() => navigation.push('user_order_history')} activeOpacity={.7} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', height: 45, borderRadius: 10 }}>
-                                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Lihat History</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </ScrollView>
-                        </>
-                    )
-            }
+            </View>
         </View>
     )
 }

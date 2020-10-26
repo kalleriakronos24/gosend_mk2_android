@@ -22,28 +22,24 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { Picker } from '@react-native-community/picker';
 
 
-export const PickupOrReceiverModal = ({ index,
+export const PickupOrReceiverModal = ({
     modalHeight,
     params,
     navigation,
     userData,
     coordinate }) => {
 
-    const { data } = params;
+    const { data, isPengirim } = params;
     const modalizeRef = useRef(null);
     let { width, height } = Dimensions.get('window');
     let [phone, setPhone] = useState('');
     let [contactName, setContactName] = useState('')
-    let [order, setOrder] = useState([]);
     let [addrDetail, setAddrDetail] = useState('');
     let [orderDetail, setOrderDetail] = useState('');
     let memoized_modal_height = modalHeight;
-    const orderCount = useSelector(state => state.orders);
-    const { count } = orderCount;
     let [mHeight, setMHeight] = useState(modalHeight);
     const dispatch = useDispatch();
 
-    let [selectedTipe, setSelectedTipe] = useState('antar');
 
     const selectContactHandler = () => {
         if (Platform.OS === 'android') {
@@ -89,13 +85,25 @@ export const PickupOrReceiverModal = ({ index,
         setMHeight(memoized_modal_height);
     }
 
-    const pickupDetail = {
-        coords : coordinate.coords,
-        detailAlamat : addrDetail
-    }
-
     const nextScreenHandler = () => {
-        navigation.navigate('send_step', { data: data, _coords : coordinate.coords, pickupDetail, type : selectedTipe })
+
+        let { latitude, longitude } = coordinate;
+
+        // penerima 
+
+        let obj = {
+            coords: {
+                latitude,
+                longitude
+            },
+            address_detail: addrDetail,
+            name: contactName,
+            phone: phone
+        };
+
+        dispatch({ type: "penerima", penerima: obj });
+
+        navigation.navigate('route_step')
     }
 
     useEffect(() => {
@@ -109,7 +117,7 @@ export const PickupOrReceiverModal = ({ index,
                 <View style={{
                     padding: 16,
                 }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{selectedTipe === 'antar' ? 'Detail Pengambilan' : 'Detail Penerima'}</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Detail Penerima</Text>
                     <View style={{ paddingTop: 15, paddingHorizontal: 4 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }}>
                             <Icon size={30} color='red' name='location-sharp' />
@@ -124,19 +132,6 @@ export const PickupOrReceiverModal = ({ index,
                             </View>
                         </View>
                     </View>
-                    {
-                        count === '1' ? (
-                            <View style={{ paddingTop: 15 }}>
-                                <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Tipe</Text>
-                                <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
-                                    <Picker selectedValue={selectedTipe} onValueChange={(v) => setSelectedTipe(v)} style={{ height: '100%', width: '100%' }}>
-                                        <Picker.Item label="Antar" value="antar" />
-                                        <Picker.Item label="Ambil" value="ambil" />
-                                    </Picker>
-                                </View>
-                            </View>
-                        ) : null
-                    }
 
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
@@ -148,34 +143,51 @@ export const PickupOrReceiverModal = ({ index,
                         </View>
                     </View>
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Pengirim' : 'Penerima'}</Text>
-                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 50, padding: 6, backgroundColor: '#F7F7F9', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Text
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Pengirim</Text>
+                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 50, padding: 6, backgroundColor: '#F7F7F9' }}>
+                            <TextInput
+                                value={contactName}
                                 style={{
-                                    textAlign: 'center'
-                                }}>{userData.name}</Text>
-                            <TouchableOpacity disabled={true} activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
+                                    width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
+                                    height: '100%'
+                                }} placeholder={'e.g Nona Srikaya'}
+                                onFocus={() => orderDetailsHandler()}
+                                onBlur={() => onFocusLeaveHandler()}
+                                onChangeText={(v) => setContactName(v)} />
+                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
+
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Pengirim' : 'Penerima'} (No. HP)</Text>
-                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9', alignItems: 'center', justifyContent: 'space-between', padding: 6 }}>
-                            <Text
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Pengirim (No. HP)</Text>
+                        <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
+                            <TextInput
+                                value={phone}
                                 style={{
-                                    textAlign: 'center'
-                                }}>{userData.no_hp}</Text>
-                            <TouchableOpacity disabled={true} activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
+                                    width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 20,
+                                    height: '100%'
+                                }} placeholder={'e.g +6289690636990'}
+                                onFocus={() => orderDetailsHandler()}
+                                onBlur={() => onFocusLeaveHandler()}
+
+                                onChangeText={(v) => setPhone(v)} />
+                            <TouchableOpacity activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <Text style={{ marginTop: 7 }}>*Note : Harap isi detail alamat karena terkadang google map tidak akurat dalam melacak lokasi anda.</Text>
-                    <TouchableOpacity onPress={() => ToastAndroid.showWithGravity('Fitur non user penerima / pengirim belum tersedia', ToastAndroid.LONG, ToastAndroid.BOTTOM)} activeOpacity={.8} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-                        <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 17 }}>Tetapkan saya sebagai {selectedTipe === 'antar' ? 'pengirim ' : 'penerima '}paket</Text>
-                        <Icon style={{ marginLeft: 10 }} name="checkmark-circle-outline" size={26} color='blue' />
-                    </TouchableOpacity>
+                    {
+                        isPengirim ? null : (
+                            <>
+                                <TouchableOpacity onPress={() => ToastAndroid.showWithGravity('Fitur non user penerima / pengirim belum tersedia', ToastAndroid.LONG, ToastAndroid.BOTTOM)} activeOpacity={.8} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 17 }}>Tetapkan saya sebagai penerima paket</Text>
+                                    <Icon style={{ marginLeft: 10 }} name="checkmark-circle-outline" size={26} color='blue' />
+                                </TouchableOpacity>
+                            </>
+                        )
+                    }
                     <TouchableOpacity disabled={addrDetail === '' ? true : false} onPress={() => nextScreenHandler()} style={{ padding: 16, borderRadius: 5, backgroundColor: addrDetail === '' ? 'red' : 'blue', marginTop: 40 }}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Next</Text>
                     </TouchableOpacity>
@@ -187,7 +199,7 @@ export const PickupOrReceiverModal = ({ index,
     return (
         <Modalize
             ref={modalizeRef}
-            alwaysOpen={mHeight ? mHeight : 300}
+            alwaysOpen={200}
             modalHeight={height - StatusBar.currentHeight}
             handlePosition='inside'
             scrollViewProps={{

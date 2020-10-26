@@ -13,9 +13,10 @@ import * as geolib from 'geolib';
 import { PickupOrReceiverModal } from '../../components/modals/pickup';
 import { useIsFocused } from '@react-navigation/native';
 import { RouteModal } from '../../components/modals/route_modal';
+import { formatRupiah } from '../../utils/functionality';
 
 
-//first
+//not used
 const Send = ({ navigation, route }) => {
 
     const { data } = route.params;
@@ -32,14 +33,13 @@ const Send = ({ navigation, route }) => {
     useEffect(() => {
         Geolocation.getCurrentPosition(
             (position) => {
-                console.log('current region isz : ', position.coords)
                 setCoords(position);
             },
             (err) => {
                 setError('Terjadi kesalahan koneksi dalam memproses lokasi anda. tidak dapat melanjutkan')
                 console.log('failed to retreive user location', err)
             },
-            { timeout: 2000 }
+            { enableHighAccuracy: true, timeout: 2000 }
         )
     }, [isFocused]);
 
@@ -74,7 +74,7 @@ const Send = ({ navigation, route }) => {
 
                     {error !== '' ? (
                         <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ textAlign:'center', fontSize: 16, fontWeight:'bold', letterSpacing: .5, color: 'red' }}>{error}</Text>
+                            <Text style={{ textAlign: 'center', fontSize: 16, fontWeight: 'bold', letterSpacing: .5, color: 'red' }}>{error}</Text>
                         </View>
                     ) : null}
                 </View>
@@ -88,18 +88,26 @@ const Send = ({ navigation, route }) => {
     )
 }
 
-// third
+// first 
 const SendStep = ({ navigation, route }) => {
 
-    const { data, _coords, pickupDetail, type } = route.params;
+    const { data } = route.params;
     const { amount } = data;
-    const { width, height } = Dimensions.get('window');
-    const dispatch = useDispatch();
+    let [_coords, set_Coords] = useState(0);
     const isFocused = useIsFocused();
-    console.log('coordinate :: ', _coords);
-
 
     useEffect(() => {
+
+        Geolocation.getCurrentPosition(
+            (position) => {
+                console.log('positions :: ', position);
+                set_Coords(position.coords);
+            },
+            (err) => {
+                console.log('failed to retreive user location', err)
+            },
+            { enableHighAccuracy: true, timeout: 2000, distanceFilter: 1000 }
+        )
         SplashScreen.hide();
     }, [isFocused]);
 
@@ -114,9 +122,6 @@ const SendStep = ({ navigation, route }) => {
     const regionChangeHandler = (coords) => {
 
         let { latitude, longitude } = coords;
-
-        console.log('region changed, coords:::', coords);
-        console.log('position :: ', _coords.latitude, _coords.longitude);
 
         setDistance(distance = geolib.getDistance({
             latitude: _coords.latitude,
@@ -135,56 +140,64 @@ const SendStep = ({ navigation, route }) => {
     const onRegionChangeHandler = () => {
         setRegionChange(130)
         setRegionMove(true);
-    }
-    let swiperRef = useRef(null);
+    };
 
-    const swipeRight = (index) => {
-        swiperRef.scrollBy(index, true)
-    }
+    let mapRef = useRef(null);
+    const mapFitToCoordinates = (
+
+    ) => {
+        // regionChangeHandler(i, coords);
+        return mapRef.fitToSuppliedMarkers(
+            [
+                'marker-move',
+                'ke'
+            ],
+            {
+                edgePadding: {
+                    top: 250,
+                    right: 250,
+                    left: 250,
+                    bottom: 250
+                }
+            }
+        );
+    };
+
 
     return _coords !== 0 ? (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-            <Swiper scrollEnabled={true} ref={(ref) => swiperRef = ref} bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false}>
-                {
-                    Array.from({ length: amount }).map((v, i) => {
-                        return (
-                            <View key={i} style={{ flex: 1, position: 'relative' }}>
-                                <MapView
-                                    initialRegion={{
-                                        latitude: _coords.latitude,
-                                        longitude: _coords.longitude,
-                                        latitudeDelta: 0.005,
-                                        longitudeDelta: 0.005
-                                    }}
-                                    onRegionChangeComplete={(e) => regionChangeHandler(e)}
-                                    onRegionChange={(e) => onRegionChangeHandler()}
-                                    style={{ flex: 1 }} zoomEnabled={true} />
-                                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: -100, left: 0, bottom: 0, right: 0 }}>
-                                    <View style={{ padding: 10 }}>
-                                        <Icon name='pin-sharp' size={80} color='red' />
-                                    </View>
-                                </View>
-                                <SendPackageModal
-                                    navigation={navigation}
-                                    swipeHandler={swipeRight}
-                                    index={i}
-                                    totalIndex={amount}
-                                    modalHeight={regionChange}
-                                    isRegionRunning={isRegionMoving}
-                                    coordinate={_coords}
-                                    distance={distance}
-                                    targetCoord={coords}
-                                    type={type}
-                                    pickupDetail={pickupDetail}
-                                    isRouteMap={false}
-                                    data={data}
-                                />
-                            </View>
-                        )
-                    })
-                }
-            </Swiper>
+            <View style={{ flex: 1, position: 'relative' }}>
+                <MapView
+                    initialRegion={{
+                        latitude: _coords.latitude,
+                        longitude: _coords.longitude,
+                        latitudeDelta: 0.005,
+                        longitudeDelta: 0.005
+                    }}
+                    ref={(ref) => mapRef = ref}
+                    onLayout={() => mapFitToCoordinates()}
+                    onRegionChangeComplete={(e) => regionChangeHandler(e)}
+                    onRegionChange={(e) => onRegionChangeHandler()}
+                    style={{ flex: 1 }} zoomEnabled={true} />
+
+                <MapView.Marker identifier="ke" coordinate={{ latitude: _coords.latitude, longitude: _coords.longitude }} />
+                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: -100, left: 0, bottom: 0, right: 0 }}>
+                    <View style={{ padding: 10 }}>
+                        <Icon name='pin-sharp' size={80} color='red' />
+                    </View>
+                </View>
+                <SendPackageModal
+                    navigation={navigation}
+                    modalHeight={regionChange}
+                    isRegionRunning={isRegionMoving}
+                    coordinate={_coords}
+                    distance={distance}
+                    targetCoord={coords}
+                    isRouteMap={false}
+                    userData={data}
+                />
+            </View>
         </View>
     ) : (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
@@ -194,23 +207,21 @@ const SendStep = ({ navigation, route }) => {
 }
 
 
-// last / fourth
+// third
 
 const RouteStep = ({ navigation, route }) => {
 
     let mapRef = useRef(null);
-    const { data, _coords, pickupDetail, type } = route.params;
-    const { amount } = data;
-    console.log('count of map to render :: ', amount);
+
     const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
     const orders = useSelector(state => state.orders);
 
     const isFocused = useIsFocused();
-    console.log('coordinate :: ', _coords);
 
     const mapFitToCoordinates = (i, coords) => {
         regionChangeHandler(i, coords);
+
         return mapRef.fitToSuppliedMarkers(
             [
                 'dari',
@@ -227,8 +238,6 @@ const RouteStep = ({ navigation, route }) => {
         );
     };
 
-
-
     useEffect(() => {
         SplashScreen.hide();
     }, [isFocused]);
@@ -240,43 +249,47 @@ const RouteStep = ({ navigation, route }) => {
 
     let [distance, setDistance] = useState(0);
 
+    const state = useSelector((state) => state.orders);
+    const { pengirim, penerima } = state;
+
+
     const regionChangeHandler = (index, coords) => {
 
         let { latitude, longitude } = coords;
 
 
         setDistance(distance = geolib.getDistance({
-            latitude: _coords.latitude,
-            longitude: _coords.longitude
+            latitude: pengirim.coords.latitude,
+            longitude: pengirim.coords.longitude
         }, {
             latitude: latitude,
             longitude: longitude
         }));
 
         const ongkir = geolib.getDistance({
-            latitude: _coords.latitude,
-            longitude: _coords.longitude
+            latitude: pengirim.coords.latitude,
+            longitude: pengirim.coords.longitude
         }, {
             latitude: latitude,
             longitude: longitude
         }) < 5000 ? 10000 : (Math.round((geolib.getDistance({
-            latitude: _coords.latitude,
-            longitude: _coords.longitude
+            latitude: pengirim.coords.latitude,
+            longitude: pengirim.coords.longitude
         }, {
             latitude: latitude,
             longitude: longitude
         }) / 1000) / 5) * 5000) + 5000;
 
         const dist = Math.round(geolib.getDistance({
-            latitude: _coords.latitude,
-            longitude: _coords.longitude
+            latitude: pengirim.coords.latitude,
+            longitude: pengirim.coords.longitude
         }, {
             latitude: latitude,
             longitude: longitude
         }) / 1000);
 
 
-        dispatch({ type: 'update_distance', id: index, distance: dist, ongkir: ongkir });
+        dispatch({ type: 'update_distance', distance: dist, ongkir: ongkir });
 
         setCoords(coords);
 
@@ -287,84 +300,65 @@ const RouteStep = ({ navigation, route }) => {
         setRegionChange(130)
         setRegionMove(true);
     }
-    let swiperRef = useRef(null);
 
-    const swipeRight = (index) => {
-        swiperRef.scrollBy(index, true)
-    }
-
-    return _coords !== 0 ? (
+    return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-            <Swiper scrollEnabled={true} ref={(ref) => swiperRef = ref} bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false}>
-                {
-                    orders.orders.map((v, i) => {
-                        console.log('order item :: ', v);
-                        return (
-                            <View key={i} style={{ flex: 1, position: 'relative' }}>
-                                <MapView
-                                    initialRegion={{
-                                        latitude: _coords.latitude,
-                                        longitude: _coords.longitude,
-                                        latitudeDelta: 0.005,
-                                        longitudeDelta: 0.005
-                                    }}
-                                    onLayout={() => mapFitToCoordinates(i, v.coords)}
-                                    pitchEnabled={true}
-                                    scrollEnabled={true}
-                                    zoomEnabled={true}
-                                    rotateEnabled={false}
-                                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
-
-                                    <MapView.Marker identifier="dari" coordinate={{ latitude: _coords.latitude, longitude: _coords.longitude }} />
-                                    <MapView.Marker identifier="ke" coordinate={{ latitude: v.coords.latitude, longitude: v.coords.longitude }} />
-                                </MapView>
-
-                                <RouteModal
-                                    navigation={navigation}
-                                    swipeHandler={swipeRight}
-                                    index={i}
-                                    totalIndex={amount}
-                                    modalHeight={regionChange}
-                                    isRegionRunning={isRegionMoving}
-                                    coordinate={_coords}
-                                    distance={v.distance}
-                                    targetCoord={coords}
-                                    type={type}
-                                    pickupDetail={pickupDetail}
-                                    isRouteMap={true}
-                                    penerima={v.to.contact_name}
-                                    nohp={v.to.phone}
-                                    barang={v.send_item}
-                                    alamat={v.address_detail}
-                                    ongkirz={v.ongkir} />
-                            </View>
-
-                        )
-                    })
-                }
-            </Swiper>
-        </View>
-    ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-                <ActivityIndicator size='large' color='blue' />
+            <View key={1} style={{ flex: 1, position: 'relative' }}>
+                <MapView
+                    initialRegion={{
+                        latitude: pengirim.coords.latitude,
+                        longitude: pengirim.coords.longitude,
+                        latitudeDelta: 0.005,
+                        longitudeDelta: 0.005
+                    }}
+                    onLayout={() => mapFitToCoordinates(0, penerima.coords)}
+                    pitchEnabled={true}
+                    scrollEnabled={true}
+                    zoomEnabled={true}
+                    rotateEnabled={false}
+                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
+                    <MapView.Marker identifier="dari" coordinate={{ latitude: pengirim.coords.latitude, longitude: pengirim.coords.longitude }} />
+                    <MapView.Marker identifier="ke" coordinate={{ latitude: penerima.coords.latitude, longitude: penerima.coords.longitude }} />
+                </MapView>
+                <RouteModal
+                    navigation={navigation}
+                    modalHeight={regionChange}
+                    isRegionRunning={isRegionMoving}
+                    isRouteMap={true} />
             </View>
-        )
+        </View>
+    )
 }
 
 
-//second
+// second
 const PickupOrReceiverScreen = ({ navigation, route }) => {
 
     let mapRef = useRef(null);
 
-    const { data, userData, coordinate } = route.params;
-    const { amount } = data;
+    const { data, userData, userCoordinate } = route.params;
+
     const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
     const isFocused = useIsFocused();
+    let [coords, setCoords] = useState(0);
 
-    console.log('positions :: ', coordinate.coords);
+    const regionChangeHandler = (coords) => {
+
+        let { latitude, longitude } = coords;
+
+        // setDistance(distance = geolib.getDistance({
+        //     latitude: userCoordinate.latitude,
+        //     longitude: userCoordinate.longitude
+        // }, {
+        //     latitude: latitude,
+        //     longitude: longitude
+        // }));
+
+        setCoords({ latitude, longitude });
+    };
+
 
     const mapFitToCoordinates = () => {
         return mapRef.fitToSuppliedMarkers(
@@ -384,7 +378,7 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
 
     useEffect(() => {
 
-        console.log('Route params data :: ', data);
+        console.log('Route params data :: ', route.params);
         // Geolocation.getCurrentPosition(
         //     (position) => {
         //         console.log('current location coords', position.coords);
@@ -400,8 +394,6 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
         }
     }, [isFocused]);
 
-    let [coords, setCoords] = useState({});
-
     let [distance, setDistance] = useState(0);
 
     return (
@@ -410,28 +402,103 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
             <View key={1} style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
-                        latitude: coordinate.coords.latitude,
-                        longitude: coordinate.coords.longitude,
+                        latitude: userCoordinate.latitude,
+                        longitude: userCoordinate.longitude,
                         latitudeDelta: 0.005,
                         longitudeDelta: 0.005
                     }}
                     onLayout={() => mapFitToCoordinates()}
-                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
-                    <MapView.Marker
-                        identifier='Tujan'
-                        title='Lokasi Mu'
-                        description='Lokasi mu sekarang ini.'
-                        coordinate={coordinate.coords}
-                        key={2}
-                    />
+                    onRegionChangeComplete={(e) => regionChangeHandler(e)}
+                    ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} cacheEnabled={false}>
                 </MapView>
+                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: -100, left: 0, bottom: 0, right: 0 }}>
+                    <View style={{ padding: 10 }}>
+                        <Icon name='pin-sharp' size={80} color='red' />
+                    </View>
+                </View>
                 <PickupOrReceiverModal
                     navigation={navigation}
-                    index={0}
-                    totalIndex={amount}
-                    coordinate={coordinate}
+                    coordinate={coords}
                     params={route.params}
                     userData={userData} />
+            </View>
+        </View>
+    )
+}
+
+const ConfirmOrder = ({ navigation }) => {
+    const orders = useSelector(state => state.orders);
+    const barHeight = StatusBar.currentHeight;
+    const { pengirim, penerima, ongkir, distance } = orders;
+    let [barang, setBarang] = useState("");
+    let [errMsg, setErrMsg] = useState("");
+
+
+    useEffect(() => {
+        console.log('data orderan :: ', orders);
+    });
+
+
+    const nextScreenHandler = () => {
+
+        if (barang === "") {
+            console.log(true);
+            setErrMsg("harap isi detail barang yg akan dikirim terlebih dahulu.");
+            return;
+        };
+
+        navigation.navigate('redirect_screen', { detail: barang });
+
+    }
+
+
+    return (
+        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }}>
+            <View style={{ padding: 16, flex: 1 }}>
+                <View style={{ padding: 50, marginTop: 20, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text>Tempat Icon disini</Text>
+                </View>
+                <View style={{ padding: 10 }}>
+                    <View>
+                        <Text style={{ fontSize: 20, letterSpacing: .4 }}>Pengirim</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{pengirim.name}</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jalan testing kaarena blum ada kartu kredit buat google map</Text>
+                    </View>
+                    <View style={{ marginTop: 20 }}>
+                        <Text style={{ fontSize: 20, letterSpacing: .4 }}>Penerima</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{penerima.name}</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jalan testing kaarena blum ada kartu kredit buat google map</Text>
+                    </View>
+
+
+                    <View style={{ marginTop: 40 }}>
+                        <TextInput
+                            style={{
+                                padding: 10,
+                                borderRadius: 7,
+                                borderWidth: 1
+                            }}
+                            onChangeText={(v) => setBarang(v)}
+                            placeholder="Input Detail barang yg mau dikirim disini."
+                            placeholderTextColor="black" />
+                        {
+                            errMsg === "" ? null : <Text style={{ fontSize: 18, fontWeight:'bold' }}>*{errMsg}</Text>
+                        }
+                    </View>
+
+                    <View style={{ marginTop: 30, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text>Biaya Ongkir</Text>
+                        <View style={{ marginTop: 15 }}>
+                            <View style={{ padding: 20 }}>
+                                <Text style={{ fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>{formatRupiah(String(ongkir), "Rp. ")}</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity onPress={() => nextScreenHandler()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
+                        <Text style={{ fontSize: 17, fontWeight: '600', color: 'white' }}>Order Sekarang</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     )
@@ -441,7 +508,8 @@ export {
     Send,
     SendStep,
     PickupOrReceiverScreen,
-    RouteStep
+    RouteStep,
+    ConfirmOrder
 };
 
 //  {/* <MapView.Marker

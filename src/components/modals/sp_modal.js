@@ -10,7 +10,8 @@ import {
     PermissionsAndroid,
     Platform,
     KeyboardAvoidingView,
-    StatusBar
+    StatusBar,
+    ToastAndroid
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { selectContactPhone } from 'react-native-select-contact';
@@ -24,16 +25,12 @@ import { Picker } from '@react-native-community/picker';
 export const SendPackageModal = ({ index,
     modalHeight,
     isRegionRunning,
-    swipeHandler,
-    totalIndex,
     navigation,
     coordinate,
     distance,
     targetCoord,
-    type,
-    pickupDetail,
     isRouteMap,
-    data
+    userData
 }) => {
 
     const modalizeRef = useRef(null);
@@ -47,14 +44,14 @@ export const SendPackageModal = ({ index,
     const orderCount = useSelector(state => state.orders);
     const { count } = orderCount;
     console.log('coordinate __ ', coordinate);
-    let [mHeight, setMHeight] = useState(modalHeight);
+    let [mHeight, setMHeight] = useState(200);
     const orderReducer = useSelector(state => state.orders);
     const coordinateReducer = useSelector(state => state.coordinate);
     let [errMsg, setErrorMsg] = useState('');
+    let [checked, setChecked] = useState(true);
 
     const dispatch = useDispatch();
 
-    let [selectedTipe, setSelectedTipe] = useState(type);
 
     const selectContactHandler = () => {
 
@@ -97,55 +94,38 @@ export const SendPackageModal = ({ index,
         setMHeight(height);
     }
     const onFocusLeaveHandler = () => {
-        setMHeight(memoized_modal_height);
+        setMHeight(200);
     }
 
     const nextScreenHandler = () => {
 
-        let idx = index + 1;
-
         let { latitude, longitude } = targetCoord;
 
+
+        // PENGIRIM
+
         let obj = {
-            id: index,
             coords: {
                 latitude,
                 longitude
             },
-            ordered_by: 'test',
-            to: {
-                contact_name: contactName,
-                phone,
-                set_this_as_recipient: true
-            },
             address_detail: addrDetail,
-            send_item: orderDetail,
-            distance: Math.round(distance / 1000),
-            ongkir: distance < 5000 ? 10000 : (Math.round((distance / 1000) / 5) * 5000) + 5000,
-            date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
-            order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
-            status: false
-        }
+            name: checked ? userData.name : contactName,
+            phone: checked ? userData.no_hp : phone
+        };
 
-        let check = orderReducer.orders.some((v, i) => i === index);
+        // let check = orderReducer.orders.some((v, i) => i === index);
+        // console.log(index === (idx - 1))
+        // if (index === (idx - 1) && check) {
+        //     navigation.navigate('route_step', { data: data, _coords: coordinate, pickupDetail });
+        // }
 
-        if (check) {
-            setErrorMsg('Data sudah ada, harap geser layer ke kiri untuk melanjutkan');
-            return;
-        }
+        dispatch({ type: 'pengirim', pengirim: obj, });
 
-        dispatch({ type: 'add', item: obj, from: '123213', costumer_coordinate: coordinate, tipe: type, pickup: pickupDetail });
-
-        if (Number(idx) !== Number(totalIndex)) {
-            swipeHandler(idx, true);
-        } else {
-            navigation.push('route_step', { data: data, _coords: coordinate, pickupDetail, type: selectedTipe });
-        }
+        navigation.navigate('pickup', { userData: userData, userCoordinate: coordinate, isPengirim: checked });
     }
 
-
     useEffect(() => {
-
 
     }, [addrDetail, phone, contactName, orderDetail])
 
@@ -156,7 +136,7 @@ export const SendPackageModal = ({ index,
                 <View style={{
                     padding: 16,
                 }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Delivery {index + 1}</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Detail Pengiriman</Text>
                     {
                         isRegionRunning ? (
                             <View style={{ paddingTop: 15, paddingHorizontal: 4, justifyContent: 'center', alignItems: 'center' }}>
@@ -180,11 +160,6 @@ export const SendPackageModal = ({ index,
                             )
                     }
 
-                    <View style={{ paddingTop: 15, flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>{selectedTipe === 'antar' ? 'Kirim' : 'Ambil'} paket {selectedTipe === 'antar' ? 'ke' : 'dari'} alamat ini : </Text>
-                        <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', textDecorationLine: 'underline' }}>Iya</Text>
-                    </View>
-
                     <View style={{ paddingTop: 15 }}>
                         <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Detail Alamat</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
@@ -196,16 +171,17 @@ export const SendPackageModal = ({ index,
                     </View>
 
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Penerima' : 'Pengirim'}</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Pengirim</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 50, padding: 6, backgroundColor: '#F7F7F9' }}>
                             <TextInput
-                                value={contactName}
+                                value={checked ? userData.name : contactName}
                                 style={{
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 24,
                                     height: '100%'
                                 }} placeholder={'e.g Nona Srikaya'}
                                 onFocus={() => orderDetailsHandler()}
-                                onBlur={() => onFocusLeaveHandler()} />
+                                onBlur={() => onFocusLeaveHandler()}
+                                onChangeText={(v) => setContactName(v)} />
                             <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
@@ -213,24 +189,26 @@ export const SendPackageModal = ({ index,
                     </View>
 
                     <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>{selectedTipe === 'antar' ? 'Penerima' : 'Pengirim'} (No. HP)</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Pengirim (No. HP)</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 45, backgroundColor: '#F7F7F9' }}>
                             <TextInput
-                                value={phone}
+                                value={checked ? userData.no_hp : phone}
                                 style={{
                                     width: width - ((16 * 2) + (6 * 2) + (6 * 2)) - 20,
                                     height: '100%'
                                 }} placeholder={'e.g +6289690636990'}
                                 onFocus={() => orderDetailsHandler()}
-                                onBlur={() => onFocusLeaveHandler()} />
+                                onBlur={() => onFocusLeaveHandler()}
+
+                                onChangeText={(v) => setPhone(v)} />
                             <TouchableOpacity activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
                                 <Icon name='call-outline' size={16} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
 
-                    <View style={{ paddingTop: 15 }}>
-                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Mau {selectedTipe === 'antar' ? 'Kirim ' : 'Ambil '} Apa ?</Text>
+                    {/* <View style={{ paddingTop: 15 }}>
+                        <Text style={{ fontSize: 16, letterSpacing: 0.5 }}>Mau Kirim Apa ?</Text>
                         <View style={{ marginTop: 4, borderRadius: 5, flexDirection: 'row', borderWidth: 1, borderColor: 'silver', height: 70, backgroundColor: '#F7F7F9' }}>
                             <TextInput
                                 value={orderDetail}
@@ -242,7 +220,12 @@ export const SendPackageModal = ({ index,
                                     width: '100%'
                                 }} placeholder={'e.g nasi goreng ayam, ayam kecap, nasi bungkus'} />
                         </View>
-                    </View>
+                    </View> */}
+
+                    <TouchableOpacity onPress={() => setChecked(!checked)} activeOpacity={.8} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                        <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 17 }}>Masukkan saya sebagai Pengirim </Text>
+                        <Icon style={{ marginLeft: 10 }} name={`${checked ? "checkmark-circle-outline" : "ellipse-outline"}`} size={26} color='blue' />
+                    </TouchableOpacity>
                     {errMsg === '' ? null : <Text>{errMsg}</Text>}
                     <TouchableOpacity onPress={() => nextScreenHandler()} style={{ padding: 16, borderRadius: 5, backgroundColor: 'blue', marginTop: 40 }}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Next</Text>
@@ -255,7 +238,7 @@ export const SendPackageModal = ({ index,
     return (
         <Modalize
             ref={modalizeRef}
-            alwaysOpen={mHeight ? mHeight : 300}
+            alwaysOpen={mHeight}
             modalHeight={height - StatusBar.currentHeight}
             handlePosition='inside'
             scrollViewProps={{

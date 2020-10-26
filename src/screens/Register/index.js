@@ -48,9 +48,9 @@ const Register = ({ navigation }) => {
 
 
     useEffect(() => {
-        
-    const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', keyboardWillShow);
-    const keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', keyboardWillHide);
+
+        const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', keyboardWillShow);
+        const keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', keyboardWillHide);
         // fetch('http://192.168.43.178:8000/id', {
         //     method : 'GET',
         //     headers : {
@@ -66,71 +66,71 @@ const Register = ({ navigation }) => {
         // .catch(err => {
         //     console.log('Err:: ',err);
         // })
-    return () => {
-        keyboardWillShowSub.remove();
-        keyboardWillHideSub.remove();
-    }
+        return () => {
+            keyboardWillShowSub.remove();
+            keyboardWillHideSub.remove();
+        }
     }, []);
     const navigateHandler = () => {
         return asDriver ? navigation.push('kurir_register', { data }) : navigation.push('password', { data });
     }
     const keyboardWillShow = (event) => {
         Animated.parallel([
-          Animated.timing(this.keyboardHeight, {
-            duration: event.duration,
-            toValue: event.endCoordinates.height,
-          }),
+            Animated.timing(this.keyboardHeight, {
+                duration: event.duration,
+                toValue: event.endCoordinates.height,
+            }),
         ]).start();
-      };
+    };
 
     const keyboardWillHide = (event) => {
         Animated.parallel([
-          Animated.timing(keyboardHeight, {
-            duration: event.duration,
-            toValue: 0,
-          }),
+            Animated.timing(keyboardHeight, {
+                duration: event.duration,
+                toValue: 0,
+            }),
         ]).start();
-      };
+    };
 
     return (
-            <Animated.View style={{ alignItems: 'center', flex: 1, paddingBottom: keyboardHeight, justifyContent:'center', backgroundColor:'white' }}>
-                <View style={{ paddingBottom: '10%' }}>
-                    <Text style={{ fontSize: 30, fontWeight: '600' }}>Register</Text>
-                </View>
+        <Animated.View style={{ alignItems: 'center', flex: 1, paddingBottom: keyboardHeight, justifyContent: 'center', backgroundColor: 'white' }}>
+            <View style={{ paddingBottom: '10%' }}>
+                <Text style={{ fontSize: 30, fontWeight: '600' }}>Register</Text>
+            </View>
 
-                <View style={{ flexDirection: 'column' }}>
-                    <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                        <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>Email</Text>
-                        <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2) }}>
-                            <TextInput value={email} onChangeText={(v) => emailValidation(v)} style={{ width: '100%' }} placeholder={'test@gmail.com'} />
-                        </View>
-                    </View>
-                    <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                        <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>Nama Lengkap</Text>
-                        <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2) }}>
-                            <TextInput value={name} style={{ width: '100%' }} onChangeText={(v) => setName(v)} placeholder={'e.g udin sedunia '} />
-                        </View>
-                    </View>
-                    <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                        <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>Alamat</Text>
-                        <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2), height: 70 }}>
-                            <TextInput
-                                multiline={true}
-                                value={alamat}
-                                onChangeText={(v) => setAlamat(v)}
-                                style={{ width: '100%', textAlign: 'justify', height: 70 }} placeholder={'e.g perum kuburan rt 19 no 09 sungai kunjang samarinda '} />
-                        </View>
-                    </View>
-                    <View style={{ paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 17 }}>I want to be driver instead </Text>
-                        <Checkbox label='' value={asDriver} onValueChange={(n) => setAsDriver(n)} />
+            <View style={{ flexDirection: 'column' }}>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                    <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>Email</Text>
+                    <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2) }}>
+                        <TextInput value={email} onChangeText={(v) => emailValidation(v)} style={{ width: '100%' }} placeholder={'test@gmail.com'} />
                     </View>
                 </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                    <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>Nama Lengkap</Text>
+                    <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2) }}>
+                        <TextInput value={name} style={{ width: '100%' }} onChangeText={(v) => setName(v)} placeholder={'e.g udin sedunia '} />
+                    </View>
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                    <Text style={{ fontSize: 17, fontWeight: '400', marginBottom: 6 }}>Alamat</Text>
+                    <View style={{ borderRadius: 5, borderWidth: 1, width: width - ((16 + 10) * 2), height: 70 }}>
+                        <TextInput
+                            multiline={true}
+                            value={alamat}
+                            onChangeText={(v) => setAlamat(v)}
+                            style={{ width: '100%', textAlign: 'justify', height: 70 }} placeholder={'e.g perum kuburan rt 19 no 09 sungai kunjang samarinda '} />
+                    </View>
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17 }}>I want to be driver instead </Text>
+                    <Checkbox label='' value={asDriver} onValueChange={(n) => setAsDriver(n)} />
+                </View>
+            </View>
 
-                <TouchableOpacity disabled={email === '' || name === '' || alamat === '' ? true : false} onPress={() => navigateHandler()} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: email === '' || name === '' || alamat === '' ? 'red' : 'blue', justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 17, fontWeight: '600', color: 'white', width: width - (100 * 2), textAlign: 'center' }}>Next</Text>
-                </TouchableOpacity>
-            </Animated.View>
+            <TouchableOpacity disabled={email === '' || name === '' || alamat === '' ? true : false} onPress={() => navigateHandler()} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: email === '' || name === '' || alamat === '' ? 'red' : 'blue', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 17, fontWeight: '600', color: 'white', width: width - (100 * 2), textAlign: 'center' }}>Next</Text>
+            </TouchableOpacity>
+        </Animated.View>
     )
 }
 
@@ -145,8 +145,6 @@ const CreatePassword = ({ navigation, route }) => {
         ...data,
         password
     };
-
-
 
     const submitRegistForm = async () => {
         console.log('test');
@@ -226,8 +224,8 @@ const CreatePassword = ({ navigation, route }) => {
     })
 
     return (
-        <KeyboardAvoidingView behavior="height" style={{ flex: 1, backgroundColor:'white' }}>
-            <View style={{ alignItems: 'center', flex: 1, justifyContent:'center', backgroundColor:'white' }}>
+        <KeyboardAvoidingView behavior="height" style={{ flex: 1, backgroundColor: 'white' }}>
+            <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center', backgroundColor: 'white' }}>
                 <View style={{ paddingBottom: '10%' }}>
                     <Text style={{ fontSize: 30, fontWeight: '600' }}>Create Password</Text>
                 </View>
@@ -326,11 +324,11 @@ const CourierRegister = ({ navigation, route }) => {
                 setFotoDiriType(response.type);
             }
         });
-    }
+    };
     const { width, height } = Dimensions.get('window');
     return (
-        <KeyboardAvoidingView behavior="height" style={{ flex: 1, justifyContent:'center', alignItems:'center', backgroundColor: 'white' }}>
-            <View style={{ alignItems: 'center', flex: 1, justifyContent:'center' }}>
+        <KeyboardAvoidingView behavior="height" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+            <ScrollView style={{ flex: 1 }}>
                 <View style={{ paddingBottom: '10%' }}>
                     <Text style={{ fontSize: 30, fontWeight: '600' }}>Daftar sbg Kurir</Text>
                 </View>
@@ -380,7 +378,7 @@ const CourierRegister = ({ navigation, route }) => {
                 })} activeOpacity={0.5} style={{ padding: 16, marginTop: 16, borderRadius: 4, backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 17, fontWeight: '600', color: 'white', width: width - (100 * 2), textAlign: 'center' }}>Next</Text>
                 </TouchableOpacity>
-            </View>
+            </ScrollView>
         </KeyboardAvoidingView>
     )
 }

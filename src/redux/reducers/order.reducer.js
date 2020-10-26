@@ -1,42 +1,40 @@
 let initialState = {
     costumer_coordinate : 0,
-    orders : [],
+    penerima : null,
     count: 0,
-    type : '',
-    pickupDetail : null
-}
+    pengirim : null,
+    distance : 0,
+    ongkir : 0
+};
 
 
 export const orderReducers = (state = initialState, action) => {
     // let check = state.orders.some((v,i) => v.id === action.item.id);
     console.log(state);
     switch(action.type){
-        case 'add':
+        case 'penerima':
                 return {
                     ...state,
-                    orders : [
-                        ...state.orders,
-                        action.item
-                    ],
-                    costumer_coordinate : action.costumer_coordinate,
-                    type : action.tipe,
-                    pickupDetail : action.pickup
+                    penerima : action.penerima,
                 }
+        case 'pengirim':
+            return {
+                ...state,
+                pengirim : action.pengirim
+            }
         case 'reset':
             return {
                 ...state,
-                orders : [],
+                penerima : null,
                 costumer_coordinate : 0,
-                count : 0
+                count : 0,
+                pengirim: null
             }
         case 'update_distance':
             return {
                 ...state,
-                orders: state.orders.map((v,i) => i === action.id ? {
-                    ...v,
-                    distance : action.distance,
-                    ongkir : action.ongkir
-                } : v)
+                distance : action.distance,
+                ongkir : action.ongkir
             };
         case 'add_count' : 
             return {

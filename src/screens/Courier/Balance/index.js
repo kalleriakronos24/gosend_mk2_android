@@ -17,6 +17,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import ImagePicker from "react-native-image-picker";
 import RNFetchBlob from "rn-fetch-blob";
 import AsyncStorage from "@react-native-community/async-storage";
+import { formatRupiah } from "../../../utils/functionality";
 
 const CourierBalance = ({ navigation }) => {
     const barHeight = StatusBar.currentHeight;
@@ -25,11 +26,19 @@ const CourierBalance = ({ navigation }) => {
     let [wallet, setWallet] = useState(0);
 
     useEffect(() => {
-        fetchTransactionData();
+        let interval = setInterval(() => {
+            fetchTransactionData();
+        }, 1000 * 10) // 10s
+
         return () => {
+            clearInterval(interval);
             console.log("cleaned up");
         };
     }, []);
+
+    useEffect(() => {
+        fetchTransactionData();
+    }, [])
 
     const fetchTransactionData = async () => {
         await AsyncStorage.getItem("LOGIN_TOKEN", async (err, token) => {
@@ -86,7 +95,7 @@ const CourierBalance = ({ navigation }) => {
                         textAlign: "center",
                     }}
                 >
-                    You have  Rp.{wallet} Wallet
+                    You have {wallet ? formatRupiah(String(wallet), "Rp. ") : 0} Wallet
         </Text>
                 {balance === 0 ? (
                     <>
@@ -364,7 +373,7 @@ const TransactionHistory = ({ navigation }) => {
                         textAlign: "center",
                     }}
                 >
-                    You have  Rp.{wallet} Wallet
+                    You have {formatRupiah(String(wallet), "Rp. ")} Wallet
         </Text>
                 <View style={{ padding: 10, marginTop: 20 }}>
                     <Text
@@ -451,6 +460,14 @@ const TransactionHistory = ({ navigation }) => {
                                                 </Text>
                                                 <Text>
                                                     {v.courier_id.fullname}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flexDirection: "row", paddingTop: 5 }}>
+                                                <Text style={{ fontSize: 15, fontWeight: "bold" }}>
+                                                    Nominal Top up :{" "}
+                                                </Text>
+                                                <Text>
+                                                    {formatRupiah(String(v.amount), "Rp. ")},-
                                                 </Text>
                                             </View>
                                             <View style={{ flexDirection: "row", paddingTop: 5 }}>
