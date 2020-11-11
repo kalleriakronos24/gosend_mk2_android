@@ -14,7 +14,10 @@ import { PickupOrReceiverModal } from '../../components/modals/pickup';
 import { useIsFocused } from '@react-navigation/native';
 import { RouteModal } from '../../components/modals/route_modal';
 import { formatRupiah } from '../../utils/functionality';
+import { ViaMap } from '../../components/modals/via_map';
+import MapViewDirections from 'react-native-maps-directions';
 
+const GOOGLE_MAPS_APIKEY = 'AIzaSyBORtT7wcFXxJFDsoerlhCiX7ZkcdX4LSk';
 
 //not used
 const Send = ({ navigation, route }) => {
@@ -91,26 +94,36 @@ const Send = ({ navigation, route }) => {
 // first 
 const SendStep = ({ navigation, route }) => {
 
-    const { data } = route.params;
-    const { amount } = data;
-    let [_coords, set_Coords] = useState(0);
+    const { data, _coords } = route.params;
+
     const isFocused = useIsFocused();
+
+
+    let [defaultAddress, setDefaultAddress] = useState("");
+    let [street, setStreet] = useState("");
 
     useEffect(() => {
 
-        Geolocation.getCurrentPosition(
-            (position) => {
-                console.log('positions :: ', position);
-                set_Coords(position.coords);
-            },
-            (err) => {
-                console.log('failed to retreive user location', err)
-            },
-            { enableHighAccuracy: true, timeout: 2000, distanceFilter: 1000 }
-        )
-        SplashScreen.hide();
-    }, [isFocused]);
+        fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + _coords.latitude + ',' + _coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
+            .then((response) => response.json())
+            .then((res) => {
+                // console.log(res.results[0]);
+                setDefaultAddress(res.results[0].formatted_address);
+                setStreet(res.results[0].address_components[1].long_name);
+            })
 
+        // Geolocation.getCurrentPosition(
+        //     (position) => {
+        //         console.log('positions :: ', position);
+        //         set_Coords(position.coords);
+        //     },
+        //     (err) => {
+        //         console.log('failed to retreive user location', err)
+        //     },
+        //     { enableHighAccuracy: false, timeout: 2000, distanceFilter: 500 }
+        // );
+
+    }, []);
 
     let [regionChange, setRegionChange] = useState(0);
     let [isRegionMoving, setRegionMove] = useState(false);
@@ -119,17 +132,19 @@ const SendStep = ({ navigation, route }) => {
 
     let [distance, setDistance] = useState(0);
 
-    const regionChangeHandler = (coords) => {
+    const regionChangeHandler = async (coords) => {
 
         let { latitude, longitude } = coords;
 
-        setDistance(distance = geolib.getDistance({
-            latitude: _coords.latitude,
-            longitude: _coords.longitude
-        }, {
-            latitude: latitude,
-            longitude: longitude
-        }));
+
+        await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + coords.latitude + ',' + coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
+            .then((response) => response.json())
+            .then((res) => {
+                console.log(res.results[0].address_components[2].short_name);
+                setDefaultAddress(res.results[0].formatted_address);
+                setStreet(res.results[0].address_components[1].long_name);
+            })
+
 
         setCoords(coords);
 
@@ -187,15 +202,23 @@ const SendStep = ({ navigation, route }) => {
                         <Icon name='pin-sharp' size={80} color='red' />
                     </View>
                 </View>
+                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: 0, left: 0, marginTop: StatusBar.currentHeight }}>
+                    <View style={{ padding: 10 }}>
+                        <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('user_order_history')} style={{ width: 80, height: 80, borderRadius: 40 }}>
+                            <Image defaultSource={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 40 }} source={{ cache: 'default', uri: data.fotoDiri }} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
                 <SendPackageModal
                     navigation={navigation}
                     modalHeight={regionChange}
                     isRegionRunning={isRegionMoving}
                     coordinate={_coords}
-                    distance={distance}
                     targetCoord={coords}
                     isRouteMap={false}
                     userData={data}
+                    namaGang={street}
+                    address={defaultAddress}
                 />
             </View>
         </View>
@@ -219,8 +242,8 @@ const RouteStep = ({ navigation, route }) => {
 
     const isFocused = useIsFocused();
 
-    const mapFitToCoordinates = (i, coords) => {
-        regionChangeHandler(i, coords);
+    const mapFitToCoordinates = (i, coords, distance) => {
+        regionChangeHandler(i, coords, distance);
 
         return mapRef.fitToSuppliedMarkers(
             [
@@ -253,18 +276,9 @@ const RouteStep = ({ navigation, route }) => {
     const { pengirim, penerima } = state;
 
 
-    const regionChangeHandler = (index, coords) => {
+    const regionChangeHandler = (index, coords, distance) => {
 
         let { latitude, longitude } = coords;
-
-
-        setDistance(distance = geolib.getDistance({
-            latitude: pengirim.coords.latitude,
-            longitude: pengirim.coords.longitude
-        }, {
-            latitude: latitude,
-            longitude: longitude
-        }));
 
         const ongkir = geolib.getDistance({
             latitude: pengirim.coords.latitude,
@@ -280,16 +294,19 @@ const RouteStep = ({ navigation, route }) => {
             longitude: longitude
         }) / 1000) / 5) * 5000) + 5000;
 
-        const dist = Math.round(geolib.getDistance({
-            latitude: pengirim.coords.latitude,
-            longitude: pengirim.coords.longitude
-        }, {
-            latitude: latitude,
-            longitude: longitude
-        }) / 1000);
+
+        // const ongkeer = Math.floor(distance) < 5 ? 10000 : (Math.floor((Math.floor(distance) / 5)) * 5000) + 10000
+        const ongkeer = Math.floor(distance) <= 10 ? 10000 : (Math.floor(Math.floor(Math.abs(distance - 10)) * 2000)) + 10000
+        // const dist = Math.round(geolib.getDistance({
+        //     latitude: pengirim.coords.latitude,
+        //     longitude: pengirim.coords.longitude
+        // }, {
+        //     latitude: latitude,
+        //     longitude: longitude
+        // }) / 1000);
 
 
-        dispatch({ type: 'update_distance', distance: dist, ongkir: ongkir });
+        dispatch({ type: 'update_distance', distance: Math.floor(distance), ongkir: ongkeer });
 
         setCoords(coords);
 
@@ -312,14 +329,35 @@ const RouteStep = ({ navigation, route }) => {
                         latitudeDelta: 0.005,
                         longitudeDelta: 0.005
                     }}
-                    onLayout={() => mapFitToCoordinates(0, penerima.coords)}
                     pitchEnabled={true}
                     scrollEnabled={true}
                     zoomEnabled={true}
                     rotateEnabled={false}
                     ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
-                    <MapView.Marker identifier="dari" coordinate={{ latitude: pengirim.coords.latitude, longitude: pengirim.coords.longitude }} />
-                    <MapView.Marker identifier="ke" coordinate={{ latitude: penerima.coords.latitude, longitude: penerima.coords.longitude }} />
+                    <MapView.Marker title="Pengirim" description="titik pengirim" identifier="dari" coordinate={{ latitude: pengirim.coords.latitude, longitude: pengirim.coords.longitude }} />
+                    <MapView.Marker title="Penerima" description="titik penerima" identifier="ke" coordinate={{ latitude: penerima.coords.latitude, longitude: penerima.coords.longitude }} />
+
+                    <MapViewDirections
+                        origin={pengirim.coords}
+                        waypoints={[]}
+                        destination={penerima.coords}
+                        apikey={GOOGLE_MAPS_APIKEY}
+                        strokeWidth={7}
+                        strokeColor="blue"
+                        optimizeWaypoints={true}
+                        onStart={(params) => {
+                            console.log(`Started routing between "${params.origin}" and "${params.destination}"`);
+                        }}
+                        onReady={result => {
+                            console.log(`Distance: ${result.distance} km`)
+                            console.log(`Duration: ${result.duration} min.`)
+
+                            mapFitToCoordinates(0, penerima.coords, result.distance)
+                        }}
+                        onError={(errorMessage) => {
+                            // console.log('GOT AN ERROR');
+                        }}
+                    />
                 </MapView>
                 <RouteModal
                     navigation={navigation}
@@ -337,16 +375,33 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
 
     let mapRef = useRef(null);
 
-    const { data, userData, userCoordinate } = route.params;
+    const { userData, userCoordinate, isPengirim } = route.params;
 
     const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
     const isFocused = useIsFocused();
     let [coords, setCoords] = useState(0);
 
+
+
+
+    let [defaultAddress, setDefaultAddress] = useState("");
+    let [street, setStreet] = useState("");
+
+
+    let [isRegionRunning, setIsRegionRunning] = useState(false);
+
     const regionChangeHandler = (coords) => {
 
         let { latitude, longitude } = coords;
+
+        fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + coords.latitude + ',' + coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
+            .then((response) => response.json())
+            .then((res) => {
+
+                setDefaultAddress(res.results[0].formatted_address);
+                setStreet(res.results[0].address_components[1].long_name);
+            })
 
         // setDistance(distance = geolib.getDistance({
         //     latitude: userCoordinate.latitude,
@@ -355,6 +410,8 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
         //     latitude: latitude,
         //     longitude: longitude
         // }));
+
+        setIsRegionRunning(false);
 
         setCoords({ latitude, longitude });
     };
@@ -378,7 +435,12 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
 
     useEffect(() => {
 
-        console.log('Route params data :: ', route.params);
+        fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + userCoordinate.latitude + ',' + userCoordinate.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
+            .then((response) => response.json())
+            .then((res) => {
+                setDefaultAddress(res.results[0].formatted_address);
+                setStreet(res.results[0].address_components[1].long_name);
+            })
         // Geolocation.getCurrentPosition(
         //     (position) => {
         //         console.log('current location coords', position.coords);
@@ -409,6 +471,7 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
                     }}
                     onLayout={() => mapFitToCoordinates()}
                     onRegionChangeComplete={(e) => regionChangeHandler(e)}
+                    onRegionChange={() => setIsRegionRunning(true)}
                     ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true} cacheEnabled={false}>
                 </MapView>
                 <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: -100, left: 0, bottom: 0, right: 0 }}>
@@ -416,11 +479,22 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
                         <Icon name='pin-sharp' size={80} color='red' />
                     </View>
                 </View>
+                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: 0, left: 0, marginTop: StatusBar.currentHeight }}>
+                    <View style={{ padding: 10 }}>
+                        <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('user_order_history')} style={{ width: 80, height: 80, borderRadius: 40 }}>
+                            <Image defaultSource={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 40 }} source={{ cache: 'default', uri: userData.fotoDiri }} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
                 <PickupOrReceiverModal
                     navigation={navigation}
                     coordinate={coords}
                     params={route.params}
-                    userData={userData} />
+                    userData={userData}
+                    address={defaultAddress}
+                    isRegionRunning={isRegionRunning}
+                    street={street}
+                    isPengirim={isPengirim} />
             </View>
         </View>
     )
@@ -435,7 +509,7 @@ const ConfirmOrder = ({ navigation }) => {
 
 
     useEffect(() => {
-        console.log('data orderan :: ', orders);
+
     });
 
 
@@ -455,21 +529,24 @@ const ConfirmOrder = ({ navigation }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }}>
             <View style={{ padding: 16, flex: 1 }}>
-                <View style={{ padding: 50, marginTop: 20, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text>Tempat Icon disini</Text>
+                <View style={{ padding: 10, marginTop: 20, justifyContent: 'center', alignItems: 'center', height: '20%', width: '100%' }}>
+                    <Image source={require('../../assets/logos/4.png')} style={{ height: '100%', width: '100%', alignSelf: 'stretch' }} />
                 </View>
                 <View style={{ padding: 10 }}>
+                    
                     <View>
                         <Text style={{ fontSize: 20, letterSpacing: .4 }}>Pengirim</Text>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{pengirim.name}</Text>
-                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jalan testing kaarena blum ada kartu kredit buat google map</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>{pengirim.address}</Text>
+                        <Text>Detail Alamat : {pengirim.address_detail}</Text>
                     </View>
+
                     <View style={{ marginTop: 20 }}>
                         <Text style={{ fontSize: 20, letterSpacing: .4 }}>Penerima</Text>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{penerima.name}</Text>
-                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>Jalan testing kaarena blum ada kartu kredit buat google map</Text>
+                        <Text style={{ fontSize: 16, letterSpacing: .5 }}>{penerima.address}</Text>
+                        <Text>Detail Alamat : {penerima.address_detail}</Text>
                     </View>
-
 
                     <View style={{ marginTop: 40 }}>
                         <TextInput
@@ -482,7 +559,7 @@ const ConfirmOrder = ({ navigation }) => {
                             placeholder="Input Detail barang yg mau dikirim disini."
                             placeholderTextColor="black" />
                         {
-                            errMsg === "" ? null : <Text style={{ fontSize: 18, fontWeight:'bold' }}>*{errMsg}</Text>
+                            errMsg === "" ? null : <Text style={{ fontSize: 18, fontWeight: 'bold' }}>*{errMsg}</Text>
                         }
                     </View>
 
@@ -494,7 +571,6 @@ const ConfirmOrder = ({ navigation }) => {
                             </View>
                         </View>
                     </View>
-
                     <TouchableOpacity onPress={() => nextScreenHandler()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
                         <Text style={{ fontSize: 17, fontWeight: '600', color: 'white' }}>Order Sekarang</Text>
                     </TouchableOpacity>
@@ -502,6 +578,94 @@ const ConfirmOrder = ({ navigation }) => {
             </View>
         </View>
     )
+};
+
+const PilihLewatMap = ({ navigation, route }) => {
+
+    let mapRef = useRef(null);
+
+    const { width, height } = Dimensions.get('window');
+    const { data } = route.params;
+    const isFocused = useIsFocused();
+    let [coords, setCoords] = useState({});
+    let [isLoading, setIsLoading] = useState(true);
+
+    const mapFitToCoordinates = () => {
+
+        return mapRef.fitToSuppliedMarkers(
+            [
+                'dari'
+            ],
+            {
+                edgePadding: {
+                    top: 250,
+                    right: 250,
+                    left: 250,
+                    bottom: 250
+                }
+            }
+        );
+    };
+
+    useEffect(() => {
+        SplashScreen.hide();
+
+        Geolocation.getCurrentPosition(
+            (position) => {
+                setCoords(position.coords);
+
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, 2000) // 2s
+            },
+            (err) => {
+                console.log('failed to retreive user location', err)
+            },
+            { enableHighAccuracy: true, timeout: 2000 }
+        )
+    }, [isFocused]);
+
+    let [regionChange, setRegionChange] = useState(0);
+    let [isRegionMoving, setRegionMove] = useState(false);
+
+    return isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+            <ActivityIndicator size='large' color='blue' />
+        </View>
+    ) : (
+            <View style={{ flex: 1, backgroundColor: 'white' }}>
+                <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+                <View key={1} style={{ flex: 1, position: 'relative' }}>
+                    <MapView
+                        initialRegion={{
+                            latitude: coords.latitude,
+                            longitude: coords.longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005
+                        }}
+                        onLayout={() => mapFitToCoordinates()}
+                        pitchEnabled={true}
+                        scrollEnabled={true}
+                        zoomEnabled={true}
+                        rotateEnabled={false}
+                        ref={(ref) => mapRef = ref} style={{ flex: 1 }} zoomEnabled={true}>
+                        <MapView.Marker identifier="dari" coordinate={{ latitude: coords.latitude, longitude: coords.longitude }} />
+                    </MapView>
+                    <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: 0, left: 0, marginTop: StatusBar.currentHeight }}>
+                        <View style={{ padding: 10 }}>
+                            <TouchableOpacity style={{ width: 80, height: 80, borderRadius: 40 }}>
+                                <Image defaultSource={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 40 }} source={{ cache: 'default', uri: data.fotoDiri }} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <ViaMap
+                        navigation={navigation}
+                        isRouteMap={false}
+                        params={data}
+                        coordinate={coords} />
+                </View>
+            </View>
+        )
 }
 
 export {
@@ -509,18 +673,6 @@ export {
     SendStep,
     PickupOrReceiverScreen,
     RouteStep,
-    ConfirmOrder
+    ConfirmOrder,
+    PilihLewatMap
 };
-
-//  {/* <MapView.Marker
-//                                         draggable coordinate={pos === 0 ? region : pos} identifier='tujuan' title='tujuan'>
-//                                             <View style={{ padding: 10 }}>
-//                                                 <Icon name='pin-sharp' size={80} color='red'/>
-//                                             </View>
-//                                         </MapView.Marker> *
-
-// (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-//         <ActivityIndicator size='large' color='blue' />
-//     </View>
-// )

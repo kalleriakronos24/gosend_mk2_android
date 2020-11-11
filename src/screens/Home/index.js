@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StatusBar, ScrollView, ActivityIndicator, Touchable, TouchableOpacity, Dimensions, ToastAndroid } from 'react-native'
+import { View, Text, StatusBar, ScrollView, ActivityIndicator, Touchable, TouchableOpacity, Dimensions, ToastAndroid, Alert } from 'react-native'
 import Swiper from 'react-native-swiper';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import SplashScreen from '../Splash/index';
 import { useIsFocused } from '@react-navigation/native';
 import io from 'socket.io-client';
-import { formatRupiah } from '../../utils/functionality';
+import { formatRupiah, requestLocationPermission } from '../../utils/functionality';
+import Geolocation from '@react-native-community/geolocation';
+
 
 const socket = io('http://192.168.43.178:8000/', {
     "transports": ['websocket'],
@@ -16,6 +17,7 @@ const socket = io('http://192.168.43.178:8000/', {
 });
 
 
+const GOOGLE_MAPS_APIKEY = 'AIzaSyBORtT7wcFXxJFDsoerlhCiX7ZkcdX4LSk';
 
 
 const Home = ({ navigation }) => {
@@ -23,6 +25,7 @@ const Home = ({ navigation }) => {
     // vars and invoked function
     const dispatch = useDispatch();
     const barHeight = StatusBar.currentHeight;
+    const device = useSelector(state => state.device);
 
     // state
     let [index, setIndex] = useState(0);
@@ -33,11 +36,15 @@ const Home = ({ navigation }) => {
 
     const logoutHandler = async () => {
         console.log('logged out');
-        dispatch({ type: 'LOGOUT' });
 
         await AsyncStorage.removeItem('LOGIN_TOKEN')
+
+        dispatch({ type: 'LOGOUT' });
+
+        await navigation.replace('new_login');
     };
 
+    let [address, setAddress] = useState("");
 
     const isFocused = useIsFocused();
 
@@ -74,8 +81,31 @@ const Home = ({ navigation }) => {
 
     }, [isFocused]);
 
+
+    useEffect(() => {
+        Geolocation.getCurrentPosition(
+            async (position) => {
+                await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
+                    .then((response) => response.json())
+                    .then((res) => {
+                        console.log(res);
+                        setAddress(res.results[0].address_components[0].short_name || null + ", " + res.results[0].address_components[1].short_name || null);
+                    })
+            },
+            (err) => {
+                // setError('Terjadi kesalahan koneksi dalam memproses lokasi anda. tidak dapat melanjutkan')
+                console.log('failed to retreive user location', err)
+            },
+            { enableHighAccuracy: false, timeout: 8000, distanceFilter: 1000 }
+        )
+    }, [isFocused])
+
+    useEffect(() => {
+        requestLocationPermission();
+    }, []);
+
     const fetchUserByToken = async (token) => {
-        console.log('this running ?');
+
         await fetch('http://192.168.43.178:8000/user/single/' + token, {
             method: 'GET',
             headers: {
@@ -92,6 +122,7 @@ const Home = ({ navigation }) => {
                         setIsLoading(false);
                     }, 2000)
                 setUserData(res.data);
+                console.log('count ?? ', res.data.count);
             })
             .catch(err => {
                 throw new Error(err);
@@ -104,11 +135,39 @@ const Home = ({ navigation }) => {
 
     const switchScreenHandler = () => {
         if (userData.user_order === "" || userData.user_order === null || userData.user_order === undefined) {
-            navigation.navigate('send_step', { data: { name: userData.fullname, no_hp: userData.no_hp } });
+            navigation.navigate('pilih_lewat_map', { data: { name: userData.fullname, no_hp: userData.no_hp, fotoDiri: userData.fotoDiri } });
         } else {
             ToastAndroid.showWithGravity('Tidak dapat membuat order, kamu masih punya order aktif', ToastAndroid.LONG, ToastAndroid.BOTTOM);
             return;
         }
+    };
+
+
+    const test = async () => {
+
+
+        let body = {
+            message: {
+                data: {
+                    testing: 'HELLOOOO BROOO KIMMMMM'
+                }
+            },
+            device_token: 'cR8QRvlJRxSYX-WqzLWDh-:APA91bGc2yQAvMR28L4-yTv9q-UPmcsDYYHrBOHhW8CmArfSIPvf3b0brdCrsZMzEvgcc7JWl8YrKikCwAs5XkOCYalgxAFplmV-i30YHEtPUdyJNQb54QHEwnPdjsbmtdq0Lls3FscC'
+        };
+
+        return await fetch(`http://192.168.43.178:8000/testing123`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(res => {
+                console.log('berhasil ', res);
+            })
+            .catch(err => {
+                console.log('error :: ', err);
+            })
     };
 
     return isLoading ?
@@ -116,7 +175,7 @@ const Home = ({ navigation }) => {
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
                 <ActivityIndicator color='blue' size='large' />
             </View>
-        ) : type === 'courier' ? (
+        ) : (
             <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
                 <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent' />
                 <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={0}>
@@ -127,13 +186,15 @@ const Home = ({ navigation }) => {
                             <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row' }}>
                                     <Icon name="location-outline" size={20} color='white' />
-                                    <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>(Nama Lokasi Sekarang)</Text>
+                                    <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>{address || "Lokasi tidak ditemukan."}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row' }}>
-                                    <View style={{ marginHorizontal: 10 }}>
+                                    <TouchableOpacity onPress={() => Alert.alert('Pesan Sistem', 'Fitur Pencarian Belum Tersedia')} style={{ marginHorizontal: 10 }}>
                                         <Icon name="search-outline" size={20} color="white" />
-                                    </View>
-                                    <Icon name="basket-outline" size={20} color='white' />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onLongPress={() => ToastAndroid.showWithGravity('Cek Orderan', ToastAndroid.LONG, ToastAndroid.BOTTOM)} onPress={() => navigation.push('find_courier')} activeOpacity={.7}>
+                                        <Icon name="basket-outline" size={20} color='white' />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                             <View style={{ paddingHorizontal: 32, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
@@ -145,36 +206,26 @@ const Home = ({ navigation }) => {
                             <View style={{ backgroundColor: 'white', borderTopLeftRadius: 70, flex: 1, zIndex: 10 }}>
                                 <View style={{ paddingTop: 20, paddingHorizontal: 32 }}>
                                     <View style={{ padding: 16 }}>
-                                        <Text style={{ fontSize: 23, fontWeight: '300' }}>Welcome, {fullname.split(' ')[fullname.split(' ').length - 1]}, have a nice day!</Text>
-                                        <View style={{ paddingTop: 16 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>My Wallet</Text>
-                                            <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
-                                                <Icon name='wallet-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{formatRupiah(String(userData.courier_info.balance), "Rp. ")},-</Text>
-                                            </View>
-                                        </View>
-                                        <View style={{ paddingTop: 16 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Item Dikirim Hari ini</Text>
-                                            <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
-                                                <Icon name='bicycle-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{userData.todayCount || 0}</Text>
-                                            </View>
+                                        <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>Fitur Kami</Text>
+
+                                        <View style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <TouchableOpacity activeOpacity={0.7} onPress={() => switchScreenHandler()} style={{ backgroundColor: '#1F4788', padding: 6, height: 150, width: 150, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
+                                                <View style={{ padding: 6, height: 55, width: 55, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center', borderColor: 'white' }}>
+                                                    <Icon name="bicycle-outline" size={35} color='white' />
+                                                </View>
+                                                <View style={{ paddingTop: 20 }}>
+                                                    <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color: 'white' }}>Kirim Barang</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity activeOpacity={0.4} onPress={() => test()} style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
+                                                <Icon size={40} name="arrow-forward-circle-outline" />
+                                            </TouchableOpacity>
                                         </View>
                                     </View>
 
-                                    <View style={{ paddingTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                            <Text style={{ fontSize: 18 }}>Isi Wallet</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order', { id: userData._id, wallet: userData.courier_info.balance })} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                            <Text style={{ fontSize: 18 }}>Cari Orderan {userData.active_order ? `( 1 )` : null}</Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    <View style={{ padding: 16, marginTop: 10 }}>
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Notes : </Text>
+                                    <View style={{ padding: 16 }}>
+                                        <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600', textAlign: 'center' }}>{'\u00A9'}Copyright Ongqir 2020. All Rights Reserved</Text>
                                         <View style={{ padding: 6 }}>
-                                            <Text>N/B</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -191,7 +242,7 @@ const Home = ({ navigation }) => {
                                     <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>Account Type : {userData.type === 'user' ? 'User' : 'Courier'}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row' }}>
-                                    <TouchableOpacity style={{ paddingHorizontal: 5 }}>
+                                    <TouchableOpacity activeOpacity={.8} onPress={() => Alert.alert('Pesan Sistem', 'fitur setting belum tersedia')} style={{ paddingHorizontal: 5 }}>
                                         <Icon name="settings-outline" size={20} color="white" />
                                     </TouchableOpacity>
                                     <TouchableOpacity style={{ paddingHorizontal: 5 }} activeOpacity={.7} onPress={() => logoutHandler()}>
@@ -209,18 +260,16 @@ const Home = ({ navigation }) => {
                                 <View style={{ paddingTop: 20, paddingHorizontal: 32 }}>
                                     <View style={{ padding: 16 }}>
                                         <View style={{ paddingTop: 16 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Total Order Berhasil</Text>
-                                            <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
-                                                <Icon name='bicycle-outline' color='blue' size={25} />
-                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{userData.totalSuccessOrder}</Text>
-                                            </View>
+                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Menu</Text>
+                                            {/* <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
+                                                <Icon name='basket-outline' color='blue' size={25} />
+                                                <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>{userData.count}</Text>
+                                            </View> */}
                                         </View>
                                     </View>
+
                                     <View style={{ paddingTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                            <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Penggunaan Wallet</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('find_order')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
+                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('user_order_history')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
                                             <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Order</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -237,124 +286,7 @@ const Home = ({ navigation }) => {
                     </ScrollView>
                 </Swiper>
             </View>
-        ) : (
-                <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
-                    <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent' />
-                    <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={0}>
-                        {/* Main Feature */}
-                        <ScrollView style={{ flex: 1 }}>
-                            <View style={{ height: 300, backgroundColor: '#1F4788', borderBottomRightRadius: 70, paddingTop: barHeight }}>
-
-                                <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        <Icon name="location-outline" size={20} color='white' />
-                                        <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>(Nama Lokasi Sekarang)</Text>
-                                    </View>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        <View style={{ marginHorizontal: 10 }}>
-                                            <Icon name="search-outline" size={20} color="white" />
-                                        </View>
-                                        <TouchableOpacity onPress={() => navigation.push('find_courier')} activeOpacity={.7}>
-                                            <Icon name="basket-outline" size={20} color='white' />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                                <View style={{ paddingHorizontal: 32, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                                    <Text style={{ fontSize: 30, fontWeight: '600', letterSpacing: 0.5, color: 'white' }}>Ongqir v0.1 Release!</Text>
-                                </View>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <View style={{ backgroundColor: '#1F4788', height: 70, width: 70, position: 'absolute', zIndex: -10, borderBottomRightRadius: 200 }} />
-                                <View style={{ backgroundColor: 'white', borderTopLeftRadius: 70, flex: 1, zIndex: 10 }}>
-                                    <View style={{ paddingTop: 20, paddingHorizontal: 32 }}>
-                                        <View style={{ padding: 16 }}>
-                                            <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>Fitur Kami</Text>
-
-                                            <View style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                <TouchableOpacity activeOpacity={0.7} onPress={() => switchScreenHandler()} style={{ backgroundColor: '#1F4788', padding: 6, height: 150, width: 150, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 20, borderTopRightRadius: 20 }}>
-                                                    <View style={{ padding: 6, height: 55, width: 55, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center', borderColor: 'white' }}>
-                                                        <Icon name="bicycle-outline" size={35} color='white' />
-                                                    </View>
-                                                    <View style={{ paddingTop: 20 }}>
-                                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color: 'white' }}>Kirim Barang</Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity activeOpacity={0.4} onPress={() => switchScreenHandler()} style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
-                                                    <Icon size={40} name="arrow-forward-circle-outline" />
-                                                </TouchableOpacity>
-                                            </View>
-                                        </View>
-
-                                        {/* <View style={{ padding: 16 }}>
-                                            <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600' }}>About Our Service</Text>
-                                            <View style={{ padding: 6 }}>
-                                                <Text style={{ letterSpacing: 0.4, fontSize: 16 }}>
-                                                    Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-                                                </Text>
-                                            </View>
-                                        </View> */}
-                                    </View>
-                                </View>
-                            </View>
-                        </ScrollView>
-                        {/* Account Page including check order */}
-                        <ScrollView style={{ flex: 1 }}>
-                            <View style={{ height: 300, backgroundColor: '#1F4788', borderBottomRightRadius: 70, paddingTop: barHeight }}>
-
-                                <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        <Icon name="person-outline" size={20} color='white' />
-                                        <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>Account Type : {userData.type === 'user' ? 'User' : 'Courier'}</Text>
-                                    </View>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        <TouchableOpacity style={{ paddingHorizontal: 5 }}>
-                                            <Icon name="settings-outline" size={20} color="white" />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={{ paddingHorizontal: 5 }} activeOpacity={.7} onPress={() => logoutHandler()}>
-                                            <Icon name="exit-outline" size={20} color='white' />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                                <View style={{ paddingHorizontal: 32, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                                    <Text style={{ fontSize: 30, fontWeight: '600', letterSpacing: 0.5, color: 'white' }}>My Account</Text>
-                                </View>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <View style={{ backgroundColor: '#1F4788', height: 70, width: 70, position: 'absolute', zIndex: -10, borderBottomRightRadius: 200 }} />
-                                <View style={{ backgroundColor: 'white', borderTopLeftRadius: 70, flex: 1, zIndex: 10 }}>
-                                    <View style={{ paddingTop: 20, paddingHorizontal: 32 }}>
-                                        <View style={{ padding: 16 }}>
-                                            <View style={{ paddingTop: 16 }}>
-                                                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Total Barang yg di kirim / ambil</Text>
-                                                <View style={{ paddingTop: 8, flexDirection: 'row', alignItems: 'center' }}>
-                                                    <Icon name='basket-outline' color='blue' size={25} />
-                                                    <Text style={{ marginLeft: 10, textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>0</Text>
-                                                </View>
-                                            </View>
-                                        </View>
-
-                                        <View style={{ paddingTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('courier_balance')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                                <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Penggunaan Wallet</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('user_order_history')} style={{ padding: 8, borderWidth: 1, borderRadius: 8, borderColor: 'blue', justifyContent: 'center', alignItems: 'center', width: (width - 8 - 16 - 32) / 2 - 12 }}>
-                                                <Text style={{ fontSize: 18, textAlign: 'center' }}>Cek Riwayat Order</Text>
-                                            </TouchableOpacity>
-                                        </View>
-
-                                        <View style={{ padding: 16, marginTop: 10 }}>
-                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Notes : </Text>
-                                            <View style={{ padding: 6 }}>
-                                                <Text>N/B</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            </View>
-                        </ScrollView>
-                    </Swiper>
-                </View>
-            )
+        )
 }
 
 export default Home

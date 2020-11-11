@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useSelector, useDispatch } from 'react-redux';
 import { SplashScreen } from '../screens/Splash';
 import Home from '../screens/Home';
-import { Send, SendStep, PickupOrReceiverScreen, RouteStep, ConfirmOrder } from '../screens/Send';
+import { Send, SendStep, PickupOrReceiverScreen, RouteStep, ConfirmOrder, PilihLewatMap } from '../screens/Send';
 import FindCourer from '../screens/FindCourier';
 import OrderFind from '../screens/Courier';
 import OrderDetailCourier from '../screens/Courier/DetailOrder';
@@ -40,12 +40,18 @@ const socket = io('http://192.168.43.178:8000/', {
 
 
 const Stack = createStackNavigator();
+let navRef = null
+let deviceTokenDispatch = null;
 
 const Router = React.memo((props) => {
-    const ref = useRef(null);
+
+    navRef = useRef(null);
+    deviceTokenDispatch = useDispatch();
+
     let [token, setToken] = useState(null);
     let login_token = useSelector(state => state.token);
     let [isLoading, setIsLoading] = useState(true);
+    
     const dispatch = useDispatch();
     let count = useSelector(state => state.orders.count);
     let appState = useRef(AppState.currentState);
@@ -91,7 +97,7 @@ const Router = React.memo((props) => {
     }, []);
 
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navRef}>
             <Stack.Navigator headerMode='none'>
 
                 {isLoading ? (
@@ -184,6 +190,12 @@ const Router = React.memo((props) => {
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
+                        <Stack.Screen name="pilih_lewat_map" component={PilihLewatMap} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
                         <Stack.Screen name="user_order_history" component={UserOrderHistory} options={{
                             headerShown: false,
                             cardShadowEnabled: false,
@@ -208,24 +220,34 @@ const Router = React.memo((props) => {
                             cardOverlayEnabled: false,
                             cardOverlay: false
                         }} />
+
+
+
+                        { /* ??? */}
+
+                        <Stack.Screen name="new_login" component={NewLogin} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
+                        <Stack.Screen name="login_pass" component={LoginPassword} options={{
+                            headerShown: false,
+                            cardShadowEnabled: false,
+                            cardOverlayEnabled: false,
+                            cardOverlay: false
+                        }} />
                     </React.Fragment>
                 ) : (
                             // not logged in routes
 
                             <React.Fragment>
-
-                                <Stack.Screen name="landing" component={Landing} options={{
+                                {/* <Stack.Screen name="login" component={Login} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
                                     cardOverlay: false
-                                }} />
-                                <Stack.Screen name="login" component={Login} options={{
-                                    headerShown: false,
-                                    cardShadowEnabled: false,
-                                    cardOverlayEnabled: false,
-                                    cardOverlay: false
-                                }} />
+                                }} /> */}
                                 <Stack.Screen name="new_login" component={NewLogin} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
@@ -238,12 +260,12 @@ const Router = React.memo((props) => {
                                     cardOverlayEnabled: false,
                                     cardOverlay: false
                                 }} />
-                                <Stack.Screen name="register" component={Register} options={{
+                                {/* <Stack.Screen name="register" component={Register} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
                                     cardOverlayEnabled: false,
                                     cardOverlay: false
-                                }} />
+                                }} /> */}
                                 <Stack.Screen name="new_register" component={NewRegister} options={{
                                     headerShown: false,
                                     cardShadowEnabled: false,
@@ -275,4 +297,8 @@ const Router = React.memo((props) => {
     )
 })
 
-export default Router;
+export {
+    Router,
+    navRef,
+    deviceTokenDispatch
+};

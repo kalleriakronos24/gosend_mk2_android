@@ -208,7 +208,7 @@ const OrderFind = ({ navigation, route }) => {
                 {
                     notFound ? (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold', textAlign:'center' }}>{wallet === 0 || wallet < 5000 ? "Wallet kamu kurang untuk mendapatkan orderan, harap isi wallet mu agar kamu bisa mendapatkan orderan." : "Kamu belum dapat orderan.. harap menunggu, orderan akan masuk di bawah ini secara otomatis"}</Text>
+                            <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold', textAlign: 'center' }}>{wallet === 0 || wallet < 5000 ? "Wallet kamu kurang untuk mendapatkan orderan, harap isi wallet mu agar kamu bisa mendapatkan orderan." : "Kamu belum dapat orderan.. harap menunggu, orderan akan masuk di bawah ini secara otomatis"}</Text>
 
                             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
                                 <Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5 }}>Status : </Text>
@@ -224,6 +224,8 @@ const OrderFind = ({ navigation, route }) => {
                                 <Text>4. Orderan masuk juga berdasarkan jumlah Wallet Kamu, jika kamu merasa walletmu sedikit , semisal di bawah Rp. 10,000 maka segera isi walletmu, karena walletmu juga termasuk faktor terbesar dalam mendapatkan orderam</Text>
 
                                 <Text>5. Cek status online kamu di atas Catatan</Text>
+                                <Text>6. Status akan terupdate otomatis</Text>
+                                <Text>7. Orderan tidak dapat di cancel oleh si PengOrder jika setelah kamu telah mengambil barang antaran tersebut</Text>
                             </View>
                         </View>
                     ) : (

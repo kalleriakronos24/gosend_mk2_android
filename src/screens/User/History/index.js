@@ -4,24 +4,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { formatRupiah } from '../../../utils/functionality';
 
 const UserOrderHistory = ({ navigation, route }) => {
 
 
     let [initText, setInitText] = useState('Searching for nearest Courier...')
-    let [isLoading, setIsLoading] = useState(true);
+    let [isLoading, setIsLoading] = useState(false);
 
     let userReducer = useSelector(state => state.orders);
     let dispatch = useDispatch();
 
-    let { orders, costumer_coordinate } = userReducer;
     let [courierData, setCourierData] = useState({});
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
     let [count, setCount] = useState(0);
     useEffect(() => {
         getUserOrder();
-        dispatch({ type: 'reset' });
+        // dispatch({ type: 'reset' });
     }, [])
 
 
@@ -43,7 +43,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                         return result.json();
                     })
                     .then((result) => {
-                        console.log('isi dari result :: ', result);
+                        console.log('isi dari result :: ', result.items);
                         setCourierData(result.courier);
                         setUserData(result.user);
                         setOrderItems(result.items);
@@ -89,102 +89,95 @@ const UserOrderHistory = ({ navigation, route }) => {
                         <>
                             <ScrollView style={{ flex: 1 }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}>
 
-                                <View style={{ padding: 10 }}>
-                                    <View style={{ padding: 6, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => navigation.navigate('home')} style={{ padding: 6 }}>
-                                            <Icon name='home-outline' size={25} />
-                                        </TouchableOpacity>
-                                        <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: 'bold' }}> Your Orders History </Text>
-                                        <TouchableOpacity activeOpacity={.7} onPress={() => console.log('no effect')} style={{ padding: 6 }}>
-                                            <Icon name='help-circle-outline' size={25} />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
                                 {
                                     false ? (
                                         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                                             <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6 }}>no orders found yet, go order some!</Text>
                                         </View>
                                     ) : (
-                                            <View style={{ padding: 16, marginTop: 10, flex: 1 }}>
-                                                <View style={{ flex: 1 }}>
-                                                    <View style={{ padding: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <View>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{userData.fullname}</Text>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10 }}>As {userData.type}</Text>
-                                                        </View>
-                                                        <View style={{ height: 100, width: 100, borderRadius: 10 }}>
-                                                            <Icon name='person-outline' size={50} />
+                                            <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
+                                                <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
+                                                <View style={{ padding: 16, flex: 1 }}>
+                                                    <View style={{ justifyContent: 'center', flex: 1 }}>
+                                                        <View style={{ height: 140, width: '100%', borderRadius: 10 }}>
+                                                            <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={require('../../../assets/logos/4.png')} />
                                                         </View>
                                                     </View>
-                                                </View>
-                                                <View style={{ marginTop: 15 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>User details</Text>
-                                                    <View style={{ padding: 6 }}>
-                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Statistic based on last orders</Text>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 10 }}>total order count : </Text>
-                                                            <Text style={{ marginLeft: 5, fontSize: 15, fontWeight: 'bold', letterSpacing: .4, textAlign: 'center', marginTop: 10 }}>{count}</Text>
+                                                    <View style={{
+                                                        marginTop: 10,
+                                                        borderBottomWidth: 1,
+                                                        borderBottomColor: 'black'
+                                                    }} />
+
+                                                    <View style={{ flexDirection: 'row', marginTop: 20 }}>
+                                                        <View style={{ height: 140, width: 140, borderRadius: 10 }}>
+                                                            <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={{ uri: userData.foto_diri }} />
+                                                        </View>
+                                                        <View style={{ flex: 1, paddingHorizontal: 20 }}>
+                                                            <Text style={{ fontSize: 20 }}>{userData.email}</Text>
+                                                            <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>{userData.fullname}</Text>
+                                                            <Text style={{ fontSize: 20, letterSpacing: .5 }}>{userData.no_hp}</Text>
                                                         </View>
                                                     </View>
-                                                </View>
-                                                <View style={{ marginTop: 15, flex: 1 }}>
-                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>Your order history </Text>
-                                                    {
-                                                        orderItems.map((x, i) => {
-                                                            return x.item.map((v, y) => {
-                                                                return (
-                                                                    <View key={y} style={{ padding: 6, borderWidth: 1, borderRadius: 10, borderColor: 'blue', marginBottom: 20 }}>
-                                                                        <View style={{ padding: 4 }}>
-                                                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 }}>
-                                                                                <Text>{v.order_id}</Text>
-                                                                                <Text>{v.date}</Text>
-                                                                            </View>
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>{v.send_item}</Text>
+                                                    <View style={{
+                                                        marginTop: 20,
+                                                        borderBottomWidth: 1,
+                                                        borderBottomColor: 'black'
+                                                    }} />
 
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Ongkir : Rp.{v.ongkir},-</Text>
+                                                    <View style={{ flex: 1, padding: 16 }}>
+                                                        <Text style={{ fontSize: 19, fontWeight: '600' }}>History Pengiriman</Text>
 
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Jarak : {v.distance} km</Text>
+                                                        <View style={{ padding: 8, flex: 1 }}>
 
-                                                                            <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Order tipe : {x.tipe}</Text>
+                                                            {
+                                                                orderItems.map((v, i) => {
+                                                                    return (
+                                                                        <>
+                                                                            <View key={i}>
+                                                                                <Text style={{ fontSize: 20 }}>tgl : {v.order_date}</Text>
+                                                                                <View style={{ marginTop: 6 }}>
+                                                                                    <Text style={{ fontSize: 20 }}>Pengirim</Text>
+                                                                                    <View style={{ padding: 6 }}>
+                                                                                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{v.pengirim.name}</Text>
+                                                                                        <Text>{v.pengirim.address}</Text>
+                                                                                    </View>
 
-                                                                            <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
-                                                                                <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{x.tipe === 'antar' ? 'Antar ke ' : 'Ambil dari '}(Alamat) : </Text>
-                                                                                <View style={{ padding: 6, flex: 1 }}>
-                                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.address_detail}</Text>
                                                                                 </View>
-                                                                            </View>
-                                                                            <View style={{ flexDirection: 'row', flex: 1, marginTop: 5 }}>
-                                                                                <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{x.tipe === 'antar' ? 'Antar ke ' : 'Ambil dari '}(No.Hp)</Text>
-                                                                                <View style={{ padding: 2, flexDirection: 'column' }}>
-                                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.contact_name}</Text>
-
-                                                                                    <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4 }}>{v.to.phone}</Text>
+                                                                                <View style={{ marginTop: 6 }}>
+                                                                                    <Text style={{ fontSize: 20 }}>Penerima</Text>
+                                                                                    <View style={{ padding: 6 }}>
+                                                                                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{v.penerima.name}</Text>
+                                                                                        <Text>{v.penerima.address}</Text>
+                                                                                    </View>
                                                                                 </View>
+                                                                                <Text style={{ fontSize: 20 }}>Ongkir : {formatRupiah(String(v.ongkir), 'Rp. ')}</Text>
+                                                                                <Text style={{ fontSize: 20 }}>Status : {v.status ? 'Barang telah sampai tujuan' : 'Barang belum sampai tujuan.'}</Text>
+                                                                                <Text style={{ fontSize: 20 }}>Barang terkirim pada : {v.waktu_barang_terkirim}</Text>
                                                                             </View>
-                                                                            {
-                                                                                x.user_cancel && x.courier_cancel ? (
-                                                                                    <>
-                                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : Orderan Di batalkan </Text>
-                                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Alasan : {x.alasan_user}</Text>
-                                                                                    </>
-                                                                                ) : (
 
-                                                                                        <Text style={{ fontSize: 15, fontWeight: 'bold', letterSpacing: .4, marginTop: 5 }}>Status : {v.status ? 'sudah dikirim' : 'belum terkirim'}</Text>
-                                                                                    )
-                                                                            }
-                                                                        </View>
-                                                                    </View>
-                                                                )
-                                                            })
-                                                        })
-                                                    }
+                                                                            <View style={{
+                                                                                marginTop: 20,
+                                                                                borderBottomWidth: 1,
+                                                                                borderBottomColor: 'black',
+                                                                                marginBottom: 15
+
+                                                                            }} />
+                                                                        </>
+                                                                    )
+                                                                })
+                                                            }
+
+                                                        </View>
+                                                    </View>
                                                 </View>
                                             </View>
                                         )
                                 }
+                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>Total Transaksi </Text>
+                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>{formatRupiah(String(orderItems.map((v, i) => v.ongkir).reduce((x, y) => x + y, 0)), 'Rp. ')}</Text>
                                 <View style={{ marginTop: 15, marginHorizontal: 15, marginBottom: 5 }}>
-                                    <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', height: 45, borderRadius: 10 }}>
+                                    <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', height: 45, borderRadius: 10, marginBottom: 30 }}>
                                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Back to home</Text>
                                     </TouchableOpacity>
                                 </View>

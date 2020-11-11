@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const NewLogin = ({ navigation }) => {
+
     let [password, setPassword] = useState("");
     let [email, setEmail] = useState("");
-
+    
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={{ padding: 16, flex: 1 }}>
@@ -17,7 +19,7 @@ const NewLogin = ({ navigation }) => {
                             width: '100%',
                             alignSelf: 'stretch',
                             borderRadius: 10
-                        }} source={require('../../assets/banner/warlock.jpg')} />
+                        }} source={require('../../assets/logos/1.png')} />
                     </View>
                 </View>
 
@@ -44,7 +46,7 @@ const NewLogin = ({ navigation }) => {
                         onChangeText={(v) => setEmail(v)}
                         placeholder="Ketik Email.."
                         placeholderTextColor="black" />
-                    <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('login_pass', { email: email })} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
+                    <TouchableOpacity activeOpacity={.8} onPress={() => email === '' ? Alert.alert('Pesan Sistem', 'Harap isi email yang valid terlebih dahulu') : navigation.navigate('login_pass', { email: email })} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
                         <Text style={{
                             fontSize: 20,
                             fontWeight: 'bold',
@@ -57,7 +59,7 @@ const NewLogin = ({ navigation }) => {
                         <Text style={{ fontSize: 18 }}>Atau</Text>
                     </View>
 
-                    <TouchableOpacity onPress={() => navigation.navigate('new_register', { email: email })} style={{ padding: 12, borderRadius: 10, width: '100%', backgroundColor: '#41CA3E' }}>
+                    <TouchableOpacity onPress={() => email === '' ? Alert.alert('Pesan Sistem', 'Harap isi email yang valid terlebih dahulu') : navigation.navigate('new_register', { email: email })} style={{ padding: 12, borderRadius: 10, width: '100%', backgroundColor: '#41CA3E' }}>
                         <Text style={{
                             fontSize: 20,
                             fontWeight: 'bold',
@@ -81,20 +83,22 @@ const NewLogin = ({ navigation }) => {
     )
 }
 
-const LoginPassword = ({ route }) => {
+const LoginPassword = ({ navigation, route }) => {
 
     const { email } = route.params;
-
+    const device = useSelector(state => state.device);
+    const { device_token } = device;
     let [isLoginError, setIsLoginError] = useState(false);
     let [errMsg, setErrorMsg] = useState("");
     let [password, setPassword] = useState("");
 
+    let [isPasswordHide, setPasswordHide] = useState(true);
+
     const body = {
         email,
-        password
+        password,
+        token: device_token
     };
-
-
     const dispatch = useDispatch();
 
 
@@ -128,10 +132,11 @@ const LoginPassword = ({ route }) => {
                     return;
                 }
 
-                const { token } = res;
-                console.log('LOGIN TOKEN : ', token);
-                dispatch({ type: 'LOGIN_TOKEN', token });
-                AsyncStorage.setItem('LOGIN_TOKEN', token);
+                const { tokenA } = res;
+                console.log('LOGIN TOKEN : ', tokenA);
+                dispatch({ type: 'LOGIN_TOKEN', tokenA });
+                AsyncStorage.setItem('LOGIN_TOKEN', tokenA);
+                navigation.replace('home');
             })
             .catch(err => {
                 console.log('Login error ::: ', err);
@@ -140,6 +145,7 @@ const LoginPassword = ({ route }) => {
                 return;
             })
     }
+
 
 
     return (
@@ -152,7 +158,7 @@ const LoginPassword = ({ route }) => {
                             width: '100%',
                             alignSelf: 'stretch',
                             borderRadius: 10
-                        }} source={require('../../assets/banner/warlock.jpg')} />
+                        }} source={require('../../assets/logos/1.png')} />
                     </View>
                 </View>
 
@@ -169,16 +175,28 @@ const LoginPassword = ({ route }) => {
                 </View>
                 <View style={{ paddingTop: 30, paddingHorizontal: 20 }}>
                     <Text style={{ fontSize: 16, marginBottom: 5 }}>Email : {email}</Text>
-                    <TextInput
-                        style={{
-                            padding: 12,
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            width: '100%'
-                        }}
-                        placeholder="Input Password ..."
-                        placeholderTextColor="black"
-                        onChangeText={(v) => setPassword(v)} />
+                    <View style={{
+                        flexDirection: 'row',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        width: '100%',
+                        alignItems: 'center'
+                    }}>
+
+                        <TextInput
+                            style={{
+                                padding: 12,
+                                width: '90%'
+                            }}
+                            placeholder="Input Password ..."
+                            textContentType='password'
+                            secureTextEntry={isPasswordHide ? true : false}
+                            placeholderTextColor="black"
+                            onChangeText={(v) => setPassword(v)} />
+                        <TouchableOpacity onPress={() => setPasswordHide(!isPasswordHide)} activeOpacity={.7} style={{ padding: 6 }}>
+                            <Icon name={`eye${isPasswordHide ? '-off-' : '-'}outline`} color='blue' size={24} />
+                        </TouchableOpacity>
+                    </View>
                     {
                         isLoginError ? (
                             <Text style={{ fontSize: 16, fontWeight: 'bold', letterSpacing: .5, color: 'red' }}>{errMsg}</Text>

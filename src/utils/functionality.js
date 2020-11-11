@@ -1,3 +1,7 @@
+import {
+    PermissionsAndroid
+} from 'react-native'
+
 const formatRupiah = (angka, prefix) => {
     var number_string = angka.replace(/[^,\d]/g, '').toString(),
         split = number_string.split(','),
@@ -16,6 +20,69 @@ const formatRupiah = (angka, prefix) => {
     return prefix == undefined ? rupiah : (rupiah ? 'Rp. ' + rupiah : '');
 }
 
+const requestLocationPermission = async () => {
+    try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            'title': 'Onqir',
+            'message': 'Onqir mau mengakses lokasi device mu ',
+            buttonPositive : 'OK'
+          }
+        )
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log("You can use the location");
+        } else {
+          console.log("location permission denied")
+          alert("Location permission denied");
+        }
+      } catch (err) {
+        console.warn(err)
+      }
+};
+
+const requestStoragePermission = async () => {
+    try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            'title': 'Onqir',
+            'message': 'Onqir mau mengakses penyimpanan device mu ',
+            buttonPositive : 'OK'
+          }
+        )
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log("You can use the location");
+        } else {
+          console.log("Storage permission denied");
+        }
+      } catch (err) {
+        console.warn(err)
+      }
+};
+const requestCameraPermission = async () => {
+    try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            'title': 'Onqir',
+            'message': 'Onqir mau mengakses penyimpanan device mu ',
+            buttonPositive : 'OK'
+          }
+        )
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log("You can use the location");
+        } else {
+          console.log("Storage permission denied");
+        }
+      } catch (err) {
+        console.warn(err)
+      }
+};
+
 export {
-    formatRupiah
+    formatRupiah,
+    requestLocationPermission,
+    requestStoragePermission,
+    requestCameraPermission
 };

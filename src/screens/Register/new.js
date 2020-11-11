@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, Image, TouchableOpacity, TextInput, KeyboardAvoidingView, Alert } from 'react-native'
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
+import { requestStoragePermission } from '../../utils/functionality';
 
 
 const NewRegister = ({ navigation, route }) => {
@@ -96,6 +97,10 @@ const NewRegister = ({ navigation, route }) => {
         });
     };
 
+
+    useEffect(() => {
+        requestStoragePermission();
+    }, [])
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={{ padding: 16, flex: 1 }}>
@@ -106,7 +111,7 @@ const NewRegister = ({ navigation, route }) => {
                             width: '100%',
                             alignSelf: 'stretch',
                             borderRadius: 10
-                        }} source={require('../../assets/banner/warlock.jpg')} />
+                        }} source={require('../../assets/logos/1.png')} />
                     </View>
                 </View>
                 <View style={{ paddingTop: 30 }}>
@@ -180,7 +185,7 @@ const NewRegister = ({ navigation, route }) => {
                     {err ? (
                         <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18 }}>Password tidak sama.</Text>
                     ) : null}
-                    <TouchableOpacity activeOpacity={.8} onPress={() => submitRegistForm()} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
+                    <TouchableOpacity activeOpacity={.8} onPress={() => fotoDiri.data === '' || name === '' || noHp === '' || pass === '' ? Alert.alert('Pesan Sistem', 'Pastikan ada menginput semua kolom untuk mendaftar') : submitRegistForm()} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
                         <Text style={{
                             fontSize: 20,
                             fontWeight: 'bold',
@@ -199,8 +204,6 @@ const EmailVerification = ({ route }) => {
     const { email } = route.params;
     let [pin, setPin] = useState("");
 
-
-
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={{ padding: 16, flex: 1, backgroundColor: 'white' }}>
@@ -211,7 +214,7 @@ const EmailVerification = ({ route }) => {
                             width: '100%',
                             alignSelf: 'stretch',
                             borderRadius: 10
-                        }} source={require('../../assets/banner/warlock.jpg')} />
+                        }} source={require('../../assets/logos/1.png')} />
                     </View>
                 </View>
                 <View style={{ paddingTop: 30, flex: 1, marginTop: 50 }}>

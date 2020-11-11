@@ -11,8 +11,10 @@ import {
     Platform,
     KeyboardAvoidingView,
     StatusBar,
-    ToastAndroid
+    ToastAndroid,
+    Alert
 } from 'react-native';
+
 import Icon from 'react-native-vector-icons/Ionicons';
 import { selectContactPhone } from 'react-native-select-contact';
 import moment from 'moment';
@@ -27,10 +29,11 @@ export const SendPackageModal = ({ index,
     isRegionRunning,
     navigation,
     coordinate,
-    distance,
     targetCoord,
     isRouteMap,
-    userData
+    userData,
+    address,
+    namaGang
 }) => {
 
     const modalizeRef = useRef(null);
@@ -43,7 +46,6 @@ export const SendPackageModal = ({ index,
     let memoized_modal_height = modalHeight;
     const orderCount = useSelector(state => state.orders);
     const { count } = orderCount;
-    console.log('coordinate __ ', coordinate);
     let [mHeight, setMHeight] = useState(200);
     const orderReducer = useSelector(state => state.orders);
     const coordinateReducer = useSelector(state => state.coordinate);
@@ -88,7 +90,9 @@ export const SendPackageModal = ({ index,
             }
         } else {
             console.log('non Android User can access contact');
-        }
+        };
+
+
     }
     const orderDetailsHandler = () => {
         setMHeight(height);
@@ -111,7 +115,8 @@ export const SendPackageModal = ({ index,
             },
             address_detail: addrDetail,
             name: checked ? userData.name : contactName,
-            phone: checked ? userData.no_hp : phone
+            phone: checked ? userData.no_hp : phone,
+            address: address
         };
 
         // let check = orderReducer.orders.some((v, i) => i === index);
@@ -120,23 +125,41 @@ export const SendPackageModal = ({ index,
         //     navigation.navigate('route_step', { data: data, _coords: coordinate, pickupDetail });
         // }
 
-        dispatch({ type: 'pengirim', pengirim: obj, });
+        if (isRegionRunning) {
+            Alert.alert('Pesan Sistem', 'Harap tunggu sampai kami me load data lokasi pilihan anda');
+            return;
+        }
+
+        if (checked) {
+
+            if (addrDetail === '') {
+                Alert.alert('Pesan Sistem', 'Harap isi detail alamat terlebih dahulu untuk melanjutkan');
+                return
+            }
+
+        } else if (checked === false && phone === '' || contactName === '' || addrDetail === '') {
+            Alert.alert('Pesan Sistem', 'Harap isi semua field terlebih dahulu untuk melanjutkan');
+            return
+        };
+
+        dispatch({ type: 'pengirim', pengirim: obj });
 
         navigation.navigate('pickup', { userData: userData, userCoordinate: coordinate, isPengirim: checked });
-    }
+    };
 
     useEffect(() => {
-
-    }, [addrDetail, phone, contactName, orderDetail])
+        
+    }, [addrDetail, phone, contactName, orderDetail]);
 
     const modalContent = () => {
+
         return (
             <KeyboardAvoidingView removeClippedSubviews={true}
                 style={{ flex: 1, backgroundColor: 'white' }}>
                 <View style={{
                     padding: 16,
                 }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Detail Pengiriman</Text>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Detail Pengirim</Text>
                     {
                         isRegionRunning ? (
                             <View style={{ paddingTop: 15, paddingHorizontal: 4, justifyContent: 'center', alignItems: 'center' }}>
@@ -148,12 +171,12 @@ export const SendPackageModal = ({ index,
                                         <Icon size={30} color='red' name='location-sharp' />
                                         <View style={{ justifyContent: 'center', flexDirection: 'column', margin: 6 }}>
                                             <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-                                                <Text style={{ fontSize: 17.2, fontWeight: 'bold' }}>Gg. Kasah 11 no.1</Text>
-                                                <TouchableOpacity activeOpacity={.4} onPress={() => console.log(distance)} style={{ padding: 2, borderWidth: 0.4, borderColor: 'blue', borderRadius: 5, width: 60, marginRight: 10 }}>
+                                                <Text style={{ fontSize: 17.2, fontWeight: 'bold' }}>{namaGang}</Text>
+                                                <TouchableOpacity activeOpacity={.4} onPress={() => ToastAndroid.showWithGravity('Fitur ini belum tersedia', ToastAndroid.LONG, ToastAndroid.BOTTOM)} style={{ padding: 2, borderWidth: 0.4, borderColor: 'blue', borderRadius: 5, width: 60, marginRight: 10 }}>
                                                     <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', color: 'blue' }}>Edit</Text>
                                                 </TouchableOpacity>
                                             </View>
-                                            <Text style={{ fontSize: 14 }}>Gg. Kasah no.11, Sungai Kapih, Kec. Sambutan, Samarinda, Kalimantan Timur, Indonesia.</Text>
+                                            <Text style={{ fontSize: 14 }}>{address}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -182,8 +205,8 @@ export const SendPackageModal = ({ index,
                                 onFocus={() => orderDetailsHandler()}
                                 onBlur={() => onFocusLeaveHandler()}
                                 onChangeText={(v) => setContactName(v)} />
-                            <TouchableOpacity activeOpacity={0.3} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
-                                <Icon name='call-outline' size={16} color='blue' />
+                            <TouchableOpacity activeOpacity={0.3} disabled={checked ? true : false} onPress={() => selectContactHandler()} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40, height: '100%' }}>
+                                <Icon name='person-outline' size={25} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -201,8 +224,8 @@ export const SendPackageModal = ({ index,
                                 onBlur={() => onFocusLeaveHandler()}
 
                                 onChangeText={(v) => setPhone(v)} />
-                            <TouchableOpacity activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
-                                <Icon name='call-outline' size={16} color='blue' />
+                            <TouchableOpacity disabled={checked ? true : false} onPress={() => selectContactHandler()} activeOpacity={0.3} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', borderRadius: 4, width: 40 }}>
+                                <Icon name='call-outline' size={25} color='blue' />
                             </TouchableOpacity>
                         </View>
                     </View>
