@@ -43,7 +43,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                         return result.json();
                     })
                     .then((result) => {
-                        console.log('isi dari result :: ', result.items);
+                        
                         setCourierData(result.courier);
                         setUserData(result.user);
                         setOrderItems(result.items);
@@ -90,7 +90,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                             <ScrollView style={{ flex: 1 }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}>
 
                                 {
-                                    false ? (
+                                    orderItems.length === 0 ? (
                                         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                                             <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6 }}>no orders found yet, go order some!</Text>
                                         </View>
@@ -103,6 +103,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                                                             <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={require('../../../assets/logos/4.png')} />
                                                         </View>
                                                     </View>
+
                                                     <View style={{
                                                         marginTop: 10,
                                                         borderBottomWidth: 1,

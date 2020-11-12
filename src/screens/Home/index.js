@@ -17,7 +17,7 @@ const socket = io('http://192.168.43.178:8000/', {
 });
 
 
-const GOOGLE_MAPS_APIKEY = 'AIzaSyBORtT7wcFXxJFDsoerlhCiX7ZkcdX4LSk';
+const GOOGLE_MAPS_APIKEY = 'AIzaSyCbgXJ_ueIa0jryLcfkmX1LaJ7Eo29hqEM';
 
 
 const Home = ({ navigation }) => {
@@ -88,8 +88,7 @@ const Home = ({ navigation }) => {
                 await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
                     .then((response) => response.json())
                     .then((res) => {
-                        console.log(res);
-                        setAddress(res.results[0].address_components[0].short_name || null + ", " + res.results[0].address_components[1].short_name || null);
+                        setAddress(res.results[0]["address_components"][0]["short_name"] + ", " + res.results[0]["address_components"][1]["short_name"]);
                     })
             },
             (err) => {

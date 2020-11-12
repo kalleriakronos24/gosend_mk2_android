@@ -17,7 +17,7 @@ import { formatRupiah } from '../../utils/functionality';
 import { ViaMap } from '../../components/modals/via_map';
 import MapViewDirections from 'react-native-maps-directions';
 
-const GOOGLE_MAPS_APIKEY = 'AIzaSyBORtT7wcFXxJFDsoerlhCiX7ZkcdX4LSk';
+const GOOGLE_MAPS_APIKEY = 'AIzaSyCbgXJ_ueIa0jryLcfkmX1LaJ7Eo29hqEM';
 
 //not used
 const Send = ({ navigation, route }) => {
@@ -533,7 +533,7 @@ const ConfirmOrder = ({ navigation }) => {
                     <Image source={require('../../assets/logos/4.png')} style={{ height: '100%', width: '100%', alignSelf: 'stretch' }} />
                 </View>
                 <View style={{ padding: 10 }}>
-                    
+
                     <View>
                         <Text style={{ fontSize: 20, letterSpacing: .4 }}>Pengirim</Text>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{pengirim.name}</Text>

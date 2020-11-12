@@ -51,7 +51,7 @@ const Router = React.memo((props) => {
     let [token, setToken] = useState(null);
     let login_token = useSelector(state => state.token);
     let [isLoading, setIsLoading] = useState(true);
-    
+
     const dispatch = useDispatch();
     let count = useSelector(state => state.orders.count);
     let appState = useRef(AppState.currentState);
@@ -93,7 +93,16 @@ const Router = React.memo((props) => {
     }
 
     useEffect(() => {
-        AppState.addEventListener("change", handleAppStateChange);
+        // AppState.addEventListener("change", handleAppStateChange);
+
+        AsyncStorage.getItem('LOGIN_TOKEN', (err, res) => res)
+            .then((res) => {
+                setToken(res);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }, []);
 
     return (
