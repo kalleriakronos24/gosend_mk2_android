@@ -3,14 +3,14 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '10.0'
 
-target 'test' do
+target 'Ongqir' do
   config = use_native_modules!
 
   use_react_native!(:path => config["reactNativePath"])
 
-  target 'testTests' do
+  target 'OngqirTests' do
     inherit! :complete
-    # Pods for testing
+    # Pods for Ongqiring
   end
 
   # Enables Flipper.
@@ -23,11 +23,11 @@ target 'test' do
   end
 end
 
-target 'test-tvOS' do
-  # Pods for test-tvOS
+target 'Ongqir-tvOS' do
+  # Pods for Ongqir-tvOS
 
-  target 'test-tvOSTests' do
+  target 'Ongqir-tvOSTests' do
     inherit! :search_paths
-    # Pods for testing
+    # Pods for Ongqiring
   end
 end
