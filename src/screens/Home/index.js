@@ -88,7 +88,7 @@ const Home = ({ navigation }) => {
                 await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
                     .then((response) => response.json())
                     .then((res) => {
-                        setAddress(res.results[0]["address_components"][0]["short_name"] + ", " + res.results[0]["address_components"][1]["short_name"]);
+                        setAddress(res.results[0]["address_components"][1]["short_name"]);
                     })
             },
             (err) => {

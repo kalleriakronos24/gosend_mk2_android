@@ -158,14 +158,14 @@ const SendStep = ({ navigation, route }) => {
     };
 
     let mapRef = useRef(null);
-    const mapFitToCoordinates = (
 
-    ) => {
+    const mapFitToCoordinates = () => {
+
+        console.log(' pengirim map onlayout working ?', _coords);
         // regionChangeHandler(i, coords);
-        return mapRef.fitToSuppliedMarkers(
+        mapRef.fitToSuppliedMarkers(
             [
-                'marker-move',
-                'ke'
+                "ke"
             ],
             {
                 edgePadding: {
@@ -173,13 +173,14 @@ const SendStep = ({ navigation, route }) => {
                     right: 250,
                     left: 250,
                     bottom: 250
-                }
+                },
+                animated: true
             }
         );
     };
 
 
-    return _coords !== 0 ? (
+    return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
             <View style={{ flex: 1, position: 'relative' }}>
@@ -194,7 +195,7 @@ const SendStep = ({ navigation, route }) => {
                     onLayout={() => mapFitToCoordinates()}
                     onRegionChangeComplete={(e) => regionChangeHandler(e)}
                     onRegionChange={(e) => onRegionChangeHandler()}
-                    style={{ flex: 1 }} zoomEnabled={true} />
+                    style={{ flex: 1 }} />
 
                 <MapView.Marker identifier="ke" coordinate={{ latitude: _coords.latitude, longitude: _coords.longitude }} />
                 <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: -100, left: 0, bottom: 0, right: 0 }}>
@@ -222,11 +223,7 @@ const SendStep = ({ navigation, route }) => {
                 />
             </View>
         </View>
-    ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-                <ActivityIndicator size='large' color='blue' />
-            </View>
-        )
+    )
 }
 
 

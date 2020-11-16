@@ -19,6 +19,7 @@ const UserOrderHistory = ({ navigation, route }) => {
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
     let [count, setCount] = useState(0);
+    let [totalTransaksi, setTotalTransaksi] = useState(0);
     useEffect(() => {
         getUserOrder();
         // dispatch({ type: 'reset' });
@@ -43,15 +44,17 @@ const UserOrderHistory = ({ navigation, route }) => {
                         return result.json();
                     })
                     .then((result) => {
-                        
+
                         setCourierData(result.courier);
                         setUserData(result.user);
                         setOrderItems(result.items);
                         setCount(result.count);
+                        setTotalTransaksi(result.transaksi);
 
                         setTimeout(() => {
                             setIsLoading(false);
                         }, 2000)
+
                     })
                     .catch(error => {
                         throw new Error(error);
@@ -88,95 +91,100 @@ const UserOrderHistory = ({ navigation, route }) => {
                 ) : (
                         <>
                             <ScrollView style={{ flex: 1 }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}>
-
-                                {
-                                    orderItems.length === 0 ? (
-                                        <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                                            <Text style={{ fontSize: 17, fontWeight: 'bold', letterSpacing: .6 }}>no orders found yet, go order some!</Text>
-                                        </View>
-                                    ) : (
-                                            <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
-                                                <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
-                                                <View style={{ padding: 16, flex: 1 }}>
-                                                    <View style={{ justifyContent: 'center', flex: 1 }}>
-                                                        <View style={{ height: 140, width: '100%', borderRadius: 10 }}>
-                                                            <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={require('../../../assets/logos/4.png')} />
-                                                        </View>
-                                                    </View>
-
-                                                    <View style={{
-                                                        marginTop: 10,
-                                                        borderBottomWidth: 1,
-                                                        borderBottomColor: 'black'
-                                                    }} />
-
-                                                    <View style={{ flexDirection: 'row', marginTop: 20 }}>
-                                                        <View style={{ height: 140, width: 140, borderRadius: 10 }}>
-                                                            <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={{ uri: userData.foto_diri }} />
-                                                        </View>
-                                                        <View style={{ flex: 1, paddingHorizontal: 20 }}>
-                                                            <Text style={{ fontSize: 20 }}>{userData.email}</Text>
-                                                            <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>{userData.fullname}</Text>
-                                                            <Text style={{ fontSize: 20, letterSpacing: .5 }}>{userData.no_hp}</Text>
-                                                        </View>
-                                                    </View>
-                                                    <View style={{
-                                                        marginTop: 20,
-                                                        borderBottomWidth: 1,
-                                                        borderBottomColor: 'black'
-                                                    }} />
-
-                                                    <View style={{ flex: 1, padding: 16 }}>
-                                                        <Text style={{ fontSize: 19, fontWeight: '600' }}>History Pengiriman</Text>
-
-                                                        <View style={{ padding: 8, flex: 1 }}>
-
-                                                            {
-                                                                orderItems.map((v, i) => {
-                                                                    return (
-                                                                        <>
-                                                                            <View key={i}>
-                                                                                <Text style={{ fontSize: 20 }}>tgl : {v.order_date}</Text>
-                                                                                <View style={{ marginTop: 6 }}>
-                                                                                    <Text style={{ fontSize: 20 }}>Pengirim</Text>
-                                                                                    <View style={{ padding: 6 }}>
-                                                                                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{v.pengirim.name}</Text>
-                                                                                        <Text>{v.pengirim.address}</Text>
-                                                                                    </View>
-
-                                                                                </View>
-                                                                                <View style={{ marginTop: 6 }}>
-                                                                                    <Text style={{ fontSize: 20 }}>Penerima</Text>
-                                                                                    <View style={{ padding: 6 }}>
-                                                                                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{v.penerima.name}</Text>
-                                                                                        <Text>{v.penerima.address}</Text>
-                                                                                    </View>
-                                                                                </View>
-                                                                                <Text style={{ fontSize: 20 }}>Ongkir : {formatRupiah(String(v.ongkir), 'Rp. ')}</Text>
-                                                                                <Text style={{ fontSize: 20 }}>Status : {v.status ? 'Barang telah sampai tujuan' : 'Barang belum sampai tujuan.'}</Text>
-                                                                                <Text style={{ fontSize: 20 }}>Barang terkirim pada : {v.waktu_barang_terkirim}</Text>
-                                                                            </View>
-
-                                                                            <View style={{
-                                                                                marginTop: 20,
-                                                                                borderBottomWidth: 1,
-                                                                                borderBottomColor: 'black',
-                                                                                marginBottom: 15
-
-                                                                            }} />
-                                                                        </>
-                                                                    )
-                                                                })
-                                                            }
-
-                                                        </View>
-                                                    </View>
-                                                </View>
+                                <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
+                                    <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
+                                    <View style={{ padding: 16, flex: 1 }}>
+                                        <View style={{ justifyContent: 'center', flex: 1 }}>
+                                            <View style={{ height: 140, width: '100%', borderRadius: 10 }}>
+                                                <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={require('../../../assets/logos/4.png')} />
                                             </View>
-                                        )
-                                }
-                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>Total Transaksi </Text>
-                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>{formatRupiah(String(orderItems.map((v, i) => v.ongkir).reduce((x, y) => x + y, 0)), 'Rp. ')}</Text>
+                                        </View>
+
+                                        <View style={{
+                                            marginTop: 10,
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: 'black'
+                                        }} />
+
+                                        <View style={{ flexDirection: 'row', marginTop: 20 }}>
+                                            <View style={{ height: 140, width: 140, borderRadius: 10 }}>
+                                                <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={{ uri: userData.foto_diri }} />
+                                            </View>
+                                            <View style={{ flex: 1, paddingHorizontal: 20 }}>
+                                                <Text style={{ fontSize: 20 }}>{userData.email}</Text>
+                                                <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>{userData.fullname}</Text>
+                                                <Text style={{ fontSize: 20, letterSpacing: .5 }}>{userData.no_hp}</Text>
+                                                <Text>Total Orderan Berhasil : {count}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={{
+                                            marginTop: 20,
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: 'black'
+                                        }} />
+
+                                        <View style={{ flex: 1, padding: 16 }}>
+                                            <Text style={{ fontSize: 19, fontWeight: '600' }}>History Pengiriman</Text>
+
+                                            <View style={{ padding: 8, flex: 1 }}>
+
+                                                {
+                                                    orderItems.map((v, i) => {
+                                                        return (
+                                                            <>
+                                                                <View key={i}>
+                                                                    <Text style={{ fontSize: 20 }}>tgl : {v.order_date}</Text>
+                                                                    <View style={{ marginTop: 6 }}>
+                                                                        <Text style={{ fontSize: 20 }}>Pengirim</Text>
+                                                                        <View style={{ padding: 6 }}>
+                                                                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{v.pengirim.name}</Text>
+                                                                            <Text>{v.pengirim.address}</Text>
+                                                                        </View>
+
+                                                                    </View>
+                                                                    <View style={{ marginTop: 6 }}>
+                                                                        <Text style={{ fontSize: 20 }}>Penerima</Text>
+                                                                        <View style={{ padding: 6 }}>
+                                                                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{v.penerima.name}</Text>
+                                                                            <Text>{v.penerima.address}</Text>
+                                                                        </View>
+                                                                    </View>
+                                                                    {
+                                                                        v.user_cancel || v.courier_cancel ? (
+                                                                            <>
+                                                                                <Text style={{ fontSize: 20 }}>Ongkir : {formatRupiah(String(v.ongkir), 'Rp. ')}</Text>
+                                                                                <Text style={{ fontSize: 20 }}>Status : {v.status ? 'Barang sudah terkirim' : 'Barang belum terkirim'}</Text>
+                                                                                <Text style={{ fontSize: 20, color: 'red', textDecorationLine:'underline' }}>Orderan di Batalkan oleh kedua pihak</Text>
+                                                                            </>
+                                                                        ) : (
+                                                                                <>
+                                                                                    <Text style={{ fontSize: 20 }}>Ongkir : {formatRupiah(String(v.ongkir), 'Rp. ')}</Text>
+                                                                                    <Text style={{ fontSize: 20 }}>Saldo Terpakai : {formatRupiah(String(v.ongkir * (15 / 100)), 'Rp. ')}</Text>
+                                                                                    <Text style={{ fontSize: 20 }}>Status : {v.status ? 'Barang sudah terkirim' : 'Barang belum terkirim'}</Text>
+                                                                                    <Text style={{ fontSize: 20 }}>Barang terkirim pada : {v.waktu_barang_terkirim}</Text>
+                                                                                </>
+                                                                            )
+                                                                    }
+                                                                </View>
+
+                                                                <View style={{
+                                                                    marginTop: 20,
+                                                                    borderBottomWidth: 1,
+                                                                    borderBottomColor: 'black',
+                                                                    marginBottom: 15
+
+                                                                }} />
+                                                            </>
+                                                        )
+                                                    })
+                                                }
+
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>Total Uang Terpakai </Text>
+                                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>{formatRupiah(String(totalTransaksi), 'Rp. ')}</Text>
                                 <View style={{ marginTop: 15, marginHorizontal: 15, marginBottom: 5 }}>
                                     <TouchableOpacity activeOpacity={.7} onPress={() => navigation.push('home')} style={{ padding: 6, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', height: 45, borderRadius: 10, marginBottom: 30 }}>
                                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Back to home</Text>
