@@ -18,7 +18,7 @@ const UserOrderHistory = ({ navigation, route }) => {
     let [courierData, setCourierData] = useState({});
     let [userData, setUserData] = useState({});
     let [orderItems, setOrderItems] = useState([]);
-    let [count, setCount] = useState(0);
+    let [count, setCount] = useState(null);
     let [totalTransaksi, setTotalTransaksi] = useState(0);
     useEffect(() => {
         getUserOrder();
@@ -81,7 +81,7 @@ const UserOrderHistory = ({ navigation, route }) => {
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
             <StatusBar barStyle='dark-content' translucent backgroundColor='rgba(0,0,0,0.251)' animated />
             {
-                isLoading ? (
+                isLoading || count === null ? (
                     <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                         <Text style={{ fontSize: 20, fontWeight: '600', letterSpacing: 0.5 }}>Loading...</Text>
                         <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>

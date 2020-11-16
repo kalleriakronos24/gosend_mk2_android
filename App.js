@@ -15,6 +15,9 @@ import { LogBox } from 'react-native';
 import {Router} from './src/routes';
 import { createStore } from 'redux';
 import Root from './src/redux/reducers/index.reducers';
+import {
+  CheckVersion
+} from './src/utils/utils';
 
 const store = createStore(Root);
 
@@ -27,6 +30,13 @@ const App = () => {
     SplashScreen.hide();
 
   })
+
+
+  // check latest version of the app
+  CheckVersion();
+
+
+  
   // listen for internet changes or connectivity
   NetInfo.addEventListener(state => {
     // do something when user is connected to the internet or when disconnected
