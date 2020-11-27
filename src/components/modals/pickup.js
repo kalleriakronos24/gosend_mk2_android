@@ -46,6 +46,7 @@ export const PickupOrReceiverModal = ({
     let [checked, setChecked] = useState(false);
 
     const selectContactHandler = () => {
+
         if (Platform.OS === 'android') {
             const granted = PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
@@ -101,8 +102,8 @@ export const PickupOrReceiverModal = ({
                 longitude
             },
             address_detail: addrDetail,
-            name: isPengirim ? userData.name : contactName,
-            phone: isPengirim ? userData.no_hp : phone,
+            name: !isPengirim && checked ? userData.name : contactName,
+            phone: !isPengirim && checked ? userData.no_hp : phone,
             address: address
         };
 

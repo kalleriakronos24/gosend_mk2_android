@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import io from 'socket.io-client';
 import Geolocation from 'react-native-geolocation-service';
+import { SERVER_URL } from '../../utils/constants';
 
 const OrderFind = ({ navigation, route }) => {
 
@@ -63,7 +64,7 @@ const OrderFind = ({ navigation, route }) => {
     const updateLocation = (token) => {
         Geolocation.getCurrentPosition(
             async (position) => {
-                await fetch('http://192.168.43.178:8000/courier/update/location', {
+                await fetch(`${SERVER_URL}/courier/update/location`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -101,7 +102,7 @@ const OrderFind = ({ navigation, route }) => {
                 }
                 console.log('test');
                 // updateLocation(res);
-                return fetch('http://192.168.43.178:8000/courier/order/get', {
+                return fetch(`${SERVER_URL}/courier/order/get`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -153,7 +154,7 @@ const OrderFind = ({ navigation, route }) => {
         }
 
 
-        await fetch('http://192.168.43.178:8000/order/courier/cancel_order', {
+        await fetch(`${SERVER_URL}/order/courier/cancel_order`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"

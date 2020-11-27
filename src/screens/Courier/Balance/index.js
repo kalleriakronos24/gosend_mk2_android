@@ -18,6 +18,7 @@ import ImagePicker from "react-native-image-picker";
 import RNFetchBlob from "rn-fetch-blob";
 import AsyncStorage from "@react-native-community/async-storage";
 import { formatRupiah } from "../../../utils/functionality";
+import { SERVER_URL } from "../../../utils/constants";
 
 const CourierBalance = ({ navigation }) => {
     const barHeight = StatusBar.currentHeight;
@@ -42,7 +43,7 @@ const CourierBalance = ({ navigation }) => {
 
     const fetchTransactionData = async () => {
         await AsyncStorage.getItem("LOGIN_TOKEN", async (err, token) => {
-            await fetch("http://192.168.43.178:8000/get/request/add/wallet/" + token, {
+            await fetch(`${SERVER_URL}/get/request/add/wallet/` + token, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -320,7 +321,7 @@ const TransactionHistory = ({ navigation }) => {
 
     const fetchTransactionData = async () => {
         await AsyncStorage.getItem("LOGIN_TOKEN", async (err, token) => {
-            await fetch("http://192.168.43.178:8000/get/user/transaction/done/" + token, {
+            await fetch(`${SERVER_URL}/get/user/transaction/done/` + token, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -602,7 +603,7 @@ const AddBalanceForm = ({ navigation }) => {
         console.log(buktiTf.data);
         await RNFetchBlob.fetch(
             'POST',
-            'http://192.168.43.178:8000/request/add/balance',
+            `${SERVER_URL}/request/add/balance`,
             {
                 Authorization: 'Bearer' + token,
                 Accept: 'application/json',

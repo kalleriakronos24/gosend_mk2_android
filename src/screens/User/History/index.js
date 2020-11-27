@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { formatRupiah } from '../../../utils/functionality';
+import { SERVER_URL } from '../../../utils/constants';
 
 const UserOrderHistory = ({ navigation, route }) => {
 
@@ -33,7 +34,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                 let body = {
                     token: res
                 }
-                fetch('http://192.168.43.178:8000/user/order/get/all', {
+                fetch(`${SERVER_URL}/user/order/get/all`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

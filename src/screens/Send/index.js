@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { View, Text, StatusBar, Image, Dimensions, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, StatusBar, Image, Dimensions, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons';
 import Swiper from 'react-native-swiper';
 import MapView, { MarkerAnimated, AnimatedRegion } from 'react-native-maps';
@@ -135,6 +135,8 @@ const SendStep = ({ navigation, route }) => {
     const regionChangeHandler = async (coords) => {
 
         let { latitude, longitude } = coords;
+
+        console.log('current coords', coords.latitude, " ", coords.longitude);
 
 
         await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + coords.latitude + ',' + coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
@@ -524,12 +526,12 @@ const ConfirmOrder = ({ navigation }) => {
 
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight }}>
-            <View style={{ padding: 16, flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight, }}>
+            <ScrollView style={{ padding: 16, flex: 1 }}>
                 <View style={{ padding: 10, marginTop: 20, justifyContent: 'center', alignItems: 'center', height: '20%', width: '100%' }}>
                     <Image source={require('../../assets/logos/4.png')} style={{ height: '100%', width: '100%', alignSelf: 'stretch' }} />
                 </View>
-                <View style={{ padding: 10 }}>
+                <View style={{ padding: 10, flex: 1 }}>
 
                     <View>
                         <Text style={{ fontSize: 20, letterSpacing: .4 }}>Pengirim</Text>
@@ -568,11 +570,11 @@ const ConfirmOrder = ({ navigation }) => {
                             </View>
                         </View>
                     </View>
-                    <TouchableOpacity onPress={() => nextScreenHandler()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
+                    <TouchableOpacity onPress={() => nextScreenHandler()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', marginBottom: 300 }}>
                         <Text style={{ fontSize: 17, fontWeight: '600', color: 'white' }}>Order Sekarang</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
         </View>
     )
 };

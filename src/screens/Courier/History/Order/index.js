@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { SERVER_URL } from '../../../../utils/constants';
 
 const CourierOrderHistory = ({ navigation, route }) => {
 
@@ -32,7 +33,7 @@ const CourierOrderHistory = ({ navigation, route }) => {
                 let body = {
                     token: res
                 }
-                fetch('http://192.168.43.178:8000/user/order/get', {
+                fetch(`${SERVER_URL}/user/order/get`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -235,7 +236,7 @@ const CourierOrderHistoryDetail = ({ navigation, route }) => {
                 let body = {
                     token: res
                 }
-                fetch('http://192.168.43.178:8000/user/order/get', {
+                fetch(`${SERVER_URL}/user/order/get`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

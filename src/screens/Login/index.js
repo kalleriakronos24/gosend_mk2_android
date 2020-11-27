@@ -4,6 +4,7 @@ import { View, Text, StatusBar, Dimensions, KeyboardAvoidingView } from 'react-n
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler'
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-community/async-storage';
+import { SERVER_URL } from '../../utils/constants';
 
 const Login = ({ navigation }) => {
 
@@ -29,7 +30,7 @@ const Login = ({ navigation }) => {
             return
         }
 
-        fetch('http://192.168.43.178:8000/user/login', {
+        fetch(`${SERVER_URL}/user/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

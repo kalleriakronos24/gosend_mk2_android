@@ -13,6 +13,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import { fetchOrder } from './src/utils/notification_actions';
 import { formatRupiah } from './src/utils/functionality';
+import { SERVER_URL } from './src/utils/constants';
 
 PushNotification.configure({
 
@@ -26,7 +27,7 @@ PushNotification.configure({
                     device_token: token.token
                 };
 
-                await fetch(`http://192.168.43.178:8000/update-device-token`, {
+                await fetch(`${SERVER_URL}/update-device-token`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -147,7 +148,7 @@ PushNotification.configure({
                     fetchOrder(r, navRef.current, "finish order")
                 } else {
                     // do something else
-                    navRef.current.navigate('home');
+                    // navRef.current.navigate('home');
                 }
 
             } else {

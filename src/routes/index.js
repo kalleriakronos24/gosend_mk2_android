@@ -32,8 +32,9 @@ import io from 'socket.io-client';
 import BackgroundTimer from 'react-native-background-timer';
 import { NewLogin, LoginPassword } from '../screens/Login/new';
 import { NewRegister, EmailVerification } from '../screens/Register/new';
+import { SERVER_URL } from '../utils/constants';
 
-const socket = io('http://192.168.43.178:8000/', {
+const socket = io(SERVER_URL, {
     "transports": ['websocket'],
     upgrade: false
 });

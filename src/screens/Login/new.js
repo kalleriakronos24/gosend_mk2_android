@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { SERVER_URL } from '../../utils/constants';
 
 const NewLogin = ({ navigation }) => {
 
     let [password, setPassword] = useState("");
     let [email, setEmail] = useState("");
-    
+
     return (
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={{ padding: 16, flex: 1 }}>
                 <View style={{ paddingTop: 30 }}>
                     <View style={{ height: 200, width: '100%', borderRadius: 10 }}>
@@ -79,7 +80,7 @@ const NewLogin = ({ navigation }) => {
                     </View>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
@@ -110,7 +111,7 @@ const LoginPassword = ({ navigation, route }) => {
             return
         }
 
-        fetch('http://192.168.43.178:8000/user/login', {
+        fetch(`${SERVER_URL}/user/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -149,7 +150,7 @@ const LoginPassword = ({ navigation, route }) => {
 
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={{ padding: 16, flex: 1 }}>
                 <View style={{ paddingTop: 30 }}>
                     <View style={{ height: 200, width: '100%', borderRadius: 10 }}>
@@ -180,7 +181,8 @@ const LoginPassword = ({ navigation, route }) => {
                         borderWidth: 1,
                         borderRadius: 8,
                         width: '100%',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        justifyContent:'space-between'
                     }}>
 
                         <TextInput
@@ -193,7 +195,7 @@ const LoginPassword = ({ navigation, route }) => {
                             secureTextEntry={isPasswordHide ? true : false}
                             placeholderTextColor="black"
                             onChangeText={(v) => setPassword(v)} />
-                        <TouchableOpacity onPress={() => setPasswordHide(!isPasswordHide)} activeOpacity={.7} style={{ padding: 6 }}>
+                        <TouchableOpacity onPress={() => setPasswordHide(!isPasswordHide)} activeOpacity={.7} style={{ padding: 6, justifyContent: 'center', alignItems: 'center' }}>
                             <Icon name={`eye${isPasswordHide ? '-off-' : '-'}outline`} color='blue' size={24} />
                         </TouchableOpacity>
                     </View>
@@ -213,7 +215,7 @@ const LoginPassword = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 export {

@@ -9,9 +9,10 @@ import { useIsFocused } from '@react-navigation/native';
 import io from 'socket.io-client';
 import { formatRupiah, requestLocationPermission } from '../../utils/functionality';
 import Geolocation from '@react-native-community/geolocation';
+import { SERVER_URL } from '../../utils/constants';
 
 
-const socket = io('http://192.168.43.178:8000/', {
+const socket = io(SERVER_URL, {
     "transports": ['websocket'],
     upgrade: false
 });
@@ -105,7 +106,7 @@ const Home = ({ navigation }) => {
 
     const fetchUserByToken = async (token) => {
 
-        await fetch('http://192.168.43.178:8000/user/single/' + token, {
+        await fetch(`${SERVER_URL}/user/single/` + token, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -154,7 +155,7 @@ const Home = ({ navigation }) => {
             device_token: 'cR8QRvlJRxSYX-WqzLWDh-:APA91bGc2yQAvMR28L4-yTv9q-UPmcsDYYHrBOHhW8CmArfSIPvf3b0brdCrsZMzEvgcc7JWl8YrKikCwAs5XkOCYalgxAFplmV-i30YHEtPUdyJNQb54QHEwnPdjsbmtdq0Lls3FscC'
         };
 
-        return await fetch(`http://192.168.43.178:8000/testing123`, {
+        return await fetch(`${SERVER_URL}/testing123`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

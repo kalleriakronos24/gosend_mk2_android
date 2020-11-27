@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { formatRupiah } from '../../utils/functionality';
 
 import RBSheet from "react-native-raw-bottom-sheet";
+import { SERVER_URL } from '../../utils/constants';
 
 
 const FindCourer = ({ navigation, route }) => {
@@ -87,7 +88,7 @@ const FindCourer = ({ navigation, route }) => {
                 let body = {
                     token: res
                 }
-                fetch('http://192.168.43.178:8000/user/order/get', {
+                fetch(`${SERVER_URL}/user/order/get`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -207,7 +208,7 @@ const FindCourer = ({ navigation, route }) => {
 
         console.log('isi submit alasan :: ', body);
 
-        await fetch('http://192.168.43.178:8000/order/set/alasan_user', {
+        await fetch(`${SERVER_URL}/order/set/alasan_user`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -261,7 +262,7 @@ const FindCourer = ({ navigation, route }) => {
             courier_id: courierData._id
         };
 
-        await fetch('http://192.168.43.178:8000/order/set/alasan_user', {
+        await fetch(`${SERVER_URL}/order/set/alasan_user`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -297,7 +298,7 @@ const FindCourer = ({ navigation, route }) => {
             </View>
         </View>
     ) : (
-            <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
+            <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight, paddingBottom: 50 }}>
                 <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
                 <View style={{ padding: 16, flex: 1 }}>
                     <View style={{ flexDirection: 'row' }}>
@@ -330,7 +331,7 @@ const FindCourer = ({ navigation, route }) => {
                         <View style={{ flex: 1, paddingHorizontal: 20 }}>
                             <Text style={{ fontSize: 20, letterSpacing: .6 }}>KT 1717 NA</Text>
                             <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>{courierData.fullname}</Text>
-                            <View style={{ padding: 16, flexDirection: 'row' }}>
+                            <View style={{ padding: 16, flexDirection: 'row', flex: 1 }}>
                                 {
                                     kurirAccept ? (
                                         <>
@@ -399,7 +400,6 @@ const FindCourer = ({ navigation, route }) => {
                                             <Text style={{ fontSize: 17, fontWeight: 'bold', color: 'white' }}>Batalkan</Text>
                                         </TouchableOpacity>
                                     )
-
                             ) : (
                                     <View>
                                         <Text style={{ textAlign: 'center', fontSize: 19 }}>- Kamu tidak dapat mengcancel orderan jika barang telah di ambil atau sedang dalam pengantaran -</Text>
@@ -439,14 +439,14 @@ const FindCourer = ({ navigation, route }) => {
                                 </TouchableOpacity>
                             </View>
 
-                            <TouchableOpacity onPress={() => sendAlasan()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red' }}>
+                            <TouchableOpacity onPress={() => sendAlasan()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red', marginBottom: 40 }}>
                                 <Text style={{ fontSize: 17, fontWeight: 'bold', color: 'white' }}>Batalkan</Text>
                             </TouchableOpacity>
 
                         </RBSheet>
                     </View>
                 </View>
-            </View>
+            </ScrollView>
         )
 }
 

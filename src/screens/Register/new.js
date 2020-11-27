@@ -4,6 +4,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import { requestStoragePermission } from '../../utils/functionality';
+import { SERVER_URL } from '../../utils/constants';
 
 
 const NewRegister = ({ navigation, route }) => {
@@ -39,7 +40,7 @@ const NewRegister = ({ navigation, route }) => {
 
         await RNFetchBlob.fetch(
             "POST",
-            "http://192.168.43.178:8000/user/add",
+            `${SERVER_URL}/user/add`,
             {
                 Authorization: 'Bearer' + token,
                 Accept: 'application/json',

@@ -5,6 +5,7 @@ import MapView from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import { useIsFocused } from '@react-navigation/native';
 import * as geolib from 'geolib';
+import { SERVER_URL } from '../../../utils/constants';
 
 
 const PickupDetail = ({ navigation, route }) => {
@@ -84,7 +85,7 @@ const PickupDetail = ({ navigation, route }) => {
             id: id
         }
 
-        return await fetch('http://192.168.43.178:8000/order/single/set-to-done', {
+        return await fetch(`${SERVER_URL}/order/single/set-to-done`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -114,7 +115,7 @@ const PickupDetail = ({ navigation, route }) => {
             status: status
         }
 
-        await fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+        await fetch(`${SERVER_URL}/order/courier/set/deliver/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -147,7 +148,7 @@ const PickupDetail = ({ navigation, route }) => {
             status: status
         }
 
-        await fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+        await fetch(`${SERVER_URL}/order/courier/set/deliver/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -179,7 +180,7 @@ const PickupDetail = ({ navigation, route }) => {
             status: status
         }
 
-        await fetch('http://192.168.43.178:8000/order/courier/set/deliver/status', {
+        await fetch(`${SERVER_URL}/order/courier/set/deliver/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

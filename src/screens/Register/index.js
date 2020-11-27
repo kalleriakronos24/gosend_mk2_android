@@ -7,6 +7,7 @@ import ImagePicker from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import RNFetchBlob from 'rn-fetch-blob';
+import { SERVER_URL } from '../../utils/constants';
 
 
 const Register = ({ navigation }) => {
@@ -174,7 +175,7 @@ const CreatePassword = ({ navigation, route }) => {
 
         await RNFetchBlob.fetch(
             "POST",
-            "http://192.168.43.178:8000/user/add",
+            `${SERVER_URL}/user/add`,
             {
                 Authorization: 'Bearer' + token,
                 Accept: 'application/json',

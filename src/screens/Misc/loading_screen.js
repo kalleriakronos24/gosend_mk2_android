@@ -3,6 +3,7 @@ import { View, Text, StatusBar } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { SERVER_URL } from '../../utils/constants';
 
 const LoadingScreen = ({ navigation, route }) => {
     const orderReducer = useSelector((state) => state.orders);
@@ -29,7 +30,7 @@ const LoadingScreen = ({ navigation, route }) => {
                     brg: detail
                 };
 
-                fetch('http://192.168.43.178:8000/add-order', {
+                fetch(`${SERVER_URL}/add-order`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
