@@ -10,6 +10,7 @@ import io from 'socket.io-client';
 import { formatRupiah, requestLocationPermission } from '../../utils/functionality';
 import Geolocation from '@react-native-community/geolocation';
 import { SERVER_URL } from '../../utils/constants';
+import NetworkIndicator from '../../components/NetworkIndicator';
 
 
 const socket = io(SERVER_URL, {
@@ -104,29 +105,38 @@ const Home = ({ navigation }) => {
         requestLocationPermission();
     }, []);
 
-    const fetchUserByToken = async (token) => {
+    const fetchUserByToken = async () => {
 
-        await fetch(`${SERVER_URL}/user/single/` + token, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => {
-                return res.json();
+        await AsyncStorage.getItem('LOGIN_TOKEN', async (e, token) => {
+
+
+
+            await fetch(`${SERVER_URL}/user/single/` + token, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             })
-            .then(res => {
-                console.log('this too ?');
-                if (res)
-                    setTimeout(() => {
-                        setIsLoading(false);
-                    }, 2000)
-                setUserData(res.data);
-                console.log('count ?? ', res.data.count);
-            })
-            .catch(err => {
-                throw new Error(err);
-            })
+                .then(res => {
+                    return res.json();
+                })
+                .then(res => {
+                    console.log('this too ?');
+                    if (res)
+                        setTimeout(() => {
+                            setIsLoading(false);
+                        }, 2000)
+                    setUserData(res.data);
+                    console.log('count ?? ', res.data.count);
+                })
+                .catch(err => {
+                    Alert.alert('Pesan Sistem', 'Koneksi tidak stabil, silahkan coba lagi', [
+                        { text: "OK", onPress: () => fetchUserByToken() }
+                    ])
+                })
+
+        });
+
     };
 
 
@@ -177,6 +187,7 @@ const Home = ({ navigation }) => {
             </View>
         ) : (
             <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+                <NetworkIndicator/>
                 <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent' />
                 <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={0}>
                     {/* Main Feature */}
@@ -186,7 +197,7 @@ const Home = ({ navigation }) => {
                             <View style={{ paddingHorizontal: 32, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <View style={{ flexDirection: 'row' }}>
                                     <Icon name="location-outline" size={20} color='white' />
-                                    <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>{address || "Lokasi tidak ditemukan."}</Text>
+                                    <Text style={{ marginLeft: 10, fontSize: 18, letterSpacing: 0.7, color: 'white' }}>{address || "-"}</Text>
                                 </View>
                                 <View style={{ flexDirection: 'row' }}>
                                     <TouchableOpacity onPress={() => Alert.alert('Pesan Sistem', 'Fitur Pencarian Belum Tersedia')} style={{ marginHorizontal: 10 }}>

@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SERVER_URL } from '../../utils/constants';
+import NetworkIndicator from '../../components/NetworkIndicator';
 
 const LoadingScreen = ({ navigation, route }) => {
     const orderReducer = useSelector((state) => state.orders);
@@ -78,6 +79,7 @@ const LoadingScreen = ({ navigation, route }) => {
         ) : (
                 <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
                     <StatusBar barStyle='default' backgroundColor='rgba(0,0,0,0.251)' translucent animated />
+                    <NetworkIndicator/>
                     <Text style={{ fontWeight: '600', fontSize: 18, letterSpacing: .5 }}>Mengalihkan ...</Text>
                 </View>
             )

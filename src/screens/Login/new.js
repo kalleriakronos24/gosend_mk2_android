@@ -182,13 +182,12 @@ const LoginPassword = ({ navigation, route }) => {
                         borderRadius: 8,
                         width: '100%',
                         alignItems: 'center',
-                        justifyContent:'space-between'
+                        justifyContent: 'space-between'
                     }}>
 
                         <TextInput
                             style={{
-                                padding: 12,
-                                width: '90%'
+                                padding: 12
                             }}
                             placeholder="Input Password ..."
                             textContentType='password'

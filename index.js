@@ -89,7 +89,7 @@ PushNotification.configure({
                 invokeApp: false
             });
 
-        } else if(notification.data.type === "KURIR_ACCEPT_ORDER") {
+        } else if (notification.data.type === "KURIR_ACCEPT_ORDER") {
 
             PushNotification.localNotification({
                 channelId: "not1",
@@ -124,8 +124,6 @@ PushNotification.configure({
                 actions: '["OK"]',
                 invokeApp: false
             });
-
-            // ????
         }
 
 

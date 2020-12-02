@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { formatRupiah } from '../../../utils/functionality';
 import { SERVER_URL } from '../../../utils/constants';
+import NetworkIndicator from '../../../components/NetworkIndicator';
 
 const UserOrderHistory = ({ navigation, route }) => {
 
@@ -92,6 +93,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                 ) : (
                         <>
                             <ScrollView style={{ flex: 1 }} scrollEventThrottle={16} refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}>
+                                <NetworkIndicator/>
                                 <View style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight }}>
                                     <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
                                     <View style={{ padding: 16, flex: 1 }}>

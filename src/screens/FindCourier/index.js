@@ -7,6 +7,7 @@ import { formatRupiah } from '../../utils/functionality';
 
 import RBSheet from "react-native-raw-bottom-sheet";
 import { SERVER_URL } from '../../utils/constants';
+import NetworkIndicator from '../../components/NetworkIndicator';
 
 
 const FindCourer = ({ navigation, route }) => {
@@ -300,6 +301,7 @@ const FindCourer = ({ navigation, route }) => {
     ) : (
             <ScrollView style={{ flex: 1, backgroundColor: 'white', paddingTop: StatusBar.currentHeight, paddingBottom: 50 }}>
                 <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
+                <NetworkIndicator/>
                 <View style={{ padding: 16, flex: 1 }}>
                     <View style={{ flexDirection: 'row' }}>
                         <View style={{ height: 80, width: 120, borderRadius: 10 }}>
@@ -308,7 +310,7 @@ const FindCourer = ({ navigation, route }) => {
                         {
                             kurirAccept ? (
                                 <View style={{ paddingHorizontal: 40, flex: 1 }}>
-                                    <Text style={{ fontSize: 17, fontWeight: '700', letterSpacing: .5, textAlign: 'justify' }}>{deliveryStatus === "belum di ambil" ? "Orderan belum di Ambil" : deliveryStatus === "otw" ? "Kurir sedang menuju ke lokasi pengambilan Barang" : deliveryStatus === "sudah di ambil" ? "Orderan sudah di Ambil" : deliveryStatus === "sedang di antar" ? "Orderan sedang di Antar" : null}</Text>
+                                    <Text style={{ fontSize: 17, fontWeight: '700', letterSpacing: .5, textAlign: 'justify' }}>{deliveryStatus === "belum di ambil" ? "Orderan belum di Ambil" : deliveryStatus === "otw" ? "Kurir sedang menuju ke lokasi pengambilan Barang" : deliveryStatus === "sudah di ambil" ? "Orderan sudah di Ambil, menunggu kurir mengantar barangmu.." : deliveryStatus === "sedang di antar" ? "Orderan sedang di Antar" : null}</Text>
                                 </View>
                             ) : (
                                     <View style={{ paddingHorizontal: 40, flex: 1 }}>
@@ -331,7 +333,7 @@ const FindCourer = ({ navigation, route }) => {
                         <View style={{ flex: 1, paddingHorizontal: 20 }}>
                             <Text style={{ fontSize: 20, letterSpacing: .6 }}>KT 1717 NA</Text>
                             <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>{courierData.fullname}</Text>
-                            <View style={{ padding: 16, flexDirection: 'row', flex: 1 }}>
+                            <View style={{ padding: 16, flexDirection: 'row', flex: 1, justifyContent:'center', alignItems:'center' }}>
                                 {
                                     kurirAccept ? (
                                         <>
@@ -401,7 +403,7 @@ const FindCourer = ({ navigation, route }) => {
                                         </TouchableOpacity>
                                     )
                             ) : (
-                                    <View>
+                                    <View style={{ flex: 1, marginBottom: 50 }}>
                                         <Text style={{ textAlign: 'center', fontSize: 19 }}>- Kamu tidak dapat mengcancel orderan jika barang telah di ambil atau sedang dalam pengantaran -</Text>
                                     </View>
                                 )

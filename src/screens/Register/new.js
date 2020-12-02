@@ -10,6 +10,7 @@ import { SERVER_URL } from '../../utils/constants';
 const NewRegister = ({ navigation, route }) => {
 
     const { email } = route.params;
+
     const type = 'user';
 
     let [name, setName] = useState('');
@@ -19,6 +20,9 @@ const NewRegister = ({ navigation, route }) => {
     let [reTypePass, setReTypePass] = useState('');
     let [fotoDiriType, setFotoDiriType] = useState('');
     let [err, setErr] = useState(false);
+    let [registerError, setRegisterErrror] = useState('');
+
+
     // image picker options
 
     const options = {
@@ -42,7 +46,6 @@ const NewRegister = ({ navigation, route }) => {
             "POST",
             `${SERVER_URL}/user/add`,
             {
-                Authorization: 'Bearer' + token,
                 Accept: 'application/json',
                 'Content-Type': 'multipart/form-data'
             },
@@ -70,12 +73,18 @@ const NewRegister = ({ navigation, route }) => {
             .then((res) => {
                 return res.json();
             })
-            .then(res => {
-                console.log(res);
-                navigation.navigate('email_verif', { email: email })
+            .then(async res => {
+                console.log('ini res ', res);
+                if (res.code === 1) {
+                    setRegisterErrror(res.msg);
+                    return;
+                }
+
+                await navigation.navigate('email_verif', { email: email })
             })
             .catch(err => {
                 console.log('ini error ', err);
+                setRegisterErrror("Ada Masalah koneksi, silahkan coba lagi");
             })
     }
 
@@ -186,6 +195,11 @@ const NewRegister = ({ navigation, route }) => {
                     {err ? (
                         <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18 }}>Password tidak sama.</Text>
                     ) : null}
+                    {
+                        registerError ? (
+                            <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18 }}>{registerError}</Text>
+                        ) : null
+                    }
                     <TouchableOpacity activeOpacity={.8} onPress={() => fotoDiri.data === '' || name === '' || noHp === '' || pass === '' ? Alert.alert('Pesan Sistem', 'Pastikan ada menginput semua kolom untuk mendaftar') : submitRegistForm()} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
                         <Text style={{
                             fontSize: 20,
@@ -200,10 +214,47 @@ const NewRegister = ({ navigation, route }) => {
     )
 }
 
-const EmailVerification = ({ route }) => {
+const EmailVerification = ({ navigation, route }) => {
 
     const { email } = route.params;
     let [pin, setPin] = useState("");
+    let [errMsg, setErrMsg] = useState("");
+    let [succMsg, setSuccMsg] = useState("");
+
+
+    const resendEmail = async () => {
+
+
+        let body = {
+            email: email
+        };
+
+        await fetch(`${SERVER_URL}/user/resend-verification`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        })
+            .then(res => {
+                return res.json();
+            })
+            .then(res => {
+                console.log('response resend email', res);
+                if (res.code === 1) {
+                    setErrMsg(res.msg);
+                    return;
+                }
+
+                setSuccMsg(res.msg);
+            })
+            .catch(err => {
+                console.log('err resend email ', err)
+
+                setErrMsg("Ada masalah koneksi, silahkan coba lagi");
+            })
+
+    }
 
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -228,9 +279,24 @@ const EmailVerification = ({ route }) => {
                         <Text style={{ fontSize: 35, fontWeight: 'bold', color: 'blue' }}>{email || "John Doe"}</Text>
                         <Text style={{ fontSize: 19, marginTop: 10 }}>Silahkan cek email anda dan klik link yg kita kirim di email tersebut.</Text>
                     </View>
-                    <View style={{ marginTop: 12, padding: 10, borderRadius: 7, backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', letterSpacing: .5 }}>Menuju Login</Text>
-                    </View>
+                    <TouchableOpacity onPress={() => navigation.navigate('new_login')} style={{ marginTop: 12, padding: 10, borderRadius: 7, backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', letterSpacing: .5, color: 'white' }}>Menuju Login</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => resendEmail()} style={{ marginTop: 12, padding: 10, borderRadius: 7, backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', letterSpacing: .5, color: 'white' }}>Kirim ulang Verifikasi</Text>
+                    </TouchableOpacity>
+
+                    {
+                        errMsg ? (
+                            <Text style={{ fontSize: 20, color: 'red', fontWeight: 'bold', marginTop: 10 }}>{errMsg}</Text>
+                        ) : null
+                    }
+
+                    {
+                        succMsg ? (
+                            <Text style={{ fontSize: 20 }}>{succMsg}</Text>
+                        ) : null
+                    }
                 </View>
             </View>
         </View>

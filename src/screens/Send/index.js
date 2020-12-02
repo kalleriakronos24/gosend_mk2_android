@@ -16,6 +16,7 @@ import { RouteModal } from '../../components/modals/route_modal';
 import { formatRupiah } from '../../utils/functionality';
 import { ViaMap } from '../../components/modals/via_map';
 import MapViewDirections from 'react-native-maps-directions';
+import NetworkIndicator from '../../components/NetworkIndicator';
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyCbgXJ_ueIa0jryLcfkmX1LaJ7Eo29hqEM';
 
@@ -59,6 +60,7 @@ const Send = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar translucent backgroundColor='transparent' barStyle='default' />
+            <NetworkIndicator/>
             <View style={{ flex: 1 }}>
                 <View style={{ width: '100%', height: 220 }}>
                     <Image source={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', width: '100%', height: 220 }} />
@@ -185,6 +187,7 @@ const SendStep = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+            <NetworkIndicator/>
             <View style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
@@ -320,6 +323,7 @@ const RouteStep = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+            <NetworkIndicator/>
             <View key={1} style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
@@ -460,6 +464,7 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+            <NetworkIndicator/>
             <View key={1} style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
@@ -527,6 +532,7 @@ const ConfirmOrder = ({ navigation }) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight, }}>
+            <NetworkIndicator/>
             <ScrollView style={{ padding: 16, flex: 1 }}>
                 <View style={{ padding: 10, marginTop: 20, justifyContent: 'center', alignItems: 'center', height: '20%', width: '100%' }}>
                     <Image source={require('../../assets/logos/4.png')} style={{ height: '100%', width: '100%', alignSelf: 'stretch' }} />
@@ -634,6 +640,7 @@ const PilihLewatMap = ({ navigation, route }) => {
     ) : (
             <View style={{ flex: 1, backgroundColor: 'white' }}>
                 <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
+                <NetworkIndicator/>
                 <View key={1} style={{ flex: 1, position: 'relative' }}>
                     <MapView
                         initialRegion={{
