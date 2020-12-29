@@ -3,12 +3,10 @@ import { View, Text, StatusBar, Image, Dimensions, TextInput, TouchableOpacity, 
 import Icon from 'react-native-vector-icons/Ionicons';
 import Swiper from 'react-native-swiper';
 import MapView, { MarkerAnimated, AnimatedRegion } from 'react-native-maps';
-import Geocoder from 'react-native-geocoding';
 import { SendPackageModal } from '../../components/modals/sp_modal';
 import Geolocation from 'react-native-geolocation-service';
 import SplashScreen from 'react-native-splash-screen';
 import { useDispatch, useSelector } from 'react-redux';
-Geocoder.init('AIzaSyCbpEHfzwBGfdSIfbFCODyH_muffddTZvg');
 import * as geolib from 'geolib';
 import { PickupOrReceiverModal } from '../../components/modals/pickup';
 import { useIsFocused } from '@react-navigation/native';
@@ -17,8 +15,9 @@ import { formatRupiah } from '../../utils/functionality';
 import { ViaMap } from '../../components/modals/via_map';
 import MapViewDirections from 'react-native-maps-directions';
 import NetworkIndicator from '../../components/NetworkIndicator';
+import SupportSection from '../../components/Support';
+import { SERVER_URL } from '../../utils/constants';
 
-const GOOGLE_MAPS_APIKEY = 'AIzaSyCbgXJ_ueIa0jryLcfkmX1LaJ7Eo29hqEM';
 
 //not used
 const Send = ({ navigation, route }) => {
@@ -60,7 +59,7 @@ const Send = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar translucent backgroundColor='transparent' barStyle='default' />
-            <NetworkIndicator/>
+            <NetworkIndicator />
             <View style={{ flex: 1 }}>
                 <View style={{ width: '100%', height: 220 }}>
                     <Image source={require('../../assets/banner/q3.png')} style={{ alignSelf: 'stretch', width: '100%', height: 220 }} />
@@ -103,27 +102,34 @@ const SendStep = ({ navigation, route }) => {
 
     let [defaultAddress, setDefaultAddress] = useState("");
     let [street, setStreet] = useState("");
+    let [GOOGLE_MAPS_APIKEY, setGmapKey] = useState("");
 
     useEffect(() => {
 
-        fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + _coords.latitude + ',' + _coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
-            .then((response) => response.json())
-            .then((res) => {
-                // console.log(res.results[0]);
-                setDefaultAddress(res.results[0].formatted_address);
-                setStreet(res.results[0].address_components[1].long_name);
+        fetch(`${SERVER_URL}/fetch-gmap-key`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                return res.json()
             })
-
-        // Geolocation.getCurrentPosition(
-        //     (position) => {
-        //         console.log('positions :: ', position);
-        //         set_Coords(position.coords);
-        //     },
-        //     (err) => {
-        //         console.log('failed to retreive user location', err)
-        //     },
-        //     { enableHighAccuracy: false, timeout: 2000, distanceFilter: 500 }
-        // );
+            .then(res => {
+                console.log('google map key ',res.key);
+                setGmapKey(res.key);
+                fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + _coords.latitude + ',' + _coords.longitude + '&key=' + res.key)
+                    .then((response) => response.json())
+                    .then((res) => {
+                        console.log('response :: ', res);
+                        // console.log(res.results[0]);
+                        setDefaultAddress(res.results[0].formatted_address);
+                        setStreet(res.results[0].address_components[1].long_name);
+                    })
+            })
+            .catch(err => {
+                throw new Error(err);
+            })
 
     }, []);
 
@@ -187,7 +193,7 @@ const SendStep = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-            <NetworkIndicator/>
+            <NetworkIndicator />
             <View style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
@@ -241,7 +247,7 @@ const RouteStep = ({ navigation, route }) => {
     const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
     const orders = useSelector(state => state.orders);
-
+    let [GOOGLE_MAPS_APIKEY, setGmapKey] = useState(null);
     const isFocused = useIsFocused();
 
     const mapFitToCoordinates = (i, coords, distance) => {
@@ -264,6 +270,21 @@ const RouteStep = ({ navigation, route }) => {
     };
 
     useEffect(() => {
+        fetch(`${SERVER_URL}/fetch-gmap-key`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                return res.json()
+            })
+            .then(res => {
+                setGmapKey(res.key);
+            })
+            .catch(err => {
+                throw new Error(err);
+            })
         SplashScreen.hide();
     }, [isFocused]);
 
@@ -323,7 +344,7 @@ const RouteStep = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-            <NetworkIndicator/>
+            <NetworkIndicator />
             <View key={1} style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
@@ -386,7 +407,7 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
     let [coords, setCoords] = useState(0);
 
 
-
+    let [GOOGLE_MAPS_APIKEY, setGmapKey] = useState(null);
 
     let [defaultAddress, setDefaultAddress] = useState("");
     let [street, setStreet] = useState("");
@@ -438,12 +459,29 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
 
     useEffect(() => {
 
-        fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + userCoordinate.latitude + ',' + userCoordinate.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
-            .then((response) => response.json())
-            .then((res) => {
-                setDefaultAddress(res.results[0].formatted_address);
-                setStreet(res.results[0].address_components[1].long_name);
+        fetch(`${SERVER_URL}/fetch-gmap-key`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                return res.json()
             })
+            .then(res => {
+                setGmapKey(res.key);
+                fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + userCoordinate.latitude + ',' + userCoordinate.longitude + '&key=' + res.key)
+                    .then((response) => response.json())
+                    .then((res) => {
+                        setDefaultAddress(res.results[0].formatted_address);
+                        setStreet(res.results[0].address_components[1].long_name);
+                    })
+            })
+            .catch(err => {
+                throw new Error(err);
+            })
+
+
         // Geolocation.getCurrentPosition(
         //     (position) => {
         //         console.log('current location coords', position.coords);
@@ -464,7 +502,7 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-            <NetworkIndicator/>
+            <NetworkIndicator />
             <View key={1} style={{ flex: 1, position: 'relative' }}>
                 <MapView
                     initialRegion={{
@@ -532,7 +570,7 @@ const ConfirmOrder = ({ navigation }) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight, }}>
-            <NetworkIndicator/>
+            <NetworkIndicator />
             <ScrollView style={{ padding: 16, flex: 1 }}>
                 <View style={{ padding: 10, marginTop: 20, justifyContent: 'center', alignItems: 'center', height: '20%', width: '100%' }}>
                     <Image source={require('../../assets/logos/4.png')} style={{ height: '100%', width: '100%', alignSelf: 'stretch' }} />
@@ -579,6 +617,7 @@ const ConfirmOrder = ({ navigation }) => {
                     <TouchableOpacity onPress={() => nextScreenHandler()} activeOpacity={.8} style={{ marginTop: 30, padding: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue', marginBottom: 300 }}>
                         <Text style={{ fontSize: 17, fontWeight: '600', color: 'white' }}>Order Sekarang</Text>
                     </TouchableOpacity>
+                    <SupportSection />
                 </View>
             </ScrollView>
         </View>
@@ -630,9 +669,6 @@ const PilihLewatMap = ({ navigation, route }) => {
         )
     }, [isFocused]);
 
-    let [regionChange, setRegionChange] = useState(0);
-    let [isRegionMoving, setRegionMove] = useState(false);
-
     return isLoading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
             <ActivityIndicator size='large' color='blue' />
@@ -640,7 +676,7 @@ const PilihLewatMap = ({ navigation, route }) => {
     ) : (
             <View style={{ flex: 1, backgroundColor: 'white' }}>
                 <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
-                <NetworkIndicator/>
+                <NetworkIndicator />
                 <View key={1} style={{ flex: 1, position: 'relative' }}>
                     <MapView
                         initialRegion={{

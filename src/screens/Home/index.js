@@ -1,25 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StatusBar, ScrollView, ActivityIndicator, Touchable, TouchableOpacity, Dimensions, ToastAndroid, Alert } from 'react-native'
+import { View, Text, StatusBar, ScrollView, ActivityIndicator, TouchableOpacity, Dimensions, ToastAndroid, Alert } from 'react-native'
 import Swiper from 'react-native-swiper';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import { useIsFocused } from '@react-navigation/native';
-import io from 'socket.io-client';
-import { formatRupiah, requestLocationPermission } from '../../utils/functionality';
+import { requestLocationPermission } from '../../utils/functionality';
 import Geolocation from '@react-native-community/geolocation';
 import { SERVER_URL } from '../../utils/constants';
 import NetworkIndicator from '../../components/NetworkIndicator';
-
-
-const socket = io(SERVER_URL, {
-    "transports": ['websocket'],
-    upgrade: false
-});
-
-
-const GOOGLE_MAPS_APIKEY = 'AIzaSyCbgXJ_ueIa0jryLcfkmX1LaJ7Eo29hqEM';
+import SupportSection from '../../components/Support';
 
 
 const Home = ({ navigation }) => {
@@ -27,23 +18,27 @@ const Home = ({ navigation }) => {
     // vars and invoked function
     const dispatch = useDispatch();
     const barHeight = StatusBar.currentHeight;
-    const device = useSelector(state => state.device);
+
+    let [setGmapKey, GOOGLE_MAPS_APIKEY] = useState(null);
 
     // state
-    let [index, setIndex] = useState(0);
     let [isLoading, setIsLoading] = useState(true);
     let [userData, setUserData] = useState({});
-    let [id, setId] = useState('');
-    let [name, setName] = useState('');
+    let [errMsg, setErrMsg] = useState("");
+    let [succMsg, setSuccMsg] = useState("");
+
 
     const logoutHandler = async () => {
         console.log('logged out');
 
         await AsyncStorage.removeItem('LOGIN_TOKEN')
+        Alert.alert("Pesan Sistem | Log Out", "Jika tidak di alihkan, cukup tutup aplikasi ini dan coba lagi.");
 
-        dispatch({ type: 'LOGOUT' });
+        setTimeout(() => {
+            dispatch({ type: 'LOGOUT' });
+        }, 3000);
 
-        await navigation.replace('new_login');
+
     };
 
     let [address, setAddress] = useState("");
@@ -55,7 +50,6 @@ const Home = ({ navigation }) => {
     useEffect(() => {
 
         AsyncStorage.getItem('LOGIN_TOKEN', (e, r) => {
-            socket.emit('userConnected', r);
             return fetchUserByToken(r)
         });
 
@@ -77,9 +71,25 @@ const Home = ({ navigation }) => {
                 //  - ERR01 : If the Settings change are unavailable
                 //  - ERR02 : If the popup has failed to open
             });
+
+        fetch(`${SERVER_URL}/fetch-gmap-key`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                return res.json()
+            })
+            .then(res => {
+                setGmapKey(res.key);
+            })
+            .catch(err => {
+                throw new Error(err);
+            })
         return () => {
             console.log('unmounted home');
-        }
+        };
 
     }, [isFocused]);
 
@@ -90,6 +100,7 @@ const Home = ({ navigation }) => {
                 await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + position.coords.latitude + ',' + position.coords.longitude + '&key=' + GOOGLE_MAPS_APIKEY)
                     .then((response) => response.json())
                     .then((res) => {
+                        console.log('address component', res);
                         setAddress(res.results[0]["address_components"][1]["short_name"]);
                     })
             },
@@ -99,6 +110,8 @@ const Home = ({ navigation }) => {
             },
             { enableHighAccuracy: false, timeout: 8000, distanceFilter: 1000 }
         )
+
+
     }, [isFocused])
 
     useEffect(() => {
@@ -122,12 +135,22 @@ const Home = ({ navigation }) => {
                 })
                 .then(res => {
                     console.log('this too ?');
-                    if (res)
-                        setTimeout(() => {
-                            setIsLoading(false);
-                        }, 2000)
-                    setUserData(res.data);
-                    console.log('count ?? ', res.data.count);
+                    if (res.data.type === "courier") {
+                        Alert.alert('Pesan Sistem', 'kurir tidak dapat mengakses aplikasi ini', [
+                            {
+                                text: "Keluar",
+                                onPress: () => {
+                                    logoutHandler();
+                                }
+                            }
+                        ])
+                    } else {
+                        if (res)
+                            setTimeout(() => {
+                                setIsLoading(false);
+                            }, 2000)
+                        setUserData(res.data);
+                    }
                 })
                 .catch(err => {
                     Alert.alert('Pesan Sistem', 'Koneksi tidak stabil, silahkan coba lagi', [
@@ -144,7 +167,13 @@ const Home = ({ navigation }) => {
     const { width, height } = Dimensions.get('window');
 
     const switchScreenHandler = () => {
-        if (userData.user_order === "" || userData.user_order === null || userData.user_order === undefined) {
+
+        if (!userData.verified) {
+            ToastAndroid.showWithGravity('Email mu belum di verifikasi, silahkan verifikasi terlebih dahulu', ToastAndroid.LONG, ToastAndroid.BOTTOM);
+            return;
+        }
+
+        if (userData.user_order === "" || userData.user_order === null || userData.user_order === undefined || userData.verified) {
             navigation.navigate('pilih_lewat_map', { data: { name: userData.fullname, no_hp: userData.no_hp, fotoDiri: userData.fotoDiri } });
         } else {
             ToastAndroid.showWithGravity('Tidak dapat membuat order, kamu masih punya order aktif', ToastAndroid.LONG, ToastAndroid.BOTTOM);
@@ -152,32 +181,38 @@ const Home = ({ navigation }) => {
         }
     };
 
-
-    const test = async () => {
+    const resendEmail = async () => {
 
 
         let body = {
-            message: {
-                data: {
-                    testing: 'HELLOOOO BROOO KIMMMMM'
-                }
-            },
-            device_token: 'cR8QRvlJRxSYX-WqzLWDh-:APA91bGc2yQAvMR28L4-yTv9q-UPmcsDYYHrBOHhW8CmArfSIPvf3b0brdCrsZMzEvgcc7JWl8YrKikCwAs5XkOCYalgxAFplmV-i30YHEtPUdyJNQb54QHEwnPdjsbmtdq0Lls3FscC'
+            email: userData.email
         };
 
-        return await fetch(`${SERVER_URL}/testing123`, {
+        await fetch(`${SERVER_URL}/user/resend-verification`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json"
             },
             body: JSON.stringify(body)
         })
             .then(res => {
-                console.log('berhasil ', res);
+                return res.json();
+            })
+            .then(res => {
+                console.log('response resend email', res);
+                if (res.code === 1) {
+                    setErrMsg(res.msg);
+                    return;
+                }
+
+                setSuccMsg(res.msg);
             })
             .catch(err => {
-                console.log('error :: ', err);
+                console.log('err resend email ', err)
+
+                setErrMsg("Ada masalah koneksi, silahkan coba lagi");
             })
+
     };
 
     return isLoading ?
@@ -187,7 +222,7 @@ const Home = ({ navigation }) => {
             </View>
         ) : (
             <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
-                <NetworkIndicator/>
+                <NetworkIndicator />
                 <StatusBar animated translucent={true} barStyle='default' backgroundColor='transparent' />
                 <Swiper bounces={true} loadMinimalLoader={<ActivityIndicator />} showsPagination={false} loop={false} index={0}>
                     {/* Main Feature */}
@@ -228,17 +263,39 @@ const Home = ({ navigation }) => {
                                                     <Text style={{ fontSize: 17, letterSpacing: .5, fontWeight: '500', color: 'white' }}>Kirim Barang</Text>
                                                 </View>
                                             </TouchableOpacity>
-                                            <TouchableOpacity activeOpacity={0.4} onPress={() => test()} style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
+                                            <TouchableOpacity activeOpacity={0.4} onPress={() => switchScreenHandler()} style={{ padding: 16, justifyContent: 'center', alignItems: 'center' }}>
                                                 <Icon size={40} name="arrow-forward-circle-outline" />
                                             </TouchableOpacity>
                                         </View>
                                     </View>
 
-                                    <View style={{ padding: 16 }}>
-                                        <Text style={{ fontSize: 23, letterSpacing: 0.5, fontWeight: '600', textAlign: 'center' }}>{'\u00A9'}Copyright Ongqir 2020. All Rights Reserved</Text>
-                                        <View style={{ padding: 6 }}>
-                                        </View>
-                                    </View>
+                                    {
+                                        !userData.verified ? (
+                                            <>
+                                                <Text style={{ marginHorizontal: 16, fontSize: 16 }}>*Klik untuk verifikasi email kamu</Text>
+                                                <View style={{ padding: 6, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <TouchableOpacity onPress={() => resendEmail()} style={{ padding: 10, borderRadius: 6, backgroundColor: 'blue' }}>
+                                                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>Verifikasi Email</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </>
+                                        ) : null
+                                    }
+
+                                    {
+                                        errMsg ? (
+                                            <Text style={{ fontSize: 20, color: 'red', fontWeight: 'bold', marginTop: 10, textAlign: 'center' }}>{errMsg}</Text>
+                                        ) : null
+                                    }
+
+                                    {
+                                        succMsg ? (
+                                            <Text style={{ fontSize: 20, textAlign: 'center' }}>{succMsg}</Text>
+                                        ) : null
+                                    }
+
+                                    <SupportSection />
+
                                 </View>
                             </View>
                         </View>
@@ -292,6 +349,7 @@ const Home = ({ navigation }) => {
                                         </View>
                                     </View>
                                 </View>
+                                <SupportSection />
                             </View>
                         </View>
                     </ScrollView>

@@ -5,6 +5,7 @@ import ImagePicker from 'react-native-image-picker';
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import { requestStoragePermission } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
+import SupportSection from '../../components/Support';
 
 
 const NewRegister = ({ navigation, route }) => {
@@ -35,10 +36,20 @@ const NewRegister = ({ navigation, route }) => {
 
     const submitRegistForm = async () => {
 
+        if(!name || !fotoDiri.data || !noHp || !pass){
+            Alert.alert('Pesan Sistem', "harap isi semua field sebelum meng-klik daftar");
+            return;
+        }
+
+        if(pass.length < 8){
+            Alert.alert('Pesan Sistem', "Panjang Password Harus 8");
+            return;
+        };
+
         if (reTypePass !== pass) {
             setErr(true);
             return;
-        }
+        };
 
         let token = Math.random() * 9999 + 'abcd';
 
@@ -200,7 +211,7 @@ const NewRegister = ({ navigation, route }) => {
                             <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 18 }}>{registerError}</Text>
                         ) : null
                     }
-                    <TouchableOpacity activeOpacity={.8} onPress={() => fotoDiri.data === '' || name === '' || noHp === '' || pass === '' ? Alert.alert('Pesan Sistem', 'Pastikan ada menginput semua kolom untuk mendaftar') : submitRegistForm()} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
+                    <TouchableOpacity activeOpacity={.8} onPress={() => submitRegistForm()} style={{ marginTop: 13, padding: 12, borderRadius: 10, width: '100%', backgroundColor: 'blue' }}>
                         <Text style={{
                             fontSize: 20,
                             fontWeight: 'bold',
@@ -209,6 +220,7 @@ const NewRegister = ({ navigation, route }) => {
                         }}>Daftar & Verifikasi Email</Text>
                     </TouchableOpacity>
                 </KeyboardAvoidingView>
+                <SupportSection />
             </View>
         </View>
     )
@@ -254,7 +266,7 @@ const EmailVerification = ({ navigation, route }) => {
                 setErrMsg("Ada masalah koneksi, silahkan coba lagi");
             })
 
-    }
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>

@@ -18,7 +18,7 @@ import { SERVER_URL } from './src/utils/constants';
 PushNotification.configure({
 
     // (optional) Called when Token is generated (iOS and Android)
-    onRegister: function (token) {
+    onRegister: async function (token) {
         AsyncStorage.getItem('LOGIN_TOKEN', async (e, r) => {
             if (r) {
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text
+    Text,
+    StatusBar
 } from 'react-native';
 import NetInfo from "@react-native-community/netinfo";
 import {
@@ -24,7 +25,7 @@ const NetworkIndicator = () => {
 
     return isConnected ? null :
         (
-            <View style={{ justifyContent: 'center', alignItems: 'center', padding: 15, flexDirection: 'row' }}>
+            <View style={{ justifyContent: 'center', alignItems: 'center', padding: 15, flexDirection: 'row', marginTop: StatusBar.currentHeight }}>
                 <BallIndicator color="red" size={20} />
                 <Text style={{ fontSize: 17, color:'black' }}>Tidak ada koneksi internet.</Text>
             </View>

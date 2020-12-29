@@ -7,6 +7,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { formatRupiah } from '../../../utils/functionality';
 import { SERVER_URL } from '../../../utils/constants';
 import NetworkIndicator from '../../../components/NetworkIndicator';
+import SupportSection from '../../../components/Support';
 
 const UserOrderHistory = ({ navigation, route }) => {
 
@@ -52,7 +53,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                         setOrderItems(result.items);
                         setCount(result.count);
                         setTotalTransaksi(result.transaksi);
-
+                        console.log('total pemakaian duid :: ', result.transaksi);
                         setTimeout(() => {
                             setIsLoading(false);
                         }, 2000)
@@ -193,6 +194,7 @@ const UserOrderHistory = ({ navigation, route }) => {
                                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16, letterSpacing: .5 }}>Back to home</Text>
                                     </TouchableOpacity>
                                 </View>
+                                <SupportSection/>
                             </ScrollView>
                         </>
                     )

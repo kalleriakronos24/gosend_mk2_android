@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SERVER_URL } from '../../utils/constants';
+import SupportSection from '../../components/Support';
 
 const NewLogin = ({ navigation }) => {
 
@@ -79,6 +80,7 @@ const NewLogin = ({ navigation }) => {
                         </View>
                     </View>
                 </View>
+                <SupportSection />
             </View>
         </ScrollView>
     )
@@ -213,6 +215,7 @@ const LoginPassword = ({ navigation, route }) => {
                         }}>Masuk</Text>
                     </TouchableOpacity>
                 </View>
+                <SupportSection />
             </View>
         </ScrollView>
     )

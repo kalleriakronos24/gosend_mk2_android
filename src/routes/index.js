@@ -104,6 +104,7 @@ const Router = React.memo((props) => {
             .catch(err => {
                 console.log(err);
             })
+        
     }, []);
 
     return (
@@ -231,22 +232,6 @@ const Router = React.memo((props) => {
                             cardOverlay: false
                         }} />
 
-
-
-                        { /* ??? */}
-
-                        <Stack.Screen name="new_login" component={NewLogin} options={{
-                            headerShown: false,
-                            cardShadowEnabled: false,
-                            cardOverlayEnabled: false,
-                            cardOverlay: false
-                        }} />
-                        <Stack.Screen name="login_pass" component={LoginPassword} options={{
-                            headerShown: false,
-                            cardShadowEnabled: false,
-                            cardOverlayEnabled: false,
-                            cardOverlay: false
-                        }} />
                     </React.Fragment>
                 ) : (
                             // not logged in routes
@@ -310,5 +295,5 @@ const Router = React.memo((props) => {
 export {
     Router,
     navRef,
-    deviceTokenDispatch
+    deviceTokenDispatch,
 };

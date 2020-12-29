@@ -8,6 +8,7 @@ import { formatRupiah } from '../../utils/functionality';
 import RBSheet from "react-native-raw-bottom-sheet";
 import { SERVER_URL } from '../../utils/constants';
 import NetworkIndicator from '../../components/NetworkIndicator';
+import SupportSection from '../../components/Support';
 
 
 const FindCourer = ({ navigation, route }) => {
@@ -285,6 +286,14 @@ const FindCourer = ({ navigation, route }) => {
             })
     };
 
+    const verifCheck = () => {
+        if(!userData.verified) { 
+            ToastAndroid.showWithGravity('Email mu belum di verifikasi, silahkan verifikasi terlebih dahulu', ToastAndroid.LONG, ToastAndroid.BOTTOM);
+            return;
+        } else {
+            navigation.navigate('pilih_lewat_map', { data: { name: userData.fullname, no_hp: userData.no_hp, fotoDiri: userData.foto_diri } })
+        }
+    }
 
     const actionSheetRef = useRef();
 
@@ -293,7 +302,7 @@ const FindCourer = ({ navigation, route }) => {
             <StatusBar barStyle="default" backgroundColor="rgba(0,0,0,0.251)" />
             <View style={{ padding: 16, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                 <Text style={{ fontWeight: 'bold', letterSpacing: .5, fontSize: 22, textAlign: 'center' }}>Kamu tidak punya Orderan Aktif untuk saat ini :(</Text>
-                <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('pilih_lewat_map', { data: { name: userData.fullname, no_hp: userData.no_hp, fotoDiri: userData.foto_diri } })} style={{ padding: 12, borderRadius: 6, marginTop: 10, backgroundColor: 'blue' }}>
+                <TouchableOpacity activeOpacity={.8} onPress={() => verifCheck()} style={{ padding: 12, borderRadius: 6, marginTop: 10, backgroundColor: 'blue' }}>
                     <Text style={{ color: 'white', fontSize: 19 }}>Order Sekarang</Text>
                 </TouchableOpacity>
             </View>
@@ -447,6 +456,8 @@ const FindCourer = ({ navigation, route }) => {
 
                         </RBSheet>
                     </View>
+
+                    <SupportSection/>
                 </View>
             </ScrollView>
         )

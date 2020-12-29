@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SERVER_URL } from '../../utils/constants';
 import NetworkIndicator from '../../components/NetworkIndicator';
+import SupportSection from '../../components/Support';
 
 const LoadingScreen = ({ navigation, route }) => {
     const orderReducer = useSelector((state) => state.orders);
@@ -75,6 +76,8 @@ const LoadingScreen = ({ navigation, route }) => {
                 <TouchableOpacity onPress={() => backToHome()} style={{ marginTop: 15, padding: 10, borderRadius: 6, justifyContent: 'center', alignItems: 'center', borderColor: 'blue' }}>
                     <Text style={{ letterSpacing: .5, fontWeight: 'bold', fontSize: 16 }}>Back to Home</Text>
                 </TouchableOpacity>
+
+                <SupportSection/>
             </View>
         ) : (
                 <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>

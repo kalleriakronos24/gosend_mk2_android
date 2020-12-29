@@ -8,10 +8,10 @@ const port = 8000;
 const protocol = 'http';
 const uri = '192.168.43.178';
 
-const ENV = 'PROD';
+const ENV = 'DEV';
 
-const PROD_PROTOCOL = 'http';
-const PROD_URI = '178.128.96.229';
+const PROD_PROTOCOL = 'https';
+const PROD_URI = 'www.ongqir-backend.com';
 
 export const SERVER_URL = ENV === "PROD" ? `${PROD_PROTOCOL}://${PROD_URI}` : `${protocol}://${uri}:${port}`;
 

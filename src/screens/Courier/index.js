@@ -82,7 +82,7 @@ const OrderFind = ({ navigation, route }) => {
                         console.log(res.msg);
                     })
                     .catch(err => {
-                        throw new Errror(err);
+                        throw new Error(err);
                     })
             },
             (err) => {
