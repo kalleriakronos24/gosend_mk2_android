@@ -19,7 +19,7 @@ const Home = ({ navigation }) => {
     const dispatch = useDispatch();
     const barHeight = StatusBar.currentHeight;
 
-    let [setGmapKey, GOOGLE_MAPS_APIKEY] = useState(null);
+    let [GOOGLE_MAPS_APIKEY, setGmapKey] = useState(null);
 
     // state
     let [isLoading, setIsLoading] = useState(true);

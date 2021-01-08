@@ -340,8 +340,9 @@ const FindCourer = ({ navigation, route }) => {
                             <Image style={{ alignSelf: 'stretch', height: '100%', width: '100%', borderRadius: 10 }} source={{ uri: courierData.foto_diri }} />
                         </View>
                         <View style={{ flex: 1, paddingHorizontal: 20 }}>
-                            <Text style={{ fontSize: 20, letterSpacing: .6 }}>KT 1717 NA</Text>
-                            <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5 }}>{courierData.fullname}</Text>
+                            <Text style={{ fontSize: 20, letterSpacing: .6 }}>{courierData.no_hp}</Text>
+                            <Text style={{ fontSize: 24, fontWeight: 'bold', letterSpacing: .5, textTransform:'capitalize' }}>{courierData.fullname}</Text>
+                            <Text style={{ fontSize: 20, letterSpacing: .6 }}>Driver / Kurir</Text>
                             <View style={{ padding: 16, flexDirection: 'row', flex: 1, justifyContent:'center', alignItems:'center' }}>
                                 {
                                     kurirAccept ? (

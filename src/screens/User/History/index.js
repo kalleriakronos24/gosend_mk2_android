@@ -163,7 +163,6 @@ const UserOrderHistory = ({ navigation, route }) => {
                                                                         ) : (
                                                                                 <>
                                                                                     <Text style={{ fontSize: 20 }}>Ongkir : {formatRupiah(String(v.ongkir), 'Rp. ')}</Text>
-                                                                                    <Text style={{ fontSize: 20 }}>Saldo Terpakai : {formatRupiah(String(v.ongkir * (15 / 100)), 'Rp. ')}</Text>
                                                                                     <Text style={{ fontSize: 20 }}>Status : {v.status ? 'Barang sudah terkirim' : 'Barang belum terkirim'}</Text>
                                                                                     <Text style={{ fontSize: 20 }}>Barang terkirim pada : {v.waktu_barang_terkirim}</Text>
                                                                                 </>

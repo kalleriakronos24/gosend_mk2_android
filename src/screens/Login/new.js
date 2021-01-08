@@ -31,7 +31,7 @@ const NewLogin = ({ navigation }) => {
                             fontSize: 26,
                             fontWeight: 'bold',
                             letterSpacing: .5
-                        }}>Selamat datang di Onqir</Text>
+                        }}>Selamat datang di Ongqir</Text>
 
                         <Text style={{ fontSize: 19, textAlign: 'center' }}>Kirim barang anda dalam satu genggaman tangan</Text>
                     </View>
@@ -171,7 +171,7 @@ const LoginPassword = ({ navigation, route }) => {
                             fontSize: 26,
                             fontWeight: 'bold',
                             letterSpacing: .5
-                        }}>Selamat datang di Onqir</Text>
+                        }}>Selamat datang di Ongqir</Text>
 
                         <Text style={{ fontSize: 19, textAlign: 'center' }}>Kirim barang anda dalam satu genggaman tangan</Text>
                     </View>

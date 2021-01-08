@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, KeyboardAvoidingView, Alert } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, KeyboardAvoidingView, Alert, ScrollView } from 'react-native'
 import RNFetchBlob from 'rn-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import { requestStoragePermission } from '../../utils/functionality';
 import { SERVER_URL } from '../../utils/constants';
 import SupportSection from '../../components/Support';
+import Spinner from '../../components/Spinner';
 
 
 const NewRegister = ({ navigation, route }) => {
@@ -22,7 +23,7 @@ const NewRegister = ({ navigation, route }) => {
     let [fotoDiriType, setFotoDiriType] = useState('');
     let [err, setErr] = useState(false);
     let [registerError, setRegisterErrror] = useState('');
-
+    let [isModalHidden, setIsModalHidden] = useState(false);
 
     // image picker options
 
@@ -36,12 +37,12 @@ const NewRegister = ({ navigation, route }) => {
 
     const submitRegistForm = async () => {
 
-        if(!name || !fotoDiri.data || !noHp || !pass){
+        if (!name || !fotoDiri.data || !noHp || !pass) {
             Alert.alert('Pesan Sistem', "harap isi semua field sebelum meng-klik daftar");
             return;
         }
 
-        if(pass.length < 8){
+        if (pass.length < 8) {
             Alert.alert('Pesan Sistem', "Panjang Password Harus 8");
             return;
         };
@@ -50,6 +51,8 @@ const NewRegister = ({ navigation, route }) => {
             setErr(true);
             return;
         };
+
+        setIsModalHidden(true);
 
         let token = Math.random() * 9999 + 'abcd';
 
@@ -85,16 +88,23 @@ const NewRegister = ({ navigation, route }) => {
                 return res.json();
             })
             .then(async res => {
-                console.log('ini res ', res);
-                if (res.code === 1) {
+                if (res.msg === "Email Telah Digunakan") {
+                    setIsModalHidden(false);
                     setRegisterErrror(res.msg);
                     return;
+                } else if (res.code === 1) {
+                    setIsModalHidden(false);
+                    setRegisterErrror("Pendaftaran Berhasil, kembali ke halaman utama untuk login ke aplikasi");
+                    return;
+                } else {
+                    setIsModalHidden(false);
+                    setTimeout(async () => {
+                        await navigation.navigate('email_verif', { email: email })
+                    }, 1000);
                 }
-
-                await navigation.navigate('email_verif', { email: email })
             })
             .catch(err => {
-                console.log('ini error ', err);
+                setIsModalHidden(false);
                 setRegisterErrror("Ada Masalah koneksi, silahkan coba lagi");
             })
     }
@@ -121,9 +131,10 @@ const NewRegister = ({ navigation, route }) => {
 
     useEffect(() => {
         requestStoragePermission();
-    }, [])
+    }, []);
+    
     return (
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={{ padding: 16, flex: 1 }}>
                 <View style={{ paddingTop: 30 }}>
                     <View style={{ height: 200, width: '100%', borderRadius: 10 }}>
@@ -144,7 +155,7 @@ const NewRegister = ({ navigation, route }) => {
                         }}>Daftar</Text>
                     </View>
                 </View>
-                <KeyboardAvoidingView behavior="height" style={{ paddingTop: 30, paddingHorizontal: 20, justifyContent: 'center', alignItems: 'center', paddingBottom: 30 }}>
+                <View style={{ paddingTop: 30, paddingHorizontal: 20, justifyContent: 'center', alignItems: 'center', paddingBottom: 30 }}>
                     <TouchableOpacity
                         style={{
                             padding: 12,
@@ -219,23 +230,24 @@ const NewRegister = ({ navigation, route }) => {
                             color: 'white'
                         }}>Daftar & Verifikasi Email</Text>
                     </TouchableOpacity>
-                </KeyboardAvoidingView>
+                </View>
                 <SupportSection />
+                <Spinner modalVisible={isModalHidden} />
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
 const EmailVerification = ({ navigation, route }) => {
 
     const { email } = route.params;
-    let [pin, setPin] = useState("");
     let [errMsg, setErrMsg] = useState("");
     let [succMsg, setSuccMsg] = useState("");
-
+    let [modalHidden, setModalHidden] = useState(false);
 
     const resendEmail = async () => {
 
+        setModalHidden(true);
 
         let body = {
             email: email
@@ -254,18 +266,18 @@ const EmailVerification = ({ navigation, route }) => {
             .then(res => {
                 console.log('response resend email', res);
                 if (res.code === 1) {
+                    setModalHidden(false);
                     setErrMsg(res.msg);
                     return;
                 }
-
+                setModalHidden(false);
                 setSuccMsg(res.msg);
             })
             .catch(err => {
                 console.log('err resend email ', err)
-
+                setModalHidden(false);
                 setErrMsg("Ada masalah koneksi, silahkan coba lagi");
             })
-
     };
 
     return (
@@ -309,6 +321,7 @@ const EmailVerification = ({ navigation, route }) => {
                             <Text style={{ fontSize: 20 }}>{succMsg}</Text>
                         ) : null
                     }
+                    <Spinner modalVisible={modalHidden} />
                 </View>
             </View>
         </View>

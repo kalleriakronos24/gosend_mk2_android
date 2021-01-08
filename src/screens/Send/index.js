@@ -5,7 +5,6 @@ import Swiper from 'react-native-swiper';
 import MapView, { MarkerAnimated, AnimatedRegion } from 'react-native-maps';
 import { SendPackageModal } from '../../components/modals/sp_modal';
 import Geolocation from 'react-native-geolocation-service';
-import SplashScreen from 'react-native-splash-screen';
 import { useDispatch, useSelector } from 'react-redux';
 import * as geolib from 'geolib';
 import { PickupOrReceiverModal } from '../../components/modals/pickup';
@@ -17,7 +16,8 @@ import MapViewDirections from 'react-native-maps-directions';
 import NetworkIndicator from '../../components/NetworkIndicator';
 import SupportSection from '../../components/Support';
 import { SERVER_URL } from '../../utils/constants';
-
+import Spinner from '../../components/Spinner';
+import {SplashScreen} from '../Splash/index';
 
 //not used
 const Send = ({ navigation, route }) => {
@@ -108,9 +108,6 @@ const SendStep = ({ navigation, route }) => {
 
         fetch(`${SERVER_URL}/fetch-gmap-key`, {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
         })
             .then(res => {
                 return res.json()
@@ -244,10 +241,8 @@ const RouteStep = ({ navigation, route }) => {
 
     let mapRef = useRef(null);
 
-    const { width, height } = Dimensions.get('window');
     const dispatch = useDispatch();
-    const orders = useSelector(state => state.orders);
-    let [GOOGLE_MAPS_APIKEY, setGmapKey] = useState(null);
+    let [GOOGLE_MAPS_APIKEY, setGmapKey] = useState("");
     const isFocused = useIsFocused();
 
     const mapFitToCoordinates = (i, coords, distance) => {
@@ -272,28 +267,23 @@ const RouteStep = ({ navigation, route }) => {
     useEffect(() => {
         fetch(`${SERVER_URL}/fetch-gmap-key`, {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
         })
             .then(res => {
                 return res.json()
             })
             .then(res => {
+                console.log("gmap key from route screen", res.key);
                 setGmapKey(res.key);
             })
             .catch(err => {
                 throw new Error(err);
             })
-        SplashScreen.hide();
     }, [isFocused]);
 
     let [regionChange, setRegionChange] = useState(0);
     let [isRegionMoving, setRegionMove] = useState(false);
 
     let [coords, setCoords] = useState({});
-
-    let [distance, setDistance] = useState(0);
 
     const state = useSelector((state) => state.orders);
     const { pengirim, penerima } = state;
@@ -341,7 +331,7 @@ const RouteStep = ({ navigation, route }) => {
         setRegionMove(true);
     }
 
-    return (
+    return GOOGLE_MAPS_APIKEY ? (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar animated barStyle='default' backgroundColor='rgba(0,0,0,0.251)' />
             <NetworkIndicator />
@@ -390,6 +380,8 @@ const RouteStep = ({ navigation, route }) => {
                     isRouteMap={true} />
             </View>
         </View>
+    ) : (
+       <SplashScreen/>
     )
 }
 
@@ -461,9 +453,6 @@ const PickupOrReceiverScreen = ({ navigation, route }) => {
 
         fetch(`${SERVER_URL}/fetch-gmap-key`, {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
         })
             .then(res => {
                 return res.json()
@@ -548,7 +537,7 @@ const ConfirmOrder = ({ navigation }) => {
     const { pengirim, penerima, ongkir, distance } = orders;
     let [barang, setBarang] = useState("");
     let [errMsg, setErrMsg] = useState("");
-
+    let [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
 
@@ -557,12 +546,14 @@ const ConfirmOrder = ({ navigation }) => {
 
     const nextScreenHandler = () => {
 
+        setModalVisible(true);
+
         if (barang === "") {
-            console.log(true);
+            setModalVisible(false);
             setErrMsg("harap isi detail barang yg akan dikirim terlebih dahulu.");
             return;
         };
-
+        setModalVisible(false);
         navigation.navigate('redirect_screen', { detail: barang });
 
     }
@@ -571,10 +562,12 @@ const ConfirmOrder = ({ navigation }) => {
     return (
         <View style={{ flex: 1, backgroundColor: 'white', paddingTop: barHeight, }}>
             <NetworkIndicator />
+            <Spinner modalVisible={modalVisible}/>
             <ScrollView style={{ padding: 16, flex: 1 }}>
                 <View style={{ padding: 10, marginTop: 20, justifyContent: 'center', alignItems: 'center', height: '20%', width: '100%' }}>
                     <Image source={require('../../assets/logos/4.png')} style={{ height: '100%', width: '100%', alignSelf: 'stretch' }} />
                 </View>
+
                 <View style={{ padding: 10, flex: 1 }}>
 
                     <View>
@@ -652,7 +645,6 @@ const PilihLewatMap = ({ navigation, route }) => {
     };
 
     useEffect(() => {
-        SplashScreen.hide();
 
         Geolocation.getCurrentPosition(
             (position) => {

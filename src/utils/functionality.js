@@ -25,8 +25,8 @@ const requestLocationPermission = async () => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
-            'title': 'Onqir',
-            'message': 'Onqir mau mengakses lokasi device mu ',
+            'title': 'Ongqir',
+            'message': 'Ongqir mau mengakses lokasi device mu ',
             buttonPositive : 'OK'
           }
         )
@@ -46,8 +46,8 @@ const requestStoragePermission = async () => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
           {
-            'title': 'Onqir',
-            'message': 'Onqir mau mengakses penyimpanan device mu ',
+            'title': 'Ongqir',
+            'message': 'Ongqir mau mengakses penyimpanan device mu ',
             buttonPositive : 'OK'
           }
         )
@@ -65,8 +65,8 @@ const requestCameraPermission = async () => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
-            'title': 'Onqir',
-            'message': 'Onqir mau mengakses penyimpanan device mu ',
+            'title': 'Ongqir',
+            'message': 'Ongqir mau mengakses penyimpanan device mu ',
             buttonPositive : 'OK'
           }
         )
