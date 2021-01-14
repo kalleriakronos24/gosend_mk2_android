@@ -305,6 +305,11 @@ const FindCourer = ({ navigation, route }) => {
                 <TouchableOpacity activeOpacity={.8} onPress={() => verifCheck()} style={{ padding: 12, borderRadius: 6, marginTop: 10, backgroundColor: 'blue' }}>
                     <Text style={{ color: 'white', fontSize: 19 }}>Order Sekarang</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity activeOpacity={.8} onPress={() => navigation.navigate('home')} style={{ padding: 12, borderRadius: 6, marginTop: 10, backgroundColor: 'blue' }}>
+                    <Text style={{ color: 'white', fontSize: 19 }}>Back to Home</Text>
+                </TouchableOpacity>
+                
             </View>
         </View>
     ) : (

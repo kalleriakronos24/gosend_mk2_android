@@ -47,7 +47,7 @@ const LoadingScreen = ({ navigation, route }) => {
                             setError(true);
                             return;
                         };
-                        navigation.push('find_courier');
+                        navigation.replace('find_courier');
                     })
                     .catch(err => {
                         throw new Error(err);
